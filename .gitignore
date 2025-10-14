@@ -1,34 +1,120 @@
-# Gradle files
+# =========================================
+# GRADLE / BUILD
+# =========================================
 .gradle/
 build/
+**/build/
+!src/**/build/
+.gradle/daemon/
+.gradle/native/
+.gradle/wrapper/dists/
+gradle-app.setting
+!gradle/wrapper/gradle-wrapper.jar
 
-# Local configuration file (sdk path, etc)
+# =========================================
+# ANDROID STUDIO
+# =========================================
+.idea/
+*.iml
+*.iws
+*.ipr
+.idea/caches/
+.idea/libraries/
+.idea/modules.xml
+.idea/workspace.xml
+.idea/navEditor.xml
+.idea/assetWizardSettings.xml
+.DS_Store
+*.orig
 local.properties
 
-# Log/OS Files
-*.log
+# =========================================
+# ANDROID SPECIFIC
+# =========================================
+# Build outputs
+*.apk
+*.ap_
+*.aab
+*.aar
+*.jar
+output.json
+app/build/
 
-# Android Studio generated files and folders
-captures/
+# Keystore files - CRITICAL FOR SECURITY
+*.keystore
+*.jks
+release.keystore
+debug.keystore
+
+# External native build folder
 .externalNativeBuild/
 .cxx/
-*.aab
-*.apk
-output-metadata.json
 
-# IntelliJ
-*.iml
-.idea/
-misc.xml
-deploymentTargetDropDown.xml
-render.experimental.xml
-
-# Keystore files
-*.jks
-*.keystore
-
-# Google Services (e.g. APIs or Firebase)
+# Google Services - CRITICAL FOR SECURITY
 google-services.json
+app/google-services.json
+fabric.properties
 
-# Android Profiling
+# =========================================
+# FIREBASE / GOOGLE SERVICES
+# =========================================
+# BU DOSYALAR ASLA COMMITLENMEMELİ!
+GoogleService-Info.plist
+google-services.json
+app/google-services.json
+
+# =========================================
+# TESTS / REPORTS
+# =========================================
+/test-results/
+/coverage/
+/reports/
+*.ec
+*.lc
+jacoco.exec
+
+# =========================================
+# TEMP / CACHE
+# =========================================
+*.tmp
+*.temp
+*.log
+*.swp
+*.swo
 *.hprof
+.cache/
+*.tar.gz
+*.tgz
+
+# =========================================
+# OS-SPECIFIC
+# =========================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# =========================================
+# ENVIRONMENT VARIABLES
+# =========================================
+.env
+.env.local
+.env.production
+.env.development
+
+
+# =========================================
+# KOTLIN SPECIFIC
+# =========================================
+# Kotlin daemon
+kotlin-daemon/
+
+# =========================================
+# WINDOWS
+# =========================================
+[Tt]humbs.db
+$RECYCLE.BIN/
+*~
