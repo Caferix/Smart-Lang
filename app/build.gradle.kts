@@ -2,8 +2,10 @@ import org.gradle.kotlin.dsl.annotationProcessor
 import org.gradle.kotlin.dsl.implementation
 
 plugins {
+
     alias(libs.plugins.android.application)
     alias(libs.plugins.hilt.android)
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -16,10 +18,8 @@ android {
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
-
     buildTypes {
         release {
             isMinifyEnabled = false
@@ -45,14 +45,28 @@ dependencies {
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
 
-    // Hilt
+// Hilt
+
     implementation (libs.hilt.android)
     annotationProcessor (libs.hilt.android.compiler)
 
-    // Hilt support for viewmodel
+
+
+// Hilt support for viewmodel
+
     implementation (libs.hilt.lifecycle.viewmodel)
     annotationProcessor (libs.hilt.compiler)
 
+
+
+    //BoM for the Firebase platform
+    implementation(platform(libs.firebase.bom))
     //Firebase
+
     implementation(libs.firebase.auth)
+    implementation(libs.firebase.firestore)
+    implementation(libs.firebase.storage)
+    implementation(libs.firebase.analytics)
+    implementation(libs.firebase.admin)
+    implementation(libs.material.v180)
 }
