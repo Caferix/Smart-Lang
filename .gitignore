@@ -52,7 +52,7 @@ debug.keystore
 
 # Google Services - CRITICAL FOR SECURITY
 google-services.json
-app/google-services.json
+!app/google-services.json
 fabric.properties
 
 # =========================================
