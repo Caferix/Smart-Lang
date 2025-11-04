@@ -31,33 +31,15 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
-    }
-
-    packaging {
-        resources {
-            excludes += "google/type/color.proto"
-            excludes += "google/type/date.proto"
-            excludes += "google/type/latlng.proto"
-            excludes += "google/type/timeofday.proto"
-            excludes += "google/type/calendar_period.proto"
-            excludes += "google/type/datetime.proto"
-            excludes += "google/type/dayofweek.proto"
-            excludes += "google/type/expr.proto"
-            excludes += "google/type/fraction.proto"
-            excludes += "google/type/money.proto"
-            excludes += "google/type/postal_address.proto"
-            excludes += "google/type/quaternion.proto"
-            excludes += "google/type/time_zone.proto"
-        }
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
     }
 }
 
 dependencies {
 
     implementation(libs.appcompat)
-    implementation(libs.material)
+    implementation(libs.material.v180)
     implementation(libs.activity)
     implementation(libs.constraintlayout)
     testImplementation(libs.junit)
@@ -92,7 +74,7 @@ configurations.all {
     resolutionStrategy {
         eachDependency {
             if (requested.group == "com.google.android.material") {
-                useVersion(libs.versions.material.get())
+                useVersion(libs.versions.materialVersion.get())
             }
         }
     }
