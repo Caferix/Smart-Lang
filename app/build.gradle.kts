@@ -20,6 +20,7 @@ android {
         versionName = "1.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
+
     buildTypes {
         release {
             isMinifyEnabled = false
@@ -30,8 +31,26 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
+    }
+
+    packaging {
+        resources {
+            excludes += "google/type/color.proto"
+            excludes += "google/type/date.proto"
+            excludes += "google/type/latlng.proto"
+            excludes += "google/type/timeofday.proto"
+            excludes += "google/type/calendar_period.proto"
+            excludes += "google/type/datetime.proto"
+            excludes += "google/type/dayofweek.proto"
+            excludes += "google/type/expr.proto"
+            excludes += "google/type/fraction.proto"
+            excludes += "google/type/money.proto"
+            excludes += "google/type/postal_address.proto"
+            excludes += "google/type/quaternion.proto"
+            excludes += "google/type/time_zone.proto"
+        }
     }
 }
 
@@ -45,28 +64,36 @@ dependencies {
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
 
-// Hilt
+    implementation(libs.androidx.navigation.fragment)
+    implementation(libs.androidx.navigation.ui)
 
     implementation (libs.hilt.android)
     annotationProcessor (libs.hilt.android.compiler)
 
-
-
-// Hilt support for viewmodel
-
     implementation (libs.hilt.lifecycle.viewmodel)
     annotationProcessor (libs.hilt.compiler)
 
-
-
-    //BoM for the Firebase platform
     implementation(platform(libs.firebase.bom))
-    //Firebase
 
-    implementation(libs.firebase.auth)
-    implementation(libs.firebase.firestore)
+    implementation(libs.firebase.auth) {
+        exclude(group = "com.google.api.grpc")
+    }
+
+    implementation(libs.firebase.firestore) {
+        exclude(group = "com.google.cloud")
+        exclude(group = "com.google.api.grpc")
+    }
+
     implementation(libs.firebase.storage)
     implementation(libs.firebase.analytics)
-    implementation(libs.firebase.admin)
-    implementation(libs.material.v180)
+}
+
+configurations.all {
+    resolutionStrategy {
+        eachDependency {
+            if (requested.group == "com.google.android.material") {
+                useVersion(libs.versions.material.get())
+            }
+        }
+    }
 }

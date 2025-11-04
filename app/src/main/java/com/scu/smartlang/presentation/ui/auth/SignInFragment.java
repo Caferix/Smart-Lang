@@ -10,6 +10,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.NavController;
+import androidx.navigation.fragment.NavHostFragment;
 
 import com.scu.smartlang.R;
 import com.scu.smartlang.presentation.viewmodel.UserViewModel;
@@ -27,6 +29,7 @@ public class SignInFragment extends Fragment {
     private TextInputEditText etPassword;
     private MaterialButton btnSignIn;
     private MaterialButton btnGoToSignUp;
+    private NavController navController;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
@@ -39,14 +42,14 @@ public class SignInFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        navController = NavHostFragment.findNavController(this);
 
         userViewModel = new ViewModelProvider(this).get(UserViewModel.class);
-
 
         etEmail = view.findViewById(R.id.et_email);
         etPassword = view.findViewById(R.id.et_password);
         btnSignIn = view.findViewById(R.id.btn_sign_in);
-        btnGoToSignUp = view.findViewById(R.id.btn_go_to_sign_up); // Hesap Oluştur butonu
+        btnGoToSignUp = view.findViewById(R.id.btn_go_to_sign_up);
 
 
         btnSignIn.setOnClickListener(v -> {
@@ -63,8 +66,7 @@ public class SignInFragment extends Fragment {
 
 
         btnGoToSignUp.setOnClickListener(v -> {
-            // TODO: SignUpFragment'a geçiş navigasyonu buraya eklenecek.
-            Toast.makeText(getContext(), "Kayıt Ekranına Git", Toast.LENGTH_SHORT).show();
+            navController.navigate(R.id.action_signInFragment_to_signUpFragment);
         });
 
 
@@ -75,7 +77,7 @@ public class SignInFragment extends Fragment {
                 AuthResultState.Success success = (AuthResultState.Success) authResult;
                 String userName = success.getUser().getUserName() != null ? success.getUser().getUserName() : "Kullanıcı";
                 Toast.makeText(getContext(), "Hoş geldin, " + userName + "!", Toast.LENGTH_LONG).show();
-                // TODO: Ana ekrana (MainActivity içinden başka bir Activity'ye) yönlendirme
+                navController.navigate(R.id.action_signInFragment_to_homeFragment);
             } else if (authResult instanceof AuthResultState.Error) {
                 AuthResultState.Error error = (AuthResultState.Error) authResult;
                 Toast.makeText(getContext(), "Hata: " + error.getMessage(), Toast.LENGTH_LONG).show();
