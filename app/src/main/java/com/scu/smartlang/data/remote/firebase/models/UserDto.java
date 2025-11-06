@@ -9,7 +9,7 @@ public class UserDto {
     private String userName;
     private String email;
     private int xp;
-    private byte level;
+    private int level;
     private String profileImageUrl;
     private UserStatsDto stats;
 
@@ -19,7 +19,7 @@ public class UserDto {
     public UserDto() {} // Required for Firestore
 
     public UserDto(String uid, String userName, String email, int xp,
-                   byte level, String profileImageUrl, Date createdAt) {
+                   int level, String profileImageUrl, Date createdAt) {
         this.uid = uid;
         this.userName = userName;
         this.email = email;
@@ -62,11 +62,11 @@ public class UserDto {
         this.xp = xp;
     }
 
-    public byte getLevel() {
+    public int getLevel() {
         return level;
     }
 
-    public void setLevel(byte level) {
+    public void setLevel(int level) {
         this.level = level;
     }
 
