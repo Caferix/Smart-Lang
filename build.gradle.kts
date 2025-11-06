@@ -8,5 +8,6 @@ plugins {
 buildscript {
     dependencies {
         classpath(libs.hilt.android.gradle.plugin)
+        classpath("com.google.gms:google-services:4.4.4")
     }
 }
