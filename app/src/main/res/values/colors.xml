@@ -1,5 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Mevcut Renkleriniz -->
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <!-- Tasarım İçin Yeni Renkler -->
+    <color name="button_green">#70C000</color> <!-- Canlı Yeşil -->
+    <color name="button_stroke_blue">#40B4E8</color> <!-- Açık Mavi Çizgi -->
+    <color name="text_title_gray">#4A4A4A</color> <!-- Başlık için Koyu Gri -->
+    <color name="text_hint_gray">#A0A0A0</color> <!-- İpucu yazıları için Açık Gri -->
+    <color name="input_background_gray">#F7F7F7</color> <!-- Girdi Alanı Arkaplanı -->
+    <color name="input_stroke_gray">#E8E8E8</color> <!-- Girdi Alanı Çizgisi (varsa) -->
 </resources>
