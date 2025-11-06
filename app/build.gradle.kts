@@ -45,14 +45,11 @@ dependencies {
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
 
-// Hilt
+    implementation(libs.androidx.navigation.fragment)
+    implementation(libs.androidx.navigation.ui)
 
     implementation (libs.hilt.android)
     annotationProcessor (libs.hilt.android.compiler)
-
-
-
-// Hilt support for viewmodel
 
     implementation (libs.hilt.lifecycle.viewmodel)
     annotationProcessor (libs.hilt.compiler)
@@ -67,5 +64,5 @@ dependencies {
     implementation(libs.firebase.firestore)
     implementation(libs.firebase.storage)
     implementation(libs.firebase.analytics)
-    implementation(libs.material.v180)
+
 }

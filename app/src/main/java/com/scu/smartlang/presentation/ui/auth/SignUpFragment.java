@@ -10,6 +10,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.NavController;
+import androidx.navigation.fragment.NavHostFragment;
 
 import com.scu.smartlang.R;
 import com.scu.smartlang.presentation.viewmodel.UserViewModel;
@@ -27,11 +29,11 @@ public class SignUpFragment extends Fragment {
     private TextInputEditText etEmail;
     private TextInputEditText etPassword;
     private MaterialButton btnSignUp;
+    private NavController navController;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Layout'u (fragment_sign_up.xml) inflate et
         return inflater.inflate(R.layout.fragment_sign_up, container, false);
     }
 
@@ -39,9 +41,9 @@ public class SignUpFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        navController = NavHostFragment.findNavController(this);
 
         userViewModel = new ViewModelProvider(this).get(UserViewModel.class);
-
 
         etUsername = view.findViewById(R.id.et_username_signup);
         etEmail = view.findViewById(R.id.et_email_signup);
@@ -65,15 +67,12 @@ public class SignUpFragment extends Fragment {
 
         userViewModel.getAuthResult().observe(getViewLifecycleOwner(), authResult -> {
             if (authResult instanceof AuthResultState.Loading) {
-
                 Toast.makeText(getContext(), "Hesap oluşturuluyor...", Toast.LENGTH_SHORT).show();
             } else if (authResult instanceof AuthResultState.Success) {
-
                 AuthResultState.Success success = (AuthResultState.Success) authResult;
                 Toast.makeText(getContext(), "Kayıt Başarılı! Hoş geldin, " + success.getUser().getUserName(), Toast.LENGTH_LONG).show();
-                // TODO: Kayıt sonrası navigasyon (örneğin ana ekrana veya giriş ekranına)
+                navController.navigate(R.id.action_signUpFragment_to_homeFragment);
             } else if (authResult instanceof AuthResultState.Error) {
-
                 AuthResultState.Error error = (AuthResultState.Error) authResult;
                 Toast.makeText(getContext(), "Kayıt Hatası: " + error.getMessage(), Toast.LENGTH_LONG).show();
             }
