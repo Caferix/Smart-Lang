@@ -1,7 +1,18 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
     <style name="Base.Theme.SmartLang" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your dark theme here. -->
-        <!-- <item name="colorPrimary">@color/my_dark_primary</item> -->
+
+        <item name="android:colorBackground">@color/dark_background</item>
+        <item name="colorSurface">@color/card_background_dark</item>
+        <item name="colorOnSurface">@color/white_text</item>
+
+        <item name="android:textColorPrimary">@color/white_text</item>
+        <item name="android:textColorSecondary">@color/text_hint_light</item>
+
+        <item name="colorPrimary">@color/button_green</item>
+
+        <item name="colorControlNormal">@color/text_hint_light</item>
+        <item name="colorControlActivated">@color/button_green</item>
+        <item name="editTextColor">@color/white_text</item>
+
     </style>
 </resources>

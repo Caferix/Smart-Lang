@@ -1,5 +1,6 @@
 package com.scu.smartlang.presentation.ui.auth;
 
+import android.content.Intent; // Yeni import
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,6 +15,7 @@ import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 
 import com.scu.smartlang.R;
+import com.scu.smartlang.presentation.ui.home.MainActivity; // Yeni import (Ana Aktivite)
 import com.scu.smartlang.presentation.viewmodel.UserViewModel;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
@@ -77,7 +79,13 @@ public class SignInFragment extends Fragment {
                 AuthResultState.Success success = (AuthResultState.Success) authResult;
                 String userName = success.getUser().getUserName() != null ? success.getUser().getUserName() : "Kullanıcı";
                 Toast.makeText(getContext(), "Hoş geldin, " + userName + "!", Toast.LENGTH_LONG).show();
-                navController.navigate(R.id.action_signInFragment_to_homeFragment);
+
+                // DÜZELTME: Navigation yerine Activity geçişi yapılıyor
+                Intent intent = new Intent(requireActivity(), MainActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(intent);
+                requireActivity().finish();
+
             } else if (authResult instanceof AuthResultState.Error) {
                 AuthResultState.Error error = (AuthResultState.Error) authResult;
                 Toast.makeText(getContext(), "Hata: " + error.getMessage(), Toast.LENGTH_LONG).show();
