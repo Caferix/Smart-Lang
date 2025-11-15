@@ -46,6 +46,7 @@ public class SignInFragment extends Fragment {
 
         userViewModel = new ViewModelProvider(this).get(UserViewModel.class);
 
+
         etEmail = view.findViewById(R.id.et_email);
         etPassword = view.findViewById(R.id.et_password);
         btnSignIn = view.findViewById(R.id.btn_sign_in);
@@ -64,7 +65,7 @@ public class SignInFragment extends Fragment {
             }
         });
 
-
+        // Hesap Oluştur butonuna navigasyon
         btnGoToSignUp.setOnClickListener(v -> {
             navController.navigate(R.id.action_signInFragment_to_signUpFragment);
         });
@@ -77,7 +78,10 @@ public class SignInFragment extends Fragment {
                 AuthResultState.Success success = (AuthResultState.Success) authResult;
                 String userName = success.getUser().getUserName() != null ? success.getUser().getUserName() : "Kullanıcı";
                 Toast.makeText(getContext(), "Hoş geldin, " + userName + "!", Toast.LENGTH_LONG).show();
-                navController.navigate(R.id.action_signInFragment_to_homeFragment);
+
+                // DÜZELTME: Fragment geçişi yapılıyor
+                navController.navigate(R.id.action_signInFragment_to_navigation_home);
+
             } else if (authResult instanceof AuthResultState.Error) {
                 AuthResultState.Error error = (AuthResultState.Error) authResult;
                 Toast.makeText(getContext(), "Hata: " + error.getMessage(), Toast.LENGTH_LONG).show();
