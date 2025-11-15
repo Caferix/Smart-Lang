@@ -9,7 +9,7 @@ public class User {
     private String userName;
     private String email;
     private int xp;
-    private byte level;
+    private int level;
     private String profileImageUrl;
     private UserStats stats;
 
@@ -27,7 +27,7 @@ public class User {
 
     public User(){} // firestore icin bos constructor
 
-    public User(String uid, String userName, String email, int xp, byte level, String profileImageUrl, Date createdAt) {
+    public User(String uid, String userName, String email, int xp, int level, String profileImageUrl, Date createdAt) {
         this.uid = uid;
         this.userName = userName;
         this.email = email;
@@ -69,11 +69,11 @@ public class User {
         this.xp = xp;
     }
 
-    public byte getLevel() {
+    public int getLevel() {
         return level;
     }
 
-    public void setLevel(byte level) {
+    public void setLevel(int level) {
         this.level = level;
     }
 

@@ -13,16 +13,16 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import com.scu.smartlang.R;
-import com.scu.smartlang.domain.model.User; //
-import com.scu.smartlang.presentation.ui.auth.AuthResultState; //
-import com.scu.smartlang.presentation.viewmodel.UserViewModel; //
+import com.scu.smartlang.domain.model.User;
+import com.scu.smartlang.presentation.ui.auth.AuthResultState;
+import com.scu.smartlang.presentation.viewmodel.UserViewModel;
 import com.google.android.material.button.MaterialButton;
 import dagger.hilt.android.AndroidEntryPoint;
 
 @AndroidEntryPoint
 public class HomeFragment extends Fragment {
 
-    private UserViewModel userViewModel; //
+    private UserViewModel userViewModel;
     private TextView tvWelcomeTitle;
     private TextView tvUserLevelXp;
     private ProgressBar progressXp;
@@ -32,9 +32,9 @@ public class HomeFragment extends Fragment {
     private MaterialButton btnStartGame;
     private ImageView ivNotificationIcon;
 
-    // Sabitler Güncellendi: Metinler sadeleştirildi
     private static final String DAILY_LESSON_TITLE = "GÜNLÜK DERSE BAŞLA";
     private static final String GAME_BUTTON_TITLE = "OYUN OYNA";
+    private static final String DEFAULT_MODULE_PLACEHOLDER = "(Henüz ders atanmadı)";
 
 
     @Nullable
@@ -47,7 +47,7 @@ public class HomeFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        userViewModel = new ViewModelProvider(this).get(UserViewModel.class); //
+        userViewModel = new ViewModelProvider(this).get(UserViewModel.class);
 
         // View'ları bağla
         tvWelcomeTitle = view.findViewById(R.id.tv_welcome_title);
@@ -56,23 +56,24 @@ public class HomeFragment extends Fragment {
         tvStreakCount = view.findViewById(R.id.tv_streak_count);
         btnStartDailyLesson = view.findViewById(R.id.btn_start_daily_lesson);
         ivNotificationIcon = view.findViewById(R.id.iv_notification_icon);
+
         btnLanguageSelector = view.findViewById(R.id.btn_language_selector);
         btnStartGame = view.findViewById(R.id.btn_start_game);
 
 
         // Kullanıcı Profilini Gözlemle
         userViewModel.getUserProfile().observe(getViewLifecycleOwner(), authResult -> {
-            if (authResult instanceof AuthResultState.Loading) { //
+            if (authResult instanceof AuthResultState.Loading) {
                 tvWelcomeTitle.setText("Yükleniyor...");
                 progressXp.setIndeterminate(true);
-            } else if (authResult instanceof AuthResultState.Success) { //
-                AuthResultState.Success success = (AuthResultState.Success) authResult; //
-                User user = success.getUser(); //
+            } else if (authResult instanceof AuthResultState.Success) {
+                AuthResultState.Success success = (AuthResultState.Success) authResult;
+                User user = success.getUser();
                 updateUiWithUser(user);
                 progressXp.setIndeterminate(false);
-            } else if (authResult instanceof AuthResultState.Error) { //
-                AuthResultState.Error error = (AuthResultState.Error) authResult; //
-                Toast.makeText(getContext(), "Profil yükleme hatası: " + error.getMessage(), Toast.LENGTH_LONG).show(); //
+            } else if (authResult instanceof AuthResultState.Error) {
+                AuthResultState.Error error = (AuthResultState.Error) authResult;
+                Toast.makeText(getContext(), "Profil yükleme hatası: " + error.getMessage(), Toast.LENGTH_LONG).show();
                 tvWelcomeTitle.setText("Hoş Geldin!");
                 progressXp.setIndeterminate(false);
             }
@@ -86,8 +87,11 @@ public class HomeFragment extends Fragment {
     }
 
     private void setupListenersAndText() {
-        // Butonlara sadeleştirilmiş metinler direkt atandı
-        btnStartDailyLesson.setText(DAILY_LESSON_TITLE);
+        String buttonText = String.format("%s<br><small><small>%s</small></small>",
+                DAILY_LESSON_TITLE,
+                DEFAULT_MODULE_PLACEHOLDER);
+
+        btnStartDailyLesson.setText(android.text.Html.fromHtml(buttonText, android.text.Html.FROM_HTML_MODE_LEGACY));
         btnStartGame.setText(GAME_BUTTON_TITLE);
 
         btnStartDailyLesson.setOnClickListener(v -> Toast.makeText(getContext(), "Günlük derse başlama akışı!", Toast.LENGTH_SHORT).show());
@@ -97,13 +101,16 @@ public class HomeFragment extends Fragment {
         btnStartGame.setOnClickListener(v -> Toast.makeText(getContext(), "Oyun modülü başlatılıyor!", Toast.LENGTH_SHORT).show());
     }
 
+
     /**
      * Kullanıcı verileri ile UI'ı günceller.
      */
     private void updateUiWithUser(User user) {
-        String userName = user.getUserName(); //
-        int currentXp = user.getXp(); //
-        byte currentLevel = user.getLevel(); //
+        String userName = user.getUserName();
+        int currentXp = user.getXp();
+
+        // Level, User.java'da int olarak tanımlı olduğu için doğrudan kullanıldı
+        int currentLevel = user.getLevel();
 
         String welcomeName = (userName != null && !userName.isEmpty()) ? userName : user.getEmail().split("@")[0];
 

@@ -68,7 +68,7 @@ public class FirebaseRepositoryImpl implements FirebaseRepository {
                     user.setEmail(firebaseUser.getEmail());
                     user.setUserName(userName);
                     user.setXp(0);
-                    user.setLevel((byte)1);
+                    user.setLevel(1);
                     user.setProfileImageUrl(null);
                     // mapping and save
                     UserDto dto = userMapper.mapToDto(user);
