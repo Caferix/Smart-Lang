@@ -2,6 +2,7 @@ package com.scu.smartlang.presentation.ui.auth;
 
 import com.scu.smartlang.domain.model.User;
 
+import javax.annotation.Nullable;
 public interface AuthResultState {
     // Loading
     class Loading implements AuthResultState {
@@ -23,16 +24,30 @@ public interface AuthResultState {
     // Auth result: Error
     class Error implements AuthResultState {
         private final String message;
-        public Error(String message) {
+        @Nullable
+        private final Exception exception;
+        public Error(String message, @Nullable Exception exception) {
             this.message = message;
+            this.exception = exception;
+        }
+
+        public Error(String message){
+            this(message,null);
         }
 
         public String getMessage() {
+
             return message;
+        }
+        @Nullable
+        public Exception getException() {
+            return exception;
         }
     }
 
-    // Email not couldn't verified hatası
+
+
+    // Email couldn't verified hatası
     public static final class EmailNotVerified implements AuthResultState {
 
     }
@@ -40,5 +55,8 @@ public interface AuthResultState {
     // E-posta gönderildiğini bildirmek için
     public static final class ResendEmailSuccess implements AuthResultState {
 
+    }
+    public static class SignedOut implements AuthResultState {
+        // Oturumun kapalı olduğunu belirtir.
     }
 }

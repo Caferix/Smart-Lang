@@ -12,6 +12,10 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.NavController;
+import androidx.navigation.NavOptions;
+import androidx.navigation.fragment.NavHostFragment;
+
 import com.scu.smartlang.R;
 import com.scu.smartlang.domain.model.User;
 import com.scu.smartlang.presentation.ui.auth.AuthResultState;
@@ -47,7 +51,7 @@ public class HomeFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        userViewModel = new ViewModelProvider(this).get(UserViewModel.class);
+        userViewModel = new ViewModelProvider(requireActivity()).get(UserViewModel.class);
 
         // View'ları bağla
         tvWelcomeTitle = view.findViewById(R.id.tv_welcome_title);
@@ -66,21 +70,29 @@ public class HomeFragment extends Fragment {
             if (authResult instanceof AuthResultState.Loading) {
                 tvWelcomeTitle.setText("Yükleniyor...");
                 progressXp.setIndeterminate(true);
+
             } else if (authResult instanceof AuthResultState.Success) {
                 AuthResultState.Success success = (AuthResultState.Success) authResult;
                 User user = success.getUser();
                 updateUiWithUser(user);
                 progressXp.setIndeterminate(false);
+
             } else if (authResult instanceof AuthResultState.Error) {
                 AuthResultState.Error error = (AuthResultState.Error) authResult;
                 Toast.makeText(getContext(), "Profil yükleme hatası: " + error.getMessage(), Toast.LENGTH_LONG).show();
-                tvWelcomeTitle.setText("Hoş Geldin!");
-                progressXp.setIndeterminate(false);
+                // Hata durumunda da giriş ekranına yönlendirdik
+                navigateToSignIn();
+
+            } else if (authResult instanceof AuthResultState.SignedOut || authResult instanceof AuthResultState.EmailNotVerified) {
+                // Oturum yoksa veya e-posta doğrulanmamışsa (fetchUserProfile bunu da kontrol ediyor)
+                // HomeFragment'ta kalmanın anlamı yok. Giriş ekranına geri dön.
+                Toast.makeText(getContext(), "Oturum bulunamadı, lütfen tekrar giriş yapın.", Toast.LENGTH_SHORT).show();
+                navigateToSignIn();
             }
         });
 
         // Profil verisini çek
-        userViewModel.fetchUserProfile();
+        //userViewModel.fetchUserProfile();
 
         // Buton ve Listener kurulumu
         setupListenersAndText();
@@ -102,27 +114,30 @@ public class HomeFragment extends Fragment {
     }
 
 
-    /**
-     * Kullanıcı verileri ile UI'ı günceller.
-     */
+      //Kullanıcı verileri ile UI'ı günceller.
     private void updateUiWithUser(User user) {
         String userName = user.getUserName();
         int currentXp = user.getXp();
-
-        // Level, User.java'da int olarak tanımlı olduğu için doğrudan kullanıldı
         int currentLevel = user.getLevel();
-
         String welcomeName = (userName != null && !userName.isEmpty()) ? userName : user.getEmail().split("@")[0];
-
-        tvWelcomeTitle.setText(String.format("Hoş Geldin, %s!", welcomeName));
-
         int progressPercent = (currentXp % 100);
         int xpTarget = 100;
 
+        tvWelcomeTitle.setText(String.format("Hoş Geldin, %s!", welcomeName));
         tvUserLevelXp.setText(String.format("Level %d | %d/%d XP", currentLevel, progressPercent, xpTarget));
         progressXp.setMax(xpTarget);
         progressXp.setProgress(progressPercent);
-
         tvStreakCount.setText("Seri: 0 Gün");
+    }
+
+    private void navigateToSignIn() {
+        // NavController'ı tekrar al (eğer null olabilme ihtimali varsa)
+        NavController navController = NavHostFragment.findNavController(this);
+
+        // Geri yığınını (back stack) temizleyerek SignInFragment'a git
+        NavOptions navOptions = new NavOptions.Builder()
+                .setPopUpTo(R.id.main_nav_graph, true)
+                .build();
+        navController.navigate(R.id.signInFragment, null, navOptions);
     }
 }

@@ -162,7 +162,26 @@ public class FirebaseRepositoryImpl implements FirebaseRepository {
         if (current == null) {
             return CompletableFuture.completedFuture(null);
         }
-        return getUserProfile(current.getUid());
+
+        // Fetch Firestore profile; then attach the FirebaseUser emailVerified flag.
+        return getUserProfile(current.getUid()).thenApply(user -> {
+            if (user == null) {
+                // If no Firestore doc, return a minimal User built from FirebaseUser
+                User u = new User();
+                u.setUid(current.getUid());
+                u.setEmail(current.getEmail());
+                u.setUserName(current.getDisplayName());
+                u.setProfileImageUrl(current.getPhotoUrl() != null ? current.getPhotoUrl().toString() : null);
+                u.setXp(0);
+                u.setLevel(1);
+                u.setEmailVerified(current.isEmailVerified()); // ensure flag is set
+                return u;
+            } else {
+                // Attach verification flag to existing domain user
+                user.setEmailVerified(current.isEmailVerified());
+                return user;
+            }
+        });
     }
 
     @Override

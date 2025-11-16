@@ -41,8 +41,8 @@ public class UserViewModel extends ViewModel {
     public UserViewModel(
             RegisterUserUseCase registerUserUseCase,
             LoginUserUseCase loginUserUseCase,
-            GetCurrentUserProfileUseCase getCurrentUserProfileUseCase, // Inject
-            SignOutUserUseCase signOutUserUseCase, // Inject
+            GetCurrentUserProfileUseCase getCurrentUserProfileUseCase,
+            SignOutUserUseCase signOutUserUseCase,
             ResendVerificationEmailUseCase resendVerificationEmailUseCase
     ) {
         this.registerUserUseCase = registerUserUseCase;
@@ -52,99 +52,142 @@ public class UserViewModel extends ViewModel {
         this.resendVerificationEmailUseCase = resendVerificationEmailUseCase;
     }
 
-     // Kayıt işlemini başlatır.
-
+    // Kayıt işlemini başlatır.
     public void registerUser(String email, String password, String userName) {
         _authResult.setValue(new AuthResultState.Loading());
 
         registerUserUseCase.execute(email, password, userName)
                 .thenAccept(user -> {
-                    // Kayıt başarılı ama giriş yapılmadı
-                    // kullanıcıya doğrulama gerektiğini söyle
-                    _authResult.postValue(new AuthResultState.EmailNotVerified());
+                    // Kayıt başarılı, hemen signOut yap (unverified olduğu için).
+                    signOutUserUseCase.execute()
+                            .thenRun(() -> {
+                                // Sonra doğrulama gerektiğini söyle.
+                                _authResult.postValue(new AuthResultState.EmailNotVerified());
+                            })
+                            .exceptionally(e -> {
+                                // SignOut hatası olursa logla ama devam et.
+                                System.err.println("Register signOut error: " + getRootCause(e).getLocalizedMessage());
+                                _authResult.postValue(new AuthResultState.EmailNotVerified());
+                                return null;
+                            });
                 })
                 .exceptionally(throwable -> {
-                    // Throwable'ın asıl sebebini (cause) al
                     Throwable cause = getRootCause(throwable);
                     _authResult.postValue(new AuthResultState.Error(cause.getLocalizedMessage()));
                     return null;
                 });
     }
 
-
-     // Giriş işlemini başlat.
+    // Giriş işlemini başlat.
     public void loginUser(String email, String password) {
         _authResult.setValue(new AuthResultState.Loading());
 
         loginUserUseCase.execute(email, password)
-                .thenAccept(user -> _authResult.postValue(new AuthResultState.Success(user)))
+                .thenAccept(basicUser -> {
+                    // Adım 1: Login başarılı. Şimdi tam profil verilerini çekiyoruz.
+                    getCurrentUserProfileUseCase.execute()
+                            .thenAccept(fullUser -> {
+                                // Adım 2: Tam profil verisi (userName dahil) çekildi.
+                                if (fullUser != null) {
+                                    // HomeFragment'ın beklediği _userProfile LiveData'sını güncelle
+                                    _userProfile.postValue(new AuthResultState.Success(fullUser));
+                                    // SignInFragment'ın navigasyon için beklediği _authResult'ı güncelle
+                                    _authResult.postValue(new AuthResultState.Success(fullUser));
+                                } else {
+                                    // Eğer login başarılı olduysa ama profil çekilemezse (nadir)
+                                    _authResult.postValue(new AuthResultState.Error("Giriş başarılı ancak profil verisi bulunamadı."));
+                                }
+                            })
+                            .exceptionally(profileFetchError -> {
+                                // Profil verisi çekme sırasında hata
+                                Throwable cause = getRootCause(profileFetchError);
+                                _authResult.postValue(new AuthResultState.Error("Giriş başarılı ama profil yükleme hatası: " + cause.getLocalizedMessage()));
+                                return null;
+                            });
+                })
                 .exceptionally(throwable -> {
-                    // HATA YÖNETİMİNİ GÜNCELLE
-
-                    // CompletableFuture'un fırlattığı asıl hatayı al
+                    // Orijinal login hatası (kullanıcı adı/şifre yanlış vb.)
                     Throwable cause = getRootCause(throwable);
-
-                    // "Email is not verified" hatasını kontrol et
-                    if (cause instanceof IllegalStateException &&
-                            "Email is not verified".equals(cause.getMessage())) {
-
-                        // yeni state i gönder
+                    // E-posta Doğrulanmadı kontrolü
+                    if (cause instanceof IllegalStateException && "Email is not verified".equals(cause.getMessage())) {
                         _authResult.postValue(new AuthResultState.EmailNotVerified());
-
                     } else {
-                        // Diğer hatalar (yanlış şifre vs.)
                         _authResult.postValue(new AuthResultState.Error(cause.getLocalizedMessage()));
                     }
                     return null;
                 });
     }
 
-     // Oturum açmış kullanıcının profilini çeker.
+
+       // Oturum açmış kullanıcının profilini çeker.
+      // Uygulama başlangıcında e-posta doğrulama kontrolü burada yapılır.
     public void fetchUserProfile() {
         _userProfile.setValue(new AuthResultState.Loading());
 
         getCurrentUserProfileUseCase.execute()
                 .thenAccept(user -> {
                     if (user != null) {
-                        _userProfile.postValue(new AuthResultState.Success(user));
+                        // User modeli, FirebaseUser dan isEmailVerified durumunu çekip getirmelidir.
+                        if (user.isEmailVerified()) {
+                            // Oturum var ve mail doğrulanmış. Ana sayfaya yönlendir.
+                            _userProfile.postValue(new AuthResultState.Success(user));
+                        } else {
+                            // Oturum var ama mail doğrulanmamış.
+                            // 1. Firebase'in kalıcı oturumunu sonlandır (force signOut).
+                            signOutUserUseCase.execute()
+                                    .thenRun(() -> {
+                                        // 2. UI'a kullanıcının doğrulanmadığını bildir.
+                                        // SignInFragment'ın formu göstermesini sağlar.
+                                        _userProfile.postValue(new AuthResultState.EmailNotVerified());
+                                    })
+                                    .exceptionally(e -> {
+                                        // Oturumu kapatma başarısız olsa bile kullanıcıyı bilgilendir.
+                                        System.err.println("Unverified user sign out error: " + getRootCause(e).getLocalizedMessage());
+                                        // Hata gönderme yerine, yine de doğrulanmama durumunu gönderiyoruz.
+                                        _userProfile.postValue(new AuthResultState.EmailNotVerified());
+                                        return null;
+                                    });
+                        }
                     } else {
-                        // Kullanıcı bulunamazsa hata
-                        _userProfile.postValue(new AuthResultState.Error("Kullanıcı profili bulunamadı."));
+                        // Kullanıcı bulunamazsa (oturum yok)
+                        _userProfile.postValue(new AuthResultState.SignedOut());
                     }
                 })
                 .exceptionally(throwable -> {
-                    _userProfile.postValue(new AuthResultState.Error(throwable.getLocalizedMessage()));
+                    // Oturum kontrolü sırasında bir hata oluşursa, oturum yok kabul et.
+                    _userProfile.postValue(new AuthResultState.SignedOut());
                     return null;
                 });
     }
 
 
-     // Kullanıcının oturumunu kapatır.
-     // SettingsFragment'ta doğrudan çağrılacak.
-
+    // Kullanıcının oturumunu kapatır.
     public void signOut() {
-        // UI'da (SettingsFragment) sonucu gözlemlemeyeceğimiz için sadece işlemi çağırıyoruz.
-        // Başarısızlık durumunda loglama veya ek bir hata yönetimi eklenebilir.
         signOutUserUseCase.execute()
                 .exceptionally(throwable -> {
-                    // Hata durumunu yönetimi
                     System.err.println("Sign out error: " + getRootCause(throwable).getLocalizedMessage());
                     return null;
                 });
     }
 
     public void resendVerificationEmail() {
+        _authResult.setValue(new AuthResultState.Loading());
+
         resendVerificationEmailUseCase.execute()
                 .thenAccept(aVoid -> {
-                    // UI'a e-postanın gönderildiğini bildir
                     _authResult.postValue(new AuthResultState.ResendEmailSuccess());
                 })
                 .exceptionally(throwable -> {
-                    // Hata durumunu yönet
                     Throwable cause = getRootCause(throwable);
                     _authResult.postValue(new AuthResultState.Error(cause.getLocalizedMessage()));
                     return null;
                 });
+    }
+
+    public void clearAuthResultState() {
+        // null olarak ayarlamak, yeni Fragment yüklendiğinde eski sonucun (örneğin EmailNotVerified)
+        // tekrar tetiklenmesini engeller.
+        _authResult.setValue(null);
     }
 
     private Throwable getRootCause(Throwable throwable) {
