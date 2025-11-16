@@ -62,20 +62,37 @@ public class SignUpFragment extends Fragment {
             } else {
 
                 userViewModel.registerUser(email, password, userName);
+                if (btnSignUp != null) btnSignUp.setEnabled(false); // Kayıt başlatıldığında butonu pasifleştir.
             }
         });
 
 
         userViewModel.getAuthResult().observe(getViewLifecycleOwner(), authResult -> {
+            // Observer tetiklendiğinde butonu tekrar etkinleştir (Loading dışındaki her durum için)
+            if (!(authResult instanceof AuthResultState.Loading) && btnSignUp != null) {
+                btnSignUp.setEnabled(true);
+            }
+
             if (authResult instanceof AuthResultState.Loading) {
 
                 Toast.makeText(getContext(), "Hesap oluşturuluyor...", Toast.LENGTH_SHORT).show();
-            } else if (authResult instanceof AuthResultState.Success) {
 
+            } else if (authResult instanceof AuthResultState.EmailNotVerified) {
+                // KRİTİK DEĞİŞİKLİK: Kayıt başarılı olduğunda bu sinyal alınır (ViewModel'den).
+
+                // Kullanıcıya e-posta doğrulama talimatını içeren dialogu göster
+                if (getParentFragmentManager().findFragmentByTag(CheckEmailDialogFragment.TAG) == null) {
+                    CheckEmailDialogFragment dialog = new CheckEmailDialogFragment();
+                    // Dialog, kapandığında kullanıcıyı SignInFragment'a yönlendirece.
+                    dialog.show(getParentFragmentManager(), CheckEmailDialogFragment.TAG);
+                }
+
+            } else if (authResult instanceof AuthResultState.Success) {
+                // Kayıt sırasında bu durum normalde gelmemeli (Çünkü EmailNotVerified bekliyoruz).
+                // Gelirse kullanıcıyı ana sayfaya yönlendir.
                 AuthResultState.Success success = (AuthResultState.Success) authResult;
                 Toast.makeText(getContext(), "Kayıt Başarılı! Hoş geldin, " + success.getUser().getUserName(), Toast.LENGTH_LONG).show();
 
-                // DÜZELTME: Fragment geçişi yapılıyor
                 navController.navigate(R.id.action_signUpFragment_to_navigation_home);
 
             } else if (authResult instanceof AuthResultState.Error) {
