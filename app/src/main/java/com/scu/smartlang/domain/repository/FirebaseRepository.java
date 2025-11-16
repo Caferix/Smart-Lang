@@ -20,4 +20,6 @@ public interface FirebaseRepository {
     //Password operations
     CompletableFuture<Void> sendPasswordResetEmail(String email);
     CompletableFuture<Void> updatePassword(String newPassword);
+
+    CompletableFuture<Void> resendVerificationEmail();
 }

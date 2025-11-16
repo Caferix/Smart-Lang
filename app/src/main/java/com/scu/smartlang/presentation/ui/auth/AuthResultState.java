@@ -11,7 +11,6 @@ public interface AuthResultState {
     // Auth result: successfull
     class Success implements AuthResultState {
         private final User user;
-
         public Success(User user) {
             this.user = user;
         }
@@ -24,7 +23,6 @@ public interface AuthResultState {
     // Auth result: Error
     class Error implements AuthResultState {
         private final String message;
-
         public Error(String message) {
             this.message = message;
         }
@@ -32,5 +30,15 @@ public interface AuthResultState {
         public String getMessage() {
             return message;
         }
+    }
+
+    // Email not couldn't verified hatası
+    public static final class EmailNotVerified implements AuthResultState {
+
+    }
+
+    // E-posta gönderildiğini bildirmek için
+    public static final class ResendEmailSuccess implements AuthResultState {
+
     }
 }

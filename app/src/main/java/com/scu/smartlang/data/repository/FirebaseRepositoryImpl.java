@@ -59,23 +59,36 @@ public class FirebaseRepositoryImpl implements FirebaseRepository {
                     FirebaseUser firebaseUser = authResult.getUser();
                     if (firebaseUser == null) {
                         CompletableFuture<User> failed = new CompletableFuture<>();
-                        failed.completeExceptionally(new IllegalStateException("Firebase user is null after create"));
+                        failed.completeExceptionally(
+                                new IllegalStateException("Firebase user is null after create")
+                        );
                         return failed;
                     }
-                    // build domain user and save to Firestore
-                    User user = new User();
-                    user.setUid(firebaseUser.getUid());
-                    user.setEmail(firebaseUser.getEmail());
-                    user.setUserName(userName);
-                    user.setXp(0);
-                    user.setLevel(1);
-                    user.setProfileImageUrl(null);
-                    // mapping and save
-                    UserDto dto = userMapper.mapToDto(user);
-                    return taskToFuture(db.collection(USERS_COLLECTION)
-                            .document(firebaseUser.getUid())
-                            .set(dto))
-                            .thenApply(v -> user);
+
+                    // sending verification email
+                    CompletableFuture<Void> emailVerificationFuture =
+                            taskToFuture(firebaseUser.sendEmailVerification());
+
+                    // after sending verification mail save user to firestore
+                    return emailVerificationFuture.thenCompose(aVoid -> {
+                        // Build domain user
+                        User user = new User();
+                        user.setUid(firebaseUser.getUid());
+                        user.setEmail(firebaseUser.getEmail());
+                        user.setUserName(userName);
+                        user.setXp(0);
+                        user.setLevel(1);
+                        user.setProfileImageUrl(null);
+
+                        // mapping & save
+                        UserDto dto = userMapper.mapToDto(user);
+
+                        return taskToFuture(
+                                db.collection(USERS_COLLECTION)
+                                        .document(firebaseUser.getUid())
+                                        .set(dto)
+                        ).thenApply(v -> user);
+                    });
                 });
     }
 
@@ -86,10 +99,28 @@ public class FirebaseRepositoryImpl implements FirebaseRepository {
                     FirebaseUser firebaseUser = authResult.getUser();
                     if (firebaseUser == null) {
                         CompletableFuture<User> failed = new CompletableFuture<>();
-                        failed.completeExceptionally(new IllegalStateException("Firebase user is null after sign in"));
+                        failed.completeExceptionally(
+                                new IllegalStateException("Firebase user is null after sign in"));
                         return failed;
                     }
-                    return getUserProfile(firebaseUser.getUid());
+
+                    // update user (reload)
+                    return taskToFuture(firebaseUser.reload())
+                            .thenCompose(aVoid -> {
+
+                                // is email verified?
+                                if (!firebaseUser.isEmailVerified()) {
+
+                                    // throw exception
+                                    CompletableFuture<User> failed = new CompletableFuture<>();
+                                    failed.completeExceptionally(
+                                            new IllegalStateException("Email is not verified"));
+                                    return failed;
+                                }
+
+                                // get verified profile
+                                return getUserProfile(firebaseUser.getUid());
+                            });
                 });
     }
 
@@ -188,6 +219,25 @@ public class FirebaseRepositoryImpl implements FirebaseRepository {
         }
 
         return taskToFuture(user.updatePassword(newPassword));
+    }
+
+    @Override
+    public CompletableFuture<Void> resendVerificationEmail() {
+        FirebaseUser user = auth.getCurrentUser();
+
+        if (user == null) {
+            CompletableFuture<Void> failed = new CompletableFuture<>();
+            failed.completeExceptionally(new IllegalStateException("No user is currently signed in."));
+            return failed;
+        }
+
+        // if already verified do nothing
+        if (user.isEmailVerified()) {
+            return CompletableFuture.completedFuture(null);
+        }
+
+        // resend verification email
+        return taskToFuture(user.sendEmailVerification());
     }
 
 }
