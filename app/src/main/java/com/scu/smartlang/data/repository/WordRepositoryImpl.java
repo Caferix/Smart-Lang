@@ -15,12 +15,17 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+@Singleton
 public class WordRepositoryImpl implements WordRepository {
 
     private static final String FILE_NAME = "words.json";
     private final Context context;
     private final Gson gson;
 
+    @Inject
     public WordRepositoryImpl(Context context) {
         this.context = context;
         this.gson = new Gson();
