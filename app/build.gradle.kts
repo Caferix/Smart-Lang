@@ -67,4 +67,7 @@ dependencies {
 
     implementation(libs.play.services.auth)
 
+    implementation("com.google.code.gson:gson:2.13.2")
+
+
 }
