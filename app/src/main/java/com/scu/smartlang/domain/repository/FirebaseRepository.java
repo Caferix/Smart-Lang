@@ -22,4 +22,6 @@ public interface FirebaseRepository {
     CompletableFuture<Void> updatePassword(String newPassword);
 
     CompletableFuture<Void> resendVerificationEmail();
+
+    CompletableFuture<Void> reauthenticateAndUpdatePassword (String currentPassword, String newPassword);
 }

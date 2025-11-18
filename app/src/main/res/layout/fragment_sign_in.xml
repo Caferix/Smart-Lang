@@ -58,7 +58,7 @@
                 android:layout_height="wrap_content"
                 android:background="@drawable/bg_input_field"
                 android:textColor="@color/black"
-                android:hint="E-posta veya kullanıcı adı"
+                android:hint="E-posta"
                 android:inputType="textEmailAddress"
                 android:paddingStart="20dp"
                 android:paddingTop="16dp"
@@ -100,7 +100,7 @@
 
         </com.google.android.material.textfield.TextInputLayout>
 
-        <!-- YENİ BİLEŞEN 1: Hata Mesajı Alanı (KRİTİK DÜZELTME) -->
+        <!-- Hata Mesajı Alanı-->
         <TextView
             android:id="@+id/tv_error"
             android:layout_width="0dp"
@@ -116,7 +116,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             tools:text="Hesabınız doğrulanmamış. Lütfen e-postanızı kontrol edin."/>
 
-        <!-- YENİ BİLEŞEN 2: Doğrulama E-postası Tekrar Gönder Butonu (KRİTİK DÜZELTME) -->
+        <!-- Doğrulama E-postası Tekrar Gönder Butonu -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_resend_email"
             style="@style/Widget.MaterialComponents.Button.TextButton"
@@ -132,7 +132,7 @@
             app:layout_constraintEnd_toEndOf="parent" />
 
 
-        <!-- Giriş Yap Butonu (Konum Değişti) -->
+        <!-- Giriş Yap Butonu-->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_sign_in"
             android:layout_width="0dp"
@@ -148,14 +148,28 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/btn_resend_email" />
 
+        <!-- YENİ: Şifremi Unuttum Butonu -->
+        <TextView
+            android:id="@+id/tv_forgot_password"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Şifremi Unuttum"
+            android:textColor="@color/button_stroke_blue"
+            android:textSize="14sp"
+            android:padding="8dp"
+            android:clickable="true"
+            android:focusable="true"
+            app:layout_constraintTop_toBottomOf="@id/btn_sign_in"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="8dp"/>
 
-        <!-- Hesap Oluştur Butonu (Konum Değişti) -->
+        <!-- Hesap Oluştur Butonu-->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_go_to_sign_up"
             style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             android:layout_width="0dp"
             android:layout_height="60dp"
-            android:layout_marginTop="24dp"
+            android:layout_marginTop="16dp"
             android:text="HESAP OLUŞTUR"
             android:textColor="@color/button_stroke_blue"
             android:textSize="16sp"
@@ -163,7 +177,7 @@
             app:cornerRadius="12dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/btn_sign_in"
+            app:layout_constraintTop_toBottomOf="@id/tv_forgot_password"
             app:strokeColor="@color/button_stroke_blue"
             app:strokeWidth="2dp" />
 

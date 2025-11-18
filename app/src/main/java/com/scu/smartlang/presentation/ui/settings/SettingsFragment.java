@@ -88,7 +88,7 @@ public class SettingsFragment extends Fragment {
         });
 
         btnChangePassword.setOnClickListener(v -> {
-            Toast.makeText(getContext(), "Şifre Değiştirme Akışı Başlatılıyor.", Toast.LENGTH_SHORT).show();
+            navController.navigate(R.id.action_navigation_settings_to_changePasswordFragment);
         });
 
         switchNotifications.setOnCheckedChangeListener((buttonView, isChecked) -> {
