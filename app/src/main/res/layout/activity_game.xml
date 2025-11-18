@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp"
+    tools:context=".GameActivity">
+
+    <!-- HATA ALMANIZI ENGELLEYECEK YENİ TEXTVIEW'LAR -->
+    <TextView
+        android:id="@+id/tv_game_user_level"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:gravity="center"
+        android:textColor="?attr/colorOnSurface"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toStartOf="@+id/guideline_middle"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="Level: 1" />
+
+    <TextView
+        android:id="@+id/tv_game_user_xp"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:gravity="center"
+        android:textColor="?attr/colorOnSurface"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@+id/guideline_middle"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:text="XP: 50/100" />
+    <!-- YENİ BÖLÜM SONU -->
+
+
+    <!-- BUTON SÜTUNLARI (Artık yeni TextView'ların altında) -->
+    <LinearLayout
+        android:id="@+id/english_words_column"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="8dp"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/guideline_middle"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tv_game_user_level"
+        app:layout_constraintVertical_bias="0.45">
+
+        <!-- Butonlar aynı kalıyor -->
+        <com.google.android.material.button.MaterialButton
+            android:layout_width="match_parent"
+            android:layout_height="70dp"
+            android:layout_marginBottom="8dp"
+            android:textColor="?attr/colorOnSurface"
+            app:backgroundTint="?attr/colorSurface"
+            app:strokeColor="?attr/colorOutline"
+            app:strokeWidth="1dp"
+            tools:text="English 1" />
+
+        <com.google.android.material.button.MaterialButton
+            android:layout_width="match_parent"
+            android:layout_height="70dp"
+            android:layout_marginBottom="8dp"
+            android:textColor="?attr/colorOnSurface"
+            app:backgroundTint="?attr/colorSurface"
+            app:strokeColor="?attr/colorOutline"
+            app:strokeWidth="1dp"
+            tools:text="English 2" />
+
+        <com.google.android.material.button.MaterialButton
+            android:layout_width="match_parent"
+            android:layout_height="70dp"
+            android:layout_marginBottom="8dp"
+            android:textColor="?attr/colorOnSurface"
+            app:backgroundTint="?attr/colorSurface"
+            app:strokeColor="?attr/colorOutline"
+            app:strokeWidth="1dp"
+            tools:text="English 3" />
+
+        <com.google.android.material.button.MaterialButton
+            android:layout_width="match_parent"
+            android:layout_height="70dp"
+            android:layout_marginBottom="8dp"
+            android:textColor="?attr/colorOnSurface"
+            app:backgroundTint="?attr/colorSurface"
+            app:strokeColor="?attr/colorOutline"
+            app:strokeWidth="1dp"
+            tools:text="English 4" />
+
+        <com.google.android.material.button.MaterialButton
+            android:layout_width="match_parent"
+            android:layout_height="70dp"
+            android:textColor="?attr/colorOnSurface"
+            app:backgroundTint="?attr/colorSurface"
+            app:strokeColor="?attr/colorOutline"
+            app:strokeWidth="1dp"
+            tools:text="English 5" />
+    </LinearLayout>
+
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/guideline_middle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.5" />
+
+    <LinearLayout
+        android:id="@+id/turkish_words_column"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/guideline_middle"
+        app:layout_constraintTop_toBottomOf="@id/tv_game_user_xp"
+        app:layout_constraintVertical_bias="0.45">
+
+        <!-- Butonlar aynı kalıyor -->
+        <com.google.android.material.button.MaterialButton
+            android:layout_width="match_parent"
+            android:layout_height="70dp"
+            android:layout_marginBottom="8dp"
+            android:textColor="?attr/colorOnSurface"
+            app:backgroundTint="?attr/colorSurface"
+            app:strokeColor="?attr/colorOutline"
+            app:strokeWidth="1dp"
+            tools:text="Turkish 1" />
+
+        <com.google.android.material.button.MaterialButton
+            android:layout_width="match_parent"
+            android:layout_height="70dp"
+            android:layout_marginBottom="8dp"
+            android:textColor="?attr/colorOnSurface"
+            app:backgroundTint="?attr/colorSurface"
+            app:strokeColor="?attr/colorOutline"
+            app:strokeWidth="1dp"
+            tools:text="Turkish 2" />
+
+        <com.google.android.material.button.MaterialButton
+            android:layout_width="match_parent"
+            android:layout_height="70dp"
+            android:layout_marginBottom="8dp"
+            android:textColor="?attr/colorOnSurface"
+            app:backgroundTint="?attr/colorSurface"
+            app:strokeColor="?attr/colorOutline"
+            app:strokeWidth="1dp"
+            tools:text="Turkish 3" />
+
+        <com.google.android.material.button.MaterialButton
+            android:layout_width="match_parent"
+            android:layout_height="70dp"
+            android:layout_marginBottom="8dp"
+            android:textColor="?attr/colorOnSurface"
+            app:backgroundTint="?attr/colorSurface"
+            app:strokeColor="?attr/colorOutline"
+            app:strokeWidth="1dp"
+            tools:text="Turkish 4" />
+
+        <com.google.android.material.button.MaterialButton
+            android:layout_width="match_parent"
+            android:layout_height="70dp"
+            android:textColor="?attr/colorOnSurface"
+            app:backgroundTint="?attr/colorSurface"
+            app:strokeColor="?attr/colorOutline"
+            app:strokeWidth="1dp"
+            tools:text="Turkish 5" />
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

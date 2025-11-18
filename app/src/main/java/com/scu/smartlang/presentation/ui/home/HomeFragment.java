@@ -1,5 +1,7 @@
-package com.scu.smartlang.presentation.ui.home;
+package com.scu.smartlang.presentation.ui.home;// KODUN BAŞLANGICI - Bu satırdan itibaren kopyalayınpackage com.scu.smartlang.presentation.ui.home;
 
+// GEREKLİ KÜTÜPHANELERİ EKLEDİM (Intent)
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,9 +18,11 @@ import androidx.navigation.NavController;
 import androidx.navigation.NavOptions;
 import androidx.navigation.fragment.NavHostFragment;
 
+import com.scu.smartlang.GameActivity;
 import com.scu.smartlang.R;
 import com.scu.smartlang.domain.model.User;
 import com.scu.smartlang.presentation.ui.auth.AuthResultState;
+// GameActivity'yi burada import ettim
 import com.scu.smartlang.presentation.viewmodel.UserViewModel;
 import com.google.android.material.button.MaterialButton;
 import dagger.hilt.android.AndroidEntryPoint;
@@ -110,11 +114,23 @@ public class HomeFragment extends Fragment {
         ivNotificationIcon.setOnClickListener(v -> Toast.makeText(getContext(), "Bildirimler açılıyor.", Toast.LENGTH_SHORT).show());
 
         btnLanguageSelector.setOnClickListener(v -> Toast.makeText(getContext(), "Dil seçme menüsü açılacak (Çoklu dil desteği yakında!)", Toast.LENGTH_SHORT).show());
-        btnStartGame.setOnClickListener(v -> Toast.makeText(getContext(), "Oyun modülü başlatılıyor!", Toast.LENGTH_SHORT).show());
+
+        // ******************** DEĞİŞİKLİK BURADA YAPILDI ********************
+        // Eski Toast mesajı yerine yeni sayfaya geçiş kodunu ekledim.
+        btnStartGame.setOnClickListener(v -> {
+            // Yeni GameActivity'yi (boş ekranı) açmak için bir "niyet" (Intent) oluşturuyoruz
+            Intent intent = new Intent(getActivity(), GameActivity.class);
+            // Yeni ekranı başlatıyoruz
+            startActivity(intent);
+        });
+        // ******************** DEĞİŞİKLİK SONA ERDİ ********************
     }
 
 
-      //Kullanıcı verileri ile UI'ı günceller.
+    /**
+     * Kullanıcı verileri ile UI'ı günceller.
+     * @param user Güncellenecek kullanıcı modeli
+     */
     private void updateUiWithUser(User user) {
         String userName = user.getUserName();
         int currentXp = user.getXp();
@@ -141,3 +157,4 @@ public class HomeFragment extends Fragment {
         navController.navigate(R.id.signInFragment, null, navOptions);
     }
 }
+// KODUN SONU - Bu satıra kadar kopyalayın
