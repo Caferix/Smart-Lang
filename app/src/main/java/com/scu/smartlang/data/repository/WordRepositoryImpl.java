@@ -18,6 +18,8 @@ import java.util.concurrent.CompletableFuture;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import dagger.hilt.android.qualifiers.ApplicationContext;
+
 @Singleton
 public class WordRepositoryImpl implements WordRepository {
 
@@ -26,7 +28,7 @@ public class WordRepositoryImpl implements WordRepository {
     private final Gson gson;
 
     @Inject
-    public WordRepositoryImpl(Context context) {
+    public WordRepositoryImpl(@ApplicationContext Context context, Gson gson) {
         this.context = context;
         this.gson = new Gson();
     }
