@@ -8,11 +8,11 @@ public class User {
     private String uid;
     private String userName;
     private String email;
-    private boolean emailVerified; // EKLENDİ: Auth akışı için kritik
+    private boolean emailVerified;
     private int xp;
     private int level;
     private String profileImageUrl;
-    private UserStats stats; // YERİNDE DURUYOR
+    private UserStats stats;
 
     public UserStats getStats() {
         return stats;
@@ -28,7 +28,6 @@ public class User {
 
     public User(){} // firestore icin bos constructor
 
-    // Tam Kurucu Metot (Constructor) GÜNCELLENDİ (9 parametre)
     public User(String uid, String userName, String email, boolean emailVerified, int xp, int level, String profileImageUrl, Date createdAt, UserStats stats) {
         this.uid = uid;
         this.userName = userName;
