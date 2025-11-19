@@ -1,105 +1,75 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/game_container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="16dp"
+    android:background="@drawable/gradient_background_game"
     tools:context=".GameActivity">
 
-    <!-- HATA ALMANIZI ENGELLEYECEK YENİ TEXTVIEW'LAR -->
+    <!-- Üst Kısım: Level ve XP Bilgileri -->
     <TextView
         android:id="@+id/tv_game_user_level"
-        android:layout_width="0dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginEnd="8dp"
-        android:gravity="center"
-        android:textColor="?attr/colorOnSurface"
-        android:textSize="18sp"
+        android:layout_marginTop="24dp"
+        android:background="@drawable/button_background_game"
+        android:elevation="4dp"
+        android:paddingHorizontal="20dp"
+        android:paddingVertical="10dp"
+        android:textColor="@color/game_button_text"
+        android:textSize="16sp"
         android:textStyle="bold"
         app:layout_constraintEnd_toStartOf="@+id/guideline_middle"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        tools:text="Level: 1" />
+        tools:text="Level: 12" />
 
     <TextView
         android:id="@+id/tv_game_user_xp"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
+        android:layout_height="0dp"
         android:gravity="center"
-        android:textColor="?attr/colorOnSurface"
-        android:textSize="18sp"
+        android:textColor="@color/white"
+        android:textSize="16sp"
         android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="@+id/tv_game_user_level"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="@+id/guideline_middle"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:text="XP: 50/100" />
-    <!-- YENİ BÖLÜM SONU -->
+        app:layout_constraintStart_toEndOf="@+id/guideline_middle"
+        app:layout_constraintTop_toTopOf="@+id/tv_game_user_level"
+        tools:text="XP: 75 / 150" />
 
-
-    <!-- BUTON SÜTUNLARI (Artık yeni TextView'ların altında) -->
+    <!-- Orta Kısım: Kelime Butonları -->
     <LinearLayout
         android:id="@+id/english_words_column"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginEnd="8dp"
         android:orientation="vertical"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/progress_xp_game"
         app:layout_constraintEnd_toStartOf="@+id/guideline_middle"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tv_game_user_level"
         app:layout_constraintVertical_bias="0.45">
 
-        <!-- Butonlar aynı kalıyor -->
-        <com.google.android.material.button.MaterialButton
-            android:layout_width="match_parent"
-            android:layout_height="70dp"
-            android:layout_marginBottom="8dp"
-            android:textColor="?attr/colorOnSurface"
-            app:backgroundTint="?attr/colorSurface"
-            app:strokeColor="?attr/colorOutline"
-            app:strokeWidth="1dp"
-            tools:text="English 1" />
+        <!-- Butonlar Java kodu ile dinamik olarak oluşturulacak ve stilleri ayarlanacak -->
+        <!-- Bu yüzden içini boş bırakmak daha doğru bir yaklaşımdır. -->
+    </LinearLayout>
 
-        <com.google.android.material.button.MaterialButton
-            android:layout_width="match_parent"
-            android:layout_height="70dp"
-            android:layout_marginBottom="8dp"
-            android:textColor="?attr/colorOnSurface"
-            app:backgroundTint="?attr/colorSurface"
-            app:strokeColor="?attr/colorOutline"
-            app:strokeWidth="1dp"
-            tools:text="English 2" />
-
-        <com.google.android.material.button.MaterialButton
-            android:layout_width="match_parent"
-            android:layout_height="70dp"
-            android:layout_marginBottom="8dp"
-            android:textColor="?attr/colorOnSurface"
-            app:backgroundTint="?attr/colorSurface"
-            app:strokeColor="?attr/colorOutline"
-            app:strokeWidth="1dp"
-            tools:text="English 3" />
-
-        <com.google.android.material.button.MaterialButton
-            android:layout_width="match_parent"
-            android:layout_height="70dp"
-            android:layout_marginBottom="8dp"
-            android:textColor="?attr/colorOnSurface"
-            app:backgroundTint="?attr/colorSurface"
-            app:strokeColor="?attr/colorOutline"
-            app:strokeWidth="1dp"
-            tools:text="English 4" />
-
-        <com.google.android.material.button.MaterialButton
-            android:layout_width="match_parent"
-            android:layout_height="70dp"
-            android:textColor="?attr/colorOnSurface"
-            app:backgroundTint="?attr/colorSurface"
-            app:strokeColor="?attr/colorOutline"
-            app:strokeWidth="1dp"
-            tools:text="English 5" />
+    <LinearLayout
+        android:id="@+id/turkish_words_column"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toTopOf="@id/progress_xp_game"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/guideline_middle"
+        app:layout_constraintTop_toBottomOf="@id/tv_game_user_xp"
+        app:layout_constraintVertical_bias="0.45">
+        <!-- Butonlar Java kodu ile dinamik olarak oluşturulacak -->
     </LinearLayout>
 
     <androidx.constraintlayout.widget.Guideline
@@ -109,67 +79,110 @@
         android:orientation="vertical"
         app:layout_constraintGuide_percent="0.5" />
 
-    <LinearLayout
-        android:id="@+id/turkish_words_column"
+    <!-- Alt Kısım: XP Barı -->
+    <ProgressBar
+        android:id="@+id/progress_xp_game"
+        style="?android:attr/progressBarStyleHorizontal"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:orientation="vertical"
+        android:layout_height="12dp"
+        android:layout_marginHorizontal="32dp"
+        android:layout_marginBottom="32dp"
+        android:progress="50"
+        android:progressDrawable="@drawable/progress_bar_custom_game"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/guideline_middle"
-        app:layout_constraintTop_toBottomOf="@id/tv_game_user_xp"
-        app:layout_constraintVertical_bias="0.45">
+        app:layout_constraintStart_toStartOf="parent" />
 
-        <!-- Butonlar aynı kalıyor -->
-        <com.google.android.material.button.MaterialButton
-            android:layout_width="match_parent"
-            android:layout_height="70dp"
-            android:layout_marginBottom="8dp"
-            android:textColor="?attr/colorOnSurface"
-            app:backgroundTint="?attr/colorSurface"
-            app:strokeColor="?attr/colorOutline"
-            app:strokeWidth="1dp"
-            tools:text="Turkish 1" />
+    <!-- Ekran Ortası Animasyon Katmanı -->
+    <ImageView
+        android:id="@+id/iv_correct_feedback"
+        android:layout_width="120dp"
+        android:layout_height="120dp"
+        android:elevation="10dp"
+        android:src="@drawable/ic_correct"
+        android:visibility="gone"
+        app:tint="@color/game_correct_glow"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        tools:visibility="visible" />
+
+    <ImageView
+        android:id="@+id/iv_wrong_feedback"
+        android:layout_width="120dp"
+        android:layout_height="120dp"
+        android:elevation="10dp"
+        android:src="@drawable/ic_wrong"
+        android:visibility="gone"
+        app:tint="@color/game_wrong_glow"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <com.airbnb.lottie.LottieAnimationView
+        android:id="@+id/lottie_level_up_animation"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:elevation="10dp"
+        android:visibility="gone"
+        app:lottie_fileName="dance_stars.json"
+        app:lottie_autoPlay="false"
+        app:lottie_loop="false"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- Oyun Sonu Menüsü -->
+    <LinearLayout
+        android:id="@+id/game_over_menu"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/button_background_game"
+        android:elevation="10dp"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="32dp"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        tools:visibility="visible">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="24dp"
+            android:text="Tebrikler, Turu Tamamladın!"
+            android:textColor="@color/white"
+            android:textSize="22sp"
+            android:textStyle="bold" />
 
         <com.google.android.material.button.MaterialButton
-            android:layout_width="match_parent"
-            android:layout_height="70dp"
-            android:layout_marginBottom="8dp"
-            android:textColor="?attr/colorOnSurface"
-            app:backgroundTint="?attr/colorSurface"
-            app:strokeColor="?attr/colorOutline"
-            app:strokeWidth="1dp"
-            tools:text="Turkish 2" />
+            android:id="@+id/btn_next_round"
+            style="@style/Widget.Material3.Button"
+            android:layout_width="250dp"
+            android:layout_height="60dp"
+            android:layout_marginBottom="16dp"
+            android:backgroundTint="@color/game_button_selected_bg"
+            android:text="Sonraki Tur"
+            android:textColor="@color/white"
+            app:cornerRadius="16dp" />
 
         <com.google.android.material.button.MaterialButton
-            android:layout_width="match_parent"
-            android:layout_height="70dp"
-            android:layout_marginBottom="8dp"
-            android:textColor="?attr/colorOnSurface"
-            app:backgroundTint="?attr/colorSurface"
-            app:strokeColor="?attr/colorOutline"
-            app:strokeWidth="1dp"
-            tools:text="Turkish 3" />
+            android:id="@+id/btn_return_home"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="250dp"
+            android:layout_height="60dp"
+            android:text="Ana Ekrana Dön"
+            android:textColor="@color/white"
+            app:cornerRadius="16dp"
+            app:strokeColor="@color/white" />
 
-        <com.google.android.material.button.MaterialButton
-            android:layout_width="match_parent"
-            android:layout_height="70dp"
-            android:layout_marginBottom="8dp"
-            android:textColor="?attr/colorOnSurface"
-            app:backgroundTint="?attr/colorSurface"
-            app:strokeColor="?attr/colorOutline"
-            app:strokeWidth="1dp"
-            tools:text="Turkish 4" />
-
-        <com.google.android.material.button.MaterialButton
-            android:layout_width="match_parent"
-            android:layout_height="70dp"
-            android:textColor="?attr/colorOnSurface"
-            app:backgroundTint="?attr/colorSurface"
-            app:strokeColor="?attr/colorOutline"
-            app:strokeWidth="1dp"
-            tools:text="Turkish 5" />
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
+

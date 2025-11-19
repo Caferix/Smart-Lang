@@ -1,151 +1,475 @@
 // KODUN BAŞLANGICI
-package com.scu.smartlang; // Bu paket adı sizde doğru olmalı
+package com.scu.smartlang;
 
-// --- Gerekli kütüphaneleri import ediyoruz ---
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.lifecycle.ViewModelProvider; // -> ViewModel için gerekli
-import android.os.Bundle;
-import android.util.Log;
-import android.widget.LinearLayout;
-import android.widget.TextView; // -> TextView için gerekli
-import android.widget.Toast; // -> Toast mesajı için gerekli
+import androidx.core.content.ContextCompat;
+import androidx.lifecycle.ViewModelProvider;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.ObjectAnimator;
+import android.content.Intent;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.util.Log;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import com.airbnb.lottie.LottieAnimationView;
 import com.google.android.material.button.MaterialButton;
-import com.scu.smartlang.domain.model.User; // -> User modeli için gerekli
+import com.scu.smartlang.domain.model.User;
 import com.scu.smartlang.domain.model.Word;
-import com.scu.smartlang.presentation.ui.auth.AuthResultState; // -> ViewModel'in kullandığı durum sınıfı
-import com.scu.smartlang.presentation.viewmodel.UserViewModel; // -> Kullanacağımız ViewModel
+import com.scu.smartlang.presentation.ui.auth.AuthResultState;
+import com.scu.smartlang.presentation.viewmodel.UserViewModel;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 
-import dagger.hilt.android.AndroidEntryPoint; // -> Hilt kütüphanesi için
+import dagger.hilt.android.AndroidEntryPoint;
 
-@AndroidEntryPoint // Bu satır, Hilt'in bu Activity'yi yönetmesini sağlar
+@AndroidEntryPoint
 public class GameActivity extends AppCompatActivity {
 
-    // --- 1. Değişkenleri Tanımlıyoruz ---
-    private UserViewModel userViewModel; // ViewModel için bir değişken.
-    private TextView tvGameUserLevel;    // Level'ı gösterecek TextView için değişken.
-    private TextView tvGameUserXp;       // XP'yi gösterecek TextView için değişken.
+    // --- UI ve ViewModel Değişkenleri ---
+    private UserViewModel userViewModel;
+    private TextView tvGameUserLevel, tvGameUserXp;
+    private ImageView correctFeedback, wrongFeedback;
+    private LinearLayout englishWordsColumn, turkishWordsColumn;
+    private ProgressBar xpProgressBar;
+    private LottieAnimationView levelUpAnimationView;
+    private LinearLayout gameOverMenu;
+    private MaterialButton btnNextRound, btnReturnHome;
 
-    // --- Oyunun diğer değişkenleri (bunlar zaten vardı) ---
+    // --- Oyun Veri Listeleri ---
     private List<Word> allWords;
     private List<Word> gameWords;
     private List<String> englishWords;
     private List<String> turkishWords;
-    private LinearLayout englishWordsColumn;
-    private LinearLayout turkishWordsColumn;
+
+    // --- Oyun Durum Değişkenleri ---
+    private MaterialButton selectedEnglishButton, selectedTurkishButton;
+    private String selectedEnglishWord, selectedTurkishWord;
+    private boolean isChecking = false;
+    private int matchedPairs = 0;
+    private final int wordsPerRound = 5;
+
+    // --- İlerleme (Progression) Değişkenleri ---
+    private User currentUser;
+    private int sessionXpGain = 0;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game);
 
-        // --- 2. ViewModel'ı burada başlatıyoruz (tanımlıyoruz) ---
-        userViewModel = new ViewModelProvider(this).get(UserViewModel.class);
-
-        // UI Elemanlarını XML'den ID'leri ile buluyoruz
-        englishWordsColumn = findViewById(R.id.english_words_column);
-        turkishWordsColumn = findViewById(R.id.turkish_words_column);
-        tvGameUserLevel = findViewById(R.id.tv_game_user_level); // Yeni eklediğimiz TextView
-        tvGameUserXp = findViewById(R.id.tv_game_user_xp);       // Yeni eklediğimiz TextView
-
-
-        // ******************** EKSİK OLAN SATIR BURAYA EKLENDİ ********************
-        // ViewModel'a Firebase'den kullanıcı profilini çekmesi için komut veriyoruz.
+        initializeViews();
+        setupListeners();
         userViewModel.fetchUserProfile();
-        // *************************************************************************
+        setupUserProfileObserver();
 
-        // Gerekli metotları çağırıyoruz
-        setupUserProfileObserver(); // Kullanıcı verisini dinleyecek metot
-        prepareNewGame();           // Oyun kelimelerini hazırlayacak metot
-        populateButtons();          // Butonları kelimelerle dolduracak metot
-
-        Log.d("GameLogic", "Oyun hazırlandı.");
+        startNewRound();
     }
 
-    /**
-     * UserViewModel'dan gelen kullanıcı verisini dinler ve UI'ı günceller.
-     */
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        saveProgress();
+    }
+
+    private void initializeViews() {
+        userViewModel = new ViewModelProvider(this).get(UserViewModel.class);
+        englishWordsColumn = findViewById(R.id.english_words_column);
+        turkishWordsColumn = findViewById(R.id.turkish_words_column);
+        tvGameUserLevel = findViewById(R.id.tv_game_user_level);
+        tvGameUserXp = findViewById(R.id.tv_game_user_xp);
+        correctFeedback = findViewById(R.id.iv_correct_feedback);
+        wrongFeedback = findViewById(R.id.iv_wrong_feedback);
+        xpProgressBar = findViewById(R.id.progress_xp_game);
+        levelUpAnimationView = findViewById(R.id.lottie_level_up_animation);
+        gameOverMenu = findViewById(R.id.game_over_menu);
+        btnNextRound = findViewById(R.id.btn_next_round);
+        btnReturnHome = findViewById(R.id.btn_return_home);
+    }
+
+    private void setupListeners() {
+        btnReturnHome.setOnClickListener(v -> finish());
+        btnNextRound.setOnClickListener(v -> startNewRound());
+    }
+
+    private void startNewRound() {
+        matchedPairs = 0;
+        gameOverMenu.setVisibility(View.GONE);
+        resetAndShowAllWordButtons();
+        prepareNewGame();
+
+        if (gameWords.isEmpty()) {
+            Toast.makeText(this, "Tebrikler! Tüm kelimeleri tamamladın.", Toast.LENGTH_LONG).show();
+            btnNextRound.setEnabled(false);
+            btnNextRound.setText("Tüm Kelimeler Bitti");
+            showGameOverMenu();
+        } else {
+            populateButtons();
+        }
+    }
+
     private void setupUserProfileObserver() {
-        // userViewModel'daki getUserProfile() metodu, bize kullanıcı verisini LiveData olarak verir.
-        // .observe() ile bu veriyi dinlemeye başlarız. Veri değiştiğinde (örneğin Firebase'den gelince)
-        // içindeki kod bloğu otomatik olarak çalışır.
         userViewModel.getUserProfile().observe(this, authResult -> {
             if (authResult instanceof AuthResultState.Success) {
-                User user = ((AuthResultState.Success) authResult).getUser();
-                updateUserUi(user); // Veri başarıyla geldiyse UI'ı güncelle
+                currentUser = ((AuthResultState.Success) authResult).getUser();
+                if (currentUser != null) {
+                    updateUserUi(currentUser, false);
+                }
             } else if (authResult instanceof AuthResultState.Error) {
                 Toast.makeText(this, "Kullanıcı verisi alınamadı.", Toast.LENGTH_SHORT).show();
             }
         });
     }
 
-    /**
-     * Gelen kullanıcı verisi ile Level ve XP metinlerini günceller.
-     */
-    private void updateUserUi(User user) {
-        if (user != null) {
-            tvGameUserLevel.setText(String.format("Level: %d", user.getLevel()));
+    private void updateUserUi(User user, boolean animate) {
+        if (user == null) return;
+        int currentLevel = user.getLevel();
+        int totalXp = user.getXp();
+        int requiredXp = calculateRequiredXp(currentLevel);
+        int xpInCurrentLevel = totalXp - calculateTotalXpForLevel(currentLevel);
 
-            int xpForLevel = user.getXp() % 100; // 125 XP ise ekranda 25/100 yazması için
-            tvGameUserXp.setText(String.format("XP: %d/100", xpForLevel));
+        tvGameUserLevel.setText(String.format("Level: %d", currentLevel));
+        tvGameUserXp.setText(String.format("XP: %d/%d", xpInCurrentLevel, requiredXp));
+
+        if (animate) {
+            int previousXpInLevel = xpInCurrentLevel - 10;
+            if (previousXpInLevel < 0) {
+                int prevLevelRequiredXp = calculateRequiredXp(currentLevel - 1);
+                previousXpInLevel = prevLevelRequiredXp + previousXpInLevel;
+            }
+            animateXpBar(previousXpInLevel, xpInCurrentLevel, requiredXp);
+        } else {
+            xpProgressBar.setMax(requiredXp);
+            xpProgressBar.setProgress(xpInCurrentLevel);
         }
     }
 
+    private void animateXpBar(int from, int to, int max) {
+        xpProgressBar.setMax(max);
+        ObjectAnimator.ofInt(xpProgressBar, "progress", from, to)
+                .setDuration(800)
+                .start();
+    }
 
-    /**
-     * Yeni bir oyun hazırlar: Kelimeleri seçer, ayırır ve karıştırır.
-     */
+    private int calculateTotalXpForLevel(int level) {
+        int totalXp = 0;
+        for (int i = 1; i < level; i++) {
+            totalXp += calculateRequiredXp(i);
+        }
+        return totalXp;
+    }
+
+    private int calculateRequiredXp(int level) {
+        return 100 + (level - 1) * 25;
+    }
+
+    private void checkForMatch() {
+        isChecking = true;
+        String correctTurkishMeaning = "";
+        Word matchedWord = null;
+        for (Word word : gameWords) {
+            if (word.getEnglishWord().equals(selectedEnglishWord)) {
+                correctTurkishMeaning = word.getTurkishMeaning();
+                matchedWord = word;
+                break;
+            }
+        }
+        if (selectedTurkishWord.equals(correctTurkishMeaning) && matchedWord != null) {
+            matchedPairs++;
+            int oldLevel = currentUser.getLevel();
+            int xpGainedThisTurn;
+            switch (matchedWord.getDifficulty().toLowerCase()) {
+                case "medium":
+                    xpGainedThisTurn = 20;
+                    break;
+                case "hard":
+                    xpGainedThisTurn = 30;
+                    break;
+                default:
+                    xpGainedThisTurn = 10;
+                    break;
+            }
+            currentUser.setXp(currentUser.getXp() + xpGainedThisTurn);
+            sessionXpGain += xpGainedThisTurn;
+            Log.d("GameLogic", "Doğru! Zorluk: " + matchedWord.getDifficulty() + ", Kazanılan XP: " + xpGainedThisTurn);
+
+            boolean hasLeveledUp = false;
+            int requiredXp = calculateRequiredXp(oldLevel);
+            int xpInLevel = currentUser.getXp() - calculateTotalXpForLevel(oldLevel);
+            if (xpInLevel >= requiredXp) {
+                currentUser.setLevel(oldLevel + 1);
+                hasLeveledUp = true;
+                Log.d("GameLogic", "LEVEL UP! Yeni Level: " + currentUser.getLevel());
+            }
+
+            updateUserUi(currentUser, true);
+            showFeedbackAnimation(correctFeedback, true, hasLeveledUp);
+        } else {
+            showFeedbackAnimation(wrongFeedback, false, false);
+        }
+    }
+
+    private void saveProgress() {
+        if (currentUser == null || sessionXpGain == 0) return;
+        userViewModel.updateUserProgress(currentUser.getLevel(), currentUser.getXp());
+    }
+
+    private void populateButtons() {
+        englishWordsColumn.removeAllViews();
+        turkishWordsColumn.removeAllViews();
+
+        for (String word : englishWords) {
+            MaterialButton button = createWordButton(word);
+            button.setOnClickListener(v -> handleEnglishWordClick((MaterialButton) v, word));
+            englishWordsColumn.addView(button);
+        }
+
+        for (String word : turkishWords) {
+            MaterialButton button = createWordButton(word);
+            button.setOnClickListener(v -> handleTurkishWordClick((MaterialButton) v, word));
+            turkishWordsColumn.addView(button);
+        }
+    }
+
+    private MaterialButton createWordButton(String text) {
+        MaterialButton button = new MaterialButton(this);
+        button.setText(text);
+        button.setTextColor(ContextCompat.getColor(this, R.color.game_button_text));
+        button.setBackgroundColor(ContextCompat.getColor(this, R.color.game_button_bg));
+        button.setStrokeColor(ContextCompat.getColorStateList(this, R.color.game_button_stroke));
+        button.setStrokeWidth(dpToPx(2));
+        button.setCornerRadius(dpToPx(24));
+        button.setAllCaps(false);
+        button.setTextSize(16);
+
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                dpToPx(70)
+        );
+        params.setMargins(0, 0, 0, dpToPx(12));
+        button.setLayoutParams(params);
+
+        return button;
+    }
+
+    private int dpToPx(int dp) {
+        return (int) (dp * getResources().getDisplayMetrics().density);
+    }
+
+    private void handleEnglishWordClick(MaterialButton button, String word) {
+        if (isChecking) return;
+        if (selectedEnglishButton == button) {
+            resetEnglishSelection();
+            return;
+        }
+        if (selectedEnglishButton == null) {
+            selectEnglishButton(button, word);
+        }
+    }
+
+    private void handleTurkishWordClick(MaterialButton button, String word) {
+        if (isChecking) return;
+        if (selectedEnglishButton != null && selectedTurkishButton == null) {
+            selectTurkishButton(button, word);
+            checkForMatch();
+        }
+    }
+
+    private void selectEnglishButton(MaterialButton button, String word) {
+        selectedEnglishButton = button;
+        selectedEnglishWord = word;
+        button.animate().scaleX(1.05f).scaleY(1.05f).setDuration(200).start();
+        button.setBackgroundColor(ContextCompat.getColor(this, R.color.game_button_selected_bg));
+        button.setTextColor(ContextCompat.getColor(this, R.color.game_button_selected_text));
+        button.setStrokeWidth(0);
+
+        for (int i = 0; i < englishWordsColumn.getChildCount(); i++) {
+            MaterialButton otherButton = (MaterialButton) englishWordsColumn.getChildAt(i);
+            if (otherButton != selectedEnglishButton) {
+                otherButton.setEnabled(false);
+                otherButton.setAlpha(0.5f);
+            }
+        }
+    }
+
+    private void resetEnglishSelection() {
+        if (selectedEnglishButton == null) return;
+        selectedEnglishButton.animate().scaleX(1.0f).scaleY(1.0f).setDuration(200).start();
+        for (int i = 0; i < englishWordsColumn.getChildCount(); i++) {
+            MaterialButton button = (MaterialButton) englishWordsColumn.getChildAt(i);
+            button.setEnabled(true);
+            button.setAlpha(1.0f);
+            button.setBackgroundColor(ContextCompat.getColor(this, R.color.game_button_bg));
+            button.setTextColor(ContextCompat.getColor(this, R.color.game_button_text));
+            button.setStrokeColor(ContextCompat.getColorStateList(this, R.color.game_button_stroke));
+            button.setStrokeWidth(dpToPx(2));
+        }
+        selectedEnglishButton = null;
+        selectedEnglishWord = null;
+    }
+
+    private void selectTurkishButton(MaterialButton button, String word) {
+        selectedTurkishButton = button;
+        selectedTurkishWord = word;
+        button.animate().scaleX(1.05f).scaleY(1.05f).setDuration(200).start();
+        button.setBackgroundColor(ContextCompat.getColor(this, R.color.game_button_selected_bg));
+        button.setTextColor(ContextCompat.getColor(this, R.color.game_button_selected_text));
+        button.setStrokeWidth(0);
+        for (int i = 0; i < turkishWordsColumn.getChildCount(); i++) {
+            ((MaterialButton) turkishWordsColumn.getChildAt(i)).setEnabled(false);
+        }
+    }
+
+    private void showFeedbackAnimation(View feedbackView, boolean isCorrect, boolean hasLeveledUp) {
+        feedbackView.setVisibility(View.VISIBLE);
+        feedbackView.setScaleX(0.1f);
+        feedbackView.setScaleY(0.1f);
+        feedbackView.setAlpha(0.0f);
+        feedbackView.animate()
+                .alpha(1.0f)
+                .scaleX(1.0f)
+                .scaleY(1.0f)
+                .setDuration(400)
+                .setListener(new AnimatorListenerAdapter() {
+                    @Override
+                    public void onAnimationEnd(Animator animation) {
+                        new Handler(Looper.getMainLooper()).postDelayed(() -> hideFeedbackAnimation(feedbackView, isCorrect, hasLeveledUp), 1000);
+                    }
+                })
+                .start();
+    }
+
+    private void hideFeedbackAnimation(View feedbackView, boolean wasCorrect, boolean hasLeveledUp) {
+        feedbackView.animate()
+                .alpha(0.0f)
+                .setDuration(400)
+                .setListener(new AnimatorListenerAdapter() {
+                    @Override
+                    public void onAnimationEnd(Animator animation) {
+                        feedbackView.setVisibility(View.GONE);
+                        if (wasCorrect) {
+                            hideMatchedButtons(selectedEnglishButton, selectedTurkishButton);
+                            if (hasLeveledUp) {
+                                playLevelUpAnimation();
+                            }
+                        } else {
+                            resetAllSelections();
+                        }
+                    }
+                })
+                .start();
+    }
+
+    private void playLevelUpAnimation() {
+        levelUpAnimationView.setVisibility(View.VISIBLE);
+        levelUpAnimationView.playAnimation();
+        levelUpAnimationView.addAnimatorListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                levelUpAnimationView.setVisibility(View.GONE);
+                levelUpAnimationView.removeAnimatorListener(this);
+                updateUserUi(currentUser, false);
+            }
+        });
+    }
+
+    private void hideMatchedButtons(View englishButton, View turkishButton) {
+        ObjectAnimator alphaEnglish = ObjectAnimator.ofFloat(englishButton, "alpha", 1.0f, 0.0f);
+        ObjectAnimator alphaTurkish = ObjectAnimator.ofFloat(turkishButton, "alpha", 1.0f, 0.0f);
+        alphaEnglish.setDuration(500);
+        alphaTurkish.setDuration(500);
+
+        alphaEnglish.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                englishButton.setVisibility(View.GONE);
+                resetAllSelections();
+
+                if (matchedPairs >= wordsPerRound) {
+                    showGameOverMenu();
+                }
+            }
+        });
+
+        alphaTurkish.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                turkishButton.setVisibility(View.INVISIBLE);
+            }
+        });
+        alphaEnglish.start();
+        alphaTurkish.start();
+    }
+
+    private void showGameOverMenu() {
+        englishWordsColumn.setVisibility(View.GONE);
+        turkishWordsColumn.setVisibility(View.GONE);
+        gameOverMenu.setAlpha(0f);
+        gameOverMenu.setVisibility(View.VISIBLE);
+        gameOverMenu.animate().alpha(1f).setDuration(500).start();
+    }
+
+    private void resetAndShowAllWordButtons() {
+        englishWordsColumn.setVisibility(View.VISIBLE);
+        turkishWordsColumn.setVisibility(View.VISIBLE);
+        resetAllSelections();
+    }
+
+    private void resetAllSelections() {
+        resetEnglishSelection();
+        if (turkishWordsColumn != null) {
+            for (int i = 0; i < turkishWordsColumn.getChildCount(); i++) {
+                MaterialButton button = (MaterialButton) turkishWordsColumn.getChildAt(i);
+                button.setEnabled(true);
+                button.setAlpha(1.0f);
+                button.animate().scaleX(1.0f).scaleY(1.0f).setDuration(200).start();
+                button.setBackgroundColor(ContextCompat.getColor(this, R.color.game_button_bg));
+                button.setTextColor(ContextCompat.getColor(this, R.color.game_button_text));
+                button.setStrokeColor(ContextCompat.getColorStateList(this, R.color.game_button_stroke));
+                button.setStrokeWidth(dpToPx(2));
+            }
+        }
+        selectedTurkishButton = null;
+        selectedTurkishWord = null;
+        isChecking = false;
+    }
+
     private void prepareNewGame() {
-        // 1. Tüm kelimelerin olduğu ana listeyi oluştur.
-        createAllWordsList();
-
-        // 2. Ana listeyi tamamen karıştır.
-        Collections.shuffle(allWords);
-
-        // 3. Karıştırılmış listenin başından itibaren 5 kelimeyi alarak oyun listesini oluştur.
-        int wordCountForGame = Math.min(5, allWords.size()); // Listede 5'ten az kelime olma ihtimaline karşı
-        gameWords = new ArrayList<>(allWords.subList(0, wordCountForGame));
-
-        // 4. İngilizce ve Türkçe listelerini ayır.
+        if (allWords == null) {
+            createAllWordsList();
+            Collections.shuffle(allWords);
+        }
+        int wordsToTake = Math.min(wordsPerRound, allWords.size());
+        if (wordsToTake == 0) {
+            gameWords = new ArrayList<>();
+            return;
+        }
+        gameWords = new ArrayList<>(allWords.subList(0, wordsToTake));
+        allWords.subList(0, wordsToTake).clear();
         englishWords = new ArrayList<>();
         turkishWords = new ArrayList<>();
-
         for (Word word : gameWords) {
             englishWords.add(word.getEnglishWord());
             turkishWords.add(word.getTurkishMeaning());
         }
-
-        // 5. Türkçe kelimeler listesini kendi içinde tekrar karıştır.
         Collections.shuffle(turkishWords);
     }
 
-    /**
-     * XML'deki butonları bulur ve içlerini kelime listeleriyle doldurur.
-     */
-    private void populateButtons() {
-        for (int i = 0; i < englishWordsColumn.getChildCount(); i++) {
-            MaterialButton button = (MaterialButton) englishWordsColumn.getChildAt(i);
-            if (i < englishWords.size()) {
-                button.setText(englishWords.get(i));
-            }
-        }
 
-        for (int i = 0; i < turkishWordsColumn.getChildCount(); i++) {
-            MaterialButton button = (MaterialButton) turkishWordsColumn.getChildAt(i);
-            if (i < turkishWords.size()) {
-                button.setText(turkishWords.get(i));
-            }
-        }
-    }
-
-    /**
-     * Olası tüm kelimeleri içeren ana listeyi oluşturur.
-     * (Bu kısım sizde zaten vardı, aynen korunuyor)
-     */
     private void createAllWordsList() {
         allWords = new ArrayList<>();
         allWords.add(new Word("1", "Apple", "Elma", "easy"));
@@ -349,5 +673,5 @@ public class GameActivity extends AppCompatActivity {
         allWords.add(new Word("199", "Demonstrate", "Gösteri Yapmak, Kanıtlamak", "medium"));
         allWords.add(new Word("200", "Lassitude", "Yorgunluk, Bitkinlik", "hard"));
     }
+
 }
-// KODUN SONU
