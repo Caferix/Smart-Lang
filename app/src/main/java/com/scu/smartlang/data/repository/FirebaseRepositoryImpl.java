@@ -3,6 +3,8 @@ package com.scu.smartlang.data.repository;
 import android.os.Build;
 
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.AuthCredential;
+import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.scu.smartlang.data.mapper.UserDataMapper;
@@ -287,5 +289,34 @@ public class FirebaseRepositoryImpl implements FirebaseRepository {
         // resend verification email
         return taskToFuture(user.sendEmailVerification());
     }
+
+    @Override
+    public CompletableFuture<Void> reauthenticateAndUpdatePassword(String currentPassword, String newPassword) {
+        CompletableFuture<Void> future = new CompletableFuture<>();
+
+        FirebaseUser user = auth.getCurrentUser();
+        if (user == null || user.getEmail() == null) {
+            future.completeExceptionally(new Exception("Kullanıcı oturum açmamış"));
+            return future;
+        }
+
+        // 1. Kullanıcıyı eski şifresiyle yeniden doğrula
+        AuthCredential credential = EmailAuthProvider.getCredential(user.getEmail(), currentPassword);
+
+        user.reauthenticate(credential)
+                .addOnSuccessListener(aVoid -> {
+                    // 2. Doğrulama başarılı - şimdi yeni şifreyi set et
+                    user.updatePassword(newPassword)
+                            .addOnSuccessListener(aVoid2 -> future.complete(null))
+                            .addOnFailureListener(future::completeExceptionally);
+                })
+                .addOnFailureListener(e -> {
+                    // Eski şifre yanlış veya başka bir hata
+                    future.completeExceptionally(e);
+                });
+
+        return future;
+    }
+
 
 }
