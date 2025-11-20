@@ -1,10 +1,13 @@
 package com.scu.smartlang.presentation.ui.settings;
 
+import android.app.TimePickerDialog;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -20,18 +23,24 @@ import com.scu.smartlang.R;
 import com.scu.smartlang.presentation.viewmodel.UserViewModel;
 import dagger.hilt.android.AndroidEntryPoint;
 
+import java.util.Locale;
+
 @AndroidEntryPoint
 public class SettingsFragment extends Fragment {
 
     private UserViewModel userViewModel;
-    private MaterialButton btnEditProfile;
-    private MaterialButton btnChangePassword;
-    private MaterialButton btnSignOut;
-    private SwitchMaterial switchDarkMode;
-    private SwitchMaterial switchNotifications;
+    private MaterialButton btnEditProfile, btnChangePassword, btnSignOut;
+    private SwitchMaterial switchDarkMode, switchNotifications;
+    private LinearLayout layoutStartTime, layoutEndTime;
+    private TextView tvStartTime, tvEndTime;
 
     private static final String PREFS_NAME = "SmartLangPrefs";
     private static final String KEY_DARK_MODE = "dark_mode_enabled";
+    private static final String KEY_NOTIFICATIONS = "notifications_enabled";
+    private static final String KEY_START_TIME_HOUR = "start_time_hour";
+    private static final String KEY_START_TIME_MINUTE = "start_time_minute";
+    private static final String KEY_END_TIME_HOUR = "end_time_hour";
+    private static final String KEY_END_TIME_MINUTE = "end_time_minute";
 
     @Nullable
     @Override
@@ -45,8 +54,6 @@ public class SettingsFragment extends Fragment {
 
         userViewModel = new ViewModelProvider(this).get(UserViewModel.class);
         SharedPreferences prefs = requireActivity().getSharedPreferences(PREFS_NAME, android.content.Context.MODE_PRIVATE);
-
-        // NavController başlatıldı
         NavController navController = NavHostFragment.findNavController(this);
 
         // View Bağlantıları
@@ -56,57 +63,95 @@ public class SettingsFragment extends Fragment {
         switchDarkMode = view.findViewById(R.id.switch_dark_mode);
         switchNotifications = view.findViewById(R.id.switch_notifications);
 
-        // Siyah Tema Başlangıç Durumu
-        int defaultMode = AppCompatDelegate.getDefaultNightMode();
-        boolean isDarkModeEnabled = defaultMode == AppCompatDelegate.MODE_NIGHT_YES ||
-                defaultMode == AppCompatDelegate.MODE_NIGHT_AUTO_BATTERY ||
-                defaultMode == AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM;
+        layoutStartTime = view.findViewById(R.id.layout_start_time);
+        layoutEndTime = view.findViewById(R.id.layout_end_time);
+        tvStartTime = view.findViewById(R.id.tv_start_time);
+        tvEndTime = view.findViewById(R.id.tv_end_time);
 
-        boolean savedState = prefs.getBoolean(KEY_DARK_MODE, isDarkModeEnabled);
-        switchDarkMode.setChecked(savedState);
+        // Kayıtlı Ayarları Yükle
+        boolean savedIsDarkMode = prefs.getBoolean(KEY_DARK_MODE, false);
+        switchDarkMode.setChecked(savedIsDarkMode);
+
+        boolean savedIsNotifications = prefs.getBoolean(KEY_NOTIFICATIONS, true);
+        switchNotifications.setChecked(savedIsNotifications);
+        updateTimePickersState(savedIsNotifications);
+
+        loadTimeSettings(prefs);
 
         // Listener'ları Kur
         setupListeners(prefs, navController);
     }
 
+    private void loadTimeSettings(SharedPreferences prefs) {
+        int startH = prefs.getInt(KEY_START_TIME_HOUR, 9);
+        int startM = prefs.getInt(KEY_START_TIME_MINUTE, 0);
+        int endH = prefs.getInt(KEY_END_TIME_HOUR, 20);
+        int endM = prefs.getInt(KEY_END_TIME_MINUTE, 0);
+
+        tvStartTime.setText(String.format(Locale.getDefault(), "%02d:%02d", startH, startM));
+        tvEndTime.setText(String.format(Locale.getDefault(), "%02d:%02d", endH, endM));
+    }
+
+    private void updateTimePickersState(boolean isEnabled) {
+        layoutStartTime.setEnabled(isEnabled);
+        layoutEndTime.setEnabled(isEnabled);
+        layoutStartTime.setAlpha(isEnabled ? 1.0f : 0.5f);
+        layoutEndTime.setAlpha(isEnabled ? 1.0f : 0.5f);
+    }
+
     private void setupListeners(SharedPreferences prefs, NavController navController) {
-        // --- Koyu Tema Anahtarı ---
+        // Koyu Tema
         switchDarkMode.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            int newMode = isChecked ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO;
-
-            AppCompatDelegate.setDefaultNightMode(newMode);
             prefs.edit().putBoolean(KEY_DARK_MODE, isChecked).apply();
-
-            String status = isChecked ? "Koyu Tema Açık" : "Açık Tema Açık";
-            Toast.makeText(getContext(), status, Toast.LENGTH_SHORT).show();
+            int newMode = isChecked ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO;
+            AppCompatDelegate.setDefaultNightMode(newMode);
         });
 
-        // --- Diğer Listener'lar ---
-
-        btnEditProfile.setOnClickListener(v -> {
-            Toast.makeText(getContext(), "Profil Düzenleme Fragment'ına Navigasyon Yapılacak.", Toast.LENGTH_SHORT).show();
-        });
-
-        btnChangePassword.setOnClickListener(v -> {
-            navController.navigate(R.id.action_navigation_settings_to_changePasswordFragment);
-        });
-
+        // Bildirimler
         switchNotifications.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            String status = isChecked ? "Bildirimler AÇIK" : "Bildirimler KAPALI";
-            Toast.makeText(getContext(), status + " (Placeholder)", Toast.LENGTH_SHORT).show();
+            prefs.edit().putBoolean(KEY_NOTIFICATIONS, isChecked).apply();
+            updateTimePickersState(isChecked);
+            Toast.makeText(getContext(), isChecked ? "Bildirimler Açıldı" : "Bildirimler Kapatıldı", Toast.LENGTH_SHORT).show();
         });
+
+        // Saat Seçiciler
+        layoutStartTime.setOnClickListener(v -> showTimePicker(true, prefs));
+        layoutEndTime.setOnClickListener(v -> showTimePicker(false, prefs));
+
+        // Navigasyonlar
+        btnEditProfile.setOnClickListener(v -> navController.navigate(R.id.action_navigation_settings_to_editProfileFragment));
+        btnChangePassword.setOnClickListener(v -> navController.navigate(R.id.action_navigation_settings_to_changePasswordFragment));
 
         // Çıkış Yap
         btnSignOut.setOnClickListener(v -> {
             userViewModel.signOut();
-
-            Toast.makeText(getContext(), "Oturum Kapatıldı. Giriş ekranına yönlendiriliyor.", Toast.LENGTH_SHORT).show();
-
-            // DÜZELTME: Fragment geçişi (Tüm yığını temizleyip Giriş Ekranına git)
-            NavOptions navOptions = new NavOptions.Builder()
-                    .setPopUpTo(R.id.main_nav_graph, true) // Tüm fragment'ları yığından temizle
-                    .build();
+            NavOptions navOptions = new NavOptions.Builder().setPopUpTo(R.id.main_nav_graph, true).build();
             navController.navigate(R.id.signInFragment, null, navOptions);
         });
+    }
+
+    private void showTimePicker(boolean isStartTime, SharedPreferences prefs) {
+        String timeString = isStartTime ? tvStartTime.getText().toString() : tvEndTime.getText().toString();
+        String[] parts = timeString.split(":");
+        int hour = Integer.parseInt(parts[0]);
+        int minute = Integer.parseInt(parts[1]);
+
+        TimePickerDialog picker = new TimePickerDialog(requireContext(), (view, h, m) -> {
+            String formattedTime = String.format(Locale.getDefault(), "%02d:%02d", h, m);
+            SharedPreferences.Editor editor = prefs.edit();
+
+            if (isStartTime) {
+                tvStartTime.setText(formattedTime);
+                editor.putInt(KEY_START_TIME_HOUR, h);
+                editor.putInt(KEY_START_TIME_MINUTE, m);
+            } else {
+                tvEndTime.setText(formattedTime);
+                editor.putInt(KEY_END_TIME_HOUR, h);
+                editor.putInt(KEY_END_TIME_MINUTE, m);
+            }
+            editor.apply();
+        }, hour, minute, true);
+
+        picker.show();
     }
 }
