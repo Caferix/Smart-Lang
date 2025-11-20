@@ -36,17 +36,15 @@ public class SettingsFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_settings, container, false);
+        return inflater.inflate(R.layout.fragment_settings, container, false); //
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        userViewModel = new ViewModelProvider(this).get(UserViewModel.class);
+        userViewModel = new ViewModelProvider(this).get(UserViewModel.class); //
         SharedPreferences prefs = requireActivity().getSharedPreferences(PREFS_NAME, android.content.Context.MODE_PRIVATE);
-
-        // NavController başlatıldı
         NavController navController = NavHostFragment.findNavController(this);
 
         // View Bağlantıları
@@ -56,55 +54,41 @@ public class SettingsFragment extends Fragment {
         switchDarkMode = view.findViewById(R.id.switch_dark_mode);
         switchNotifications = view.findViewById(R.id.switch_notifications);
 
-        // Siyah Tema Başlangıç Durumu
-        int defaultMode = AppCompatDelegate.getDefaultNightMode();
-        boolean isDarkModeEnabled = defaultMode == AppCompatDelegate.MODE_NIGHT_YES ||
-                defaultMode == AppCompatDelegate.MODE_NIGHT_AUTO_BATTERY ||
-                defaultMode == AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM;
+        // Tema Durumu
+        boolean isDarkModeEnabled = AppCompatDelegate.getDefaultNightMode() == AppCompatDelegate.MODE_NIGHT_YES;
+        switchDarkMode.setChecked(isDarkModeEnabled);
 
-        boolean savedState = prefs.getBoolean(KEY_DARK_MODE, isDarkModeEnabled);
-        switchDarkMode.setChecked(savedState);
-
-        // Listener'ları Kur
         setupListeners(prefs, navController);
     }
 
     private void setupListeners(SharedPreferences prefs, NavController navController) {
-        // --- Koyu Tema Anahtarı ---
+        // Koyu Tema
         switchDarkMode.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            int newMode = isChecked ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO;
-
-            AppCompatDelegate.setDefaultNightMode(newMode);
             prefs.edit().putBoolean(KEY_DARK_MODE, isChecked).apply();
-
-            String status = isChecked ? "Koyu Tema Açık" : "Açık Tema Açık";
-            Toast.makeText(getContext(), status, Toast.LENGTH_SHORT).show();
+            int newMode = isChecked ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO;
+            AppCompatDelegate.setDefaultNightMode(newMode);
         });
 
-        // --- Diğer Listener'lar ---
-
-        btnEditProfile.setOnClickListener(v -> {
-            Toast.makeText(getContext(), "Profil Düzenleme Fragment'ına Navigasyon Yapılacak.", Toast.LENGTH_SHORT).show();
-        });
-
+        // DÜZELTME 1: Şifre Değiştirme Navigasyonu
         btnChangePassword.setOnClickListener(v -> {
-            Toast.makeText(getContext(), "Şifre Değiştirme Akışı Başlatılıyor.", Toast.LENGTH_SHORT).show();
+            navController.navigate(R.id.action_navigation_settings_to_changePasswordFragment);
+        });
+
+        // DÜZELTME 2: Profil Düzenleme Navigasyonu
+        btnEditProfile.setOnClickListener(v -> {
+            navController.navigate(R.id.action_navigation_settings_to_editProfileFragment);
         });
 
         switchNotifications.setOnCheckedChangeListener((buttonView, isChecked) -> {
             String status = isChecked ? "Bildirimler AÇIK" : "Bildirimler KAPALI";
-            Toast.makeText(getContext(), status + " (Placeholder)", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), status, Toast.LENGTH_SHORT).show();
         });
 
         // Çıkış Yap
         btnSignOut.setOnClickListener(v -> {
-            userViewModel.signOut();
-
-            Toast.makeText(getContext(), "Oturum Kapatıldı. Giriş ekranına yönlendiriliyor.", Toast.LENGTH_SHORT).show();
-
-            // DÜZELTME: Fragment geçişi (Tüm yığını temizleyip Giriş Ekranına git)
+            userViewModel.signOut(); //
             NavOptions navOptions = new NavOptions.Builder()
-                    .setPopUpTo(R.id.main_nav_graph, true) // Tüm fragment'ları yığından temizle
+                    .setPopUpTo(R.id.main_nav_graph, true)
                     .build();
             navController.navigate(R.id.signInFragment, null, navOptions);
         });
