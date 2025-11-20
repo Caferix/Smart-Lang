@@ -41,10 +41,9 @@ public class SignUpFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        navController = NavHostFragment.findNavController(this); // NavController başlatıldı
+        navController = NavHostFragment.findNavController(this);
 
         userViewModel = new ViewModelProvider(this).get(UserViewModel.class);
-
 
         etUsername = view.findViewById(R.id.et_username_signup);
         etEmail = view.findViewById(R.id.et_email_signup);
@@ -68,18 +67,12 @@ public class SignUpFragment extends Fragment {
 
         userViewModel.getAuthResult().observe(getViewLifecycleOwner(), authResult -> {
             if (authResult instanceof AuthResultState.Loading) {
-
                 Toast.makeText(getContext(), "Hesap oluşturuluyor...", Toast.LENGTH_SHORT).show();
             } else if (authResult instanceof AuthResultState.Success) {
-
                 AuthResultState.Success success = (AuthResultState.Success) authResult;
                 Toast.makeText(getContext(), "Kayıt Başarılı! Hoş geldin, " + success.getUser().getUserName(), Toast.LENGTH_LONG).show();
-
-                // DÜZELTME: Fragment geçişi yapılıyor
-                navController.navigate(R.id.action_signUpFragment_to_navigation_home);
-
+                navController.navigate(R.id.action_signUpFragment_to_homeFragment);
             } else if (authResult instanceof AuthResultState.Error) {
-
                 AuthResultState.Error error = (AuthResultState.Error) authResult;
                 Toast.makeText(getContext(), "Kayıt Hatası: " + error.getMessage(), Toast.LENGTH_LONG).show();
             }

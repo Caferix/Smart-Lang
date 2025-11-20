@@ -15,7 +15,6 @@ public class SendPasswordResetEmailUseCase {
     public CompletableFuture<Void> execute(String email) {
         if (email == null || email.trim().isEmpty()) {
             CompletableFuture<Void> failed = new CompletableFuture<>();
-            failed.completeExceptionally(new IllegalArgumentException("Email adresi boş olamaz"));
             return failed;
         }
         return repository.sendPasswordResetEmail(email);

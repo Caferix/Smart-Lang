@@ -36,14 +36,12 @@ public class SettingsFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_settings, container, false); //
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        userViewModel = new ViewModelProvider(this).get(UserViewModel.class); //
         SharedPreferences prefs = requireActivity().getSharedPreferences(PREFS_NAME, android.content.Context.MODE_PRIVATE);
         NavController navController = NavHostFragment.findNavController(this);
 
@@ -54,41 +52,27 @@ public class SettingsFragment extends Fragment {
         switchDarkMode = view.findViewById(R.id.switch_dark_mode);
         switchNotifications = view.findViewById(R.id.switch_notifications);
 
-        // Tema Durumu
-        boolean isDarkModeEnabled = AppCompatDelegate.getDefaultNightMode() == AppCompatDelegate.MODE_NIGHT_YES;
-        switchDarkMode.setChecked(isDarkModeEnabled);
 
         setupListeners(prefs, navController);
     }
 
     private void setupListeners(SharedPreferences prefs, NavController navController) {
-        // Koyu Tema
         switchDarkMode.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            prefs.edit().putBoolean(KEY_DARK_MODE, isChecked).apply();
             int newMode = isChecked ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO;
             AppCompatDelegate.setDefaultNightMode(newMode);
         });
 
-        // DÜZELTME 1: Şifre Değiştirme Navigasyonu
         btnChangePassword.setOnClickListener(v -> {
             navController.navigate(R.id.action_navigation_settings_to_changePasswordFragment);
         });
 
-        // DÜZELTME 2: Profil Düzenleme Navigasyonu
-        btnEditProfile.setOnClickListener(v -> {
-            navController.navigate(R.id.action_navigation_settings_to_editProfileFragment);
-        });
-
         switchNotifications.setOnCheckedChangeListener((buttonView, isChecked) -> {
             String status = isChecked ? "Bildirimler AÇIK" : "Bildirimler KAPALI";
-            Toast.makeText(getContext(), status, Toast.LENGTH_SHORT).show();
         });
 
         // Çıkış Yap
         btnSignOut.setOnClickListener(v -> {
-            userViewModel.signOut(); //
             NavOptions navOptions = new NavOptions.Builder()
-                    .setPopUpTo(R.id.main_nav_graph, true)
                     .build();
             navController.navigate(R.id.signInFragment, null, navOptions);
         });

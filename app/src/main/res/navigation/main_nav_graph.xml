@@ -20,7 +20,6 @@
             app:destination="@id/navigation_home"
             app:popUpTo="@id/main_nav_graph"
             app:popUpToInclusive="true"/>
-
         <action
             android:id="@+id/action_signInFragment_to_forgotPasswordFragment"
             app:destination="@id/forgotPasswordFragment" />
@@ -40,13 +39,6 @@
     </fragment>
 
     <fragment
-        android:id="@+id/forgotPasswordFragment"
-        android:name="com.scu.smartlang.presentation.ui.auth.ForgotPasswordFragment"
-        android:label="Şifremi Unuttum"
-        tools:layout="@layout/fragment_forgot_password" />
-
-
-    <fragment
         android:id="@+id/navigation_home"
         android:name="com.scu.smartlang.presentation.ui.home.HomeFragment"
         android:label="Ana Sayfa"
@@ -63,27 +55,12 @@
         android:name="com.scu.smartlang.presentation.ui.settings.SettingsFragment"
         android:label="Ayarlar"
         tools:layout="@layout/fragment_settings">
-
-        <action
-            android:id="@+id/action_navigation_settings_to_editProfileFragment"
-            app:destination="@id/editProfileFragment" />
-
         <action
             android:id="@+id/action_navigation_settings_to_changePasswordFragment"
             app:destination="@id/changePasswordFragment" />
     </fragment>
-
-
-    <fragment
-        android:id="@+id/editProfileFragment"
-        android:name="com.scu.smartlang.presentation.ui.settings.EditProfileFragment"
-        android:label="Profili Düzenle"
-        tools:layout="@layout/fragment_edit_profile" />
-
     <fragment
         android:id="@+id/changePasswordFragment"
         android:name="com.scu.smartlang.presentation.ui.auth.ChangePasswordFragment"
-        android:label="Şifre Değiştir"
-        tools:layout="@layout/fragment_change_password" />
 
 </navigation>

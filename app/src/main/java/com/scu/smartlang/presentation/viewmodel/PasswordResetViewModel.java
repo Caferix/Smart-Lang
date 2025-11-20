@@ -34,13 +34,11 @@ public class PasswordResetViewModel extends ViewModel {
         this.updatePasswordUseCase = updatePasswordUseCase;
     }
 
-    // Şifre sıfırlama e-postası gönder
     public void sendPasswordResetEmail(String email) {
         _isLoading.setValue(true);
         sendPasswordResetEmailUseCase.execute(email)
                 .thenAccept(aVoid -> {
                     _isLoading.postValue(false);
-                    _successMessage.postValue("Sıfırlama e-postası gönderildi. Lütfen kutunuzu kontrol edin.");
                 })
                 .exceptionally(throwable -> {
                     _isLoading.postValue(false);
@@ -49,7 +47,6 @@ public class PasswordResetViewModel extends ViewModel {
                 });
     }
 
-    // Yeni şifre ile güncelle (Re-auth gerektiren durumlar için repository'de işlem yapılır)
     public void updatePasswordWithReauthentication(String currentPassword, String newPassword) {
         _isLoading.setValue(true);
 
@@ -60,18 +57,10 @@ public class PasswordResetViewModel extends ViewModel {
                 })
                 .exceptionally(throwable -> {
                     _isLoading.postValue(false);
-                    _errorMessage.postValue(parseFirebaseError(throwable));
                     return null;
                 });
     }
 
-    // Hata mesajlarını Türkçeleştir
     private String parseFirebaseError(Throwable throwable) {
-        if (throwable == null || throwable.getMessage() == null) return "Bir hata oluştu.";
-        String msg = throwable.getMessage().toLowerCase();
-        if (msg.contains("invalid_login_credentials") || msg.contains("wrong-password")) return "Mevcut şifre yanlış.";
-        if (msg.contains("weak-password")) return "Şifre çok zayıf.";
-        if (msg.contains("requires-recent-login")) return "Güvenlik için tekrar giriş yapmalısınız.";
-        return throwable.getMessage(); // Bilinmeyen hatalar için orijinal mesaj
     }
 }
