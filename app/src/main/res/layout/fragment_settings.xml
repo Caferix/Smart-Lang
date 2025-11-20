@@ -4,8 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?android:attr/colorBackground"
-    tools:context=".presentation.ui.settings.SettingsFragment">
+    android:background="?android:attr/colorBackground" tools:context=".presentation.ui.settings.SettingsFragment">
 
     <ScrollView
         android:layout_width="0dp"
@@ -25,18 +24,16 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/settings_title"
-                android:textColor="?android:attr/textColorPrimary"
-                android:textSize="28sp"
+                android:text="Ayarlar"
+                android:textColor="?android:attr/textColorPrimary" android:textSize="28sp"
                 android:textStyle="bold"
                 android:layout_marginBottom="24dp"/>
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/account_settings"
-                android:textColor="?android:attr/textColorPrimary"
-                android:textSize="18sp"
+                android:text="Hesap Ayarları"
+                android:textColor="?android:attr/textColorPrimary" android:textSize="18sp"
                 android:textStyle="bold"
                 android:layout_marginTop="16dp"
                 android:layout_marginBottom="12dp"/>
@@ -47,10 +44,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:paddingVertical="16dp"
-                android:text="@string/profile_edit"
+                android:text="Profilimi Düzenle"
                 android:textAlignment="viewStart"
-                android:textColor="?android:attr/textColorPrimary"
-                app:icon="@drawable/ic_person_24dp"
+                android:textColor="?android:attr/textColorPrimary" app:icon="@drawable/ic_person_24dp"
                 app:iconGravity="textStart"
                 app:iconTint="@color/button_blue" />
 
@@ -60,19 +56,17 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:paddingVertical="16dp"
-                android:text="@string/change_password"
+                android:text="Şifremi Değiştir"
                 android:textAlignment="viewStart"
-                android:textColor="?android:attr/textColorPrimary"
-                app:icon="@drawable/ic_lock_24dp"
+                android:textColor="?android:attr/textColorPrimary" app:icon="@drawable/ic_lock_24dp"
                 app:iconGravity="textStart"
                 app:iconTint="@color/button_blue" />
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/app_settings"
-                android:textColor="?android:attr/textColorPrimary"
-                android:textSize="18sp"
+                android:text="Uygulama Ayarları"
+                android:textColor="?android:attr/textColorPrimary" android:textSize="18sp"
                 android:textStyle="bold"
                 android:layout_marginTop="24dp"
                 android:layout_marginBottom="12dp"/>
@@ -86,19 +80,17 @@
 
                 <ImageView
                     android:layout_width="24dp"
-                    android:layout_height="34dp"
-                    android:layout_marginEnd="16dp"
-                    android:contentDescription="Koyu Tema İkonu"
+                    android:layout_height="24dp"
                     android:src="@drawable/ic_dark_mode_24dp"
-                    app:tint="?android:attr/textColorPrimary" />
+                    android:contentDescription="Koyu Tema İkonu"
+                    app:tint="?android:attr/textColorPrimary" android:layout_marginEnd="16dp"/>
 
                 <TextView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="@string/dark_mode_label"
-                    android:textColor="?android:attr/textColorPrimary"
-                    android:textSize="16sp"/>
+                    android:text="Koyu Tema (Siyah Tema)"
+                    android:textColor="?android:attr/textColorPrimary" android:textSize="16sp"/>
 
                 <com.google.android.material.switchmaterial.SwitchMaterial
                     android:id="@+id/switch_dark_mode"
@@ -119,16 +111,14 @@
                     android:layout_height="24dp"
                     android:src="@drawable/ic_notifications_24dp"
                     android:contentDescription="Bildirim İkonu"
-                    app:tint="?android:attr/textColorPrimary"
-                    android:layout_marginEnd="16dp"/>
+                    app:tint="?android:attr/textColorPrimary" android:layout_marginEnd="16dp"/>
 
                 <TextView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="@string/notifications_label"
-                    android:textColor="?android:attr/textColorPrimary"
-                    android:textSize="16sp"/>
+                    android:text="Bildirimleri Aç/Kapat"
+                    android:textColor="?android:attr/textColorPrimary" android:textSize="16sp"/>
 
                 <com.google.android.material.switchmaterial.SwitchMaterial
                     android:id="@+id/switch_notifications"
@@ -137,85 +127,10 @@
                     android:checked="true" />
             </LinearLayout>
 
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/notification_schedule_label"
-                android:textColor="?android:attr/textColorSecondary"
-                android:textSize="14sp"
-                android:layout_marginTop="8dp"
-                android:layout_marginBottom="8dp"/>
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:baselineAligned="false"
-                android:weightSum="2"
-                android:paddingBottom="12dp">
-
-                <LinearLayout
-                    android:id="@+id/layout_start_time"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical"
-                    android:background="@drawable/bg_input_field"
-                    android:padding="12dp"
-                    android:layout_marginEnd="8dp"
-                    android:clickable="true"
-                    android:focusable="true">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/start_time_label"
-                        android:textSize="12sp"
-                        android:textColor="@color/text_hint_gray"/>
-                    <TextView
-                        android:id="@+id/tv_start_time"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="09:00"
-                        android:textSize="18sp"
-                        android:textStyle="bold"
-                        android:textColor="@color/black"/>
-                </LinearLayout>
-
-                <LinearLayout
-                    android:id="@+id/layout_end_time"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical"
-                    android:background="@drawable/bg_input_field"
-                    android:padding="12dp"
-                    android:layout_marginStart="8dp"
-                    android:clickable="true"
-                    android:focusable="true">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/end_time_label"
-                        android:textSize="12sp"
-                        android:textColor="@color/text_hint_gray"/>
-                    <TextView
-                        android:id="@+id/tv_end_time"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="20:00"
-                        android:textSize="18sp"
-                        android:textStyle="bold"
-                        android:textColor="@color/black"/>
-                </LinearLayout>
-            </LinearLayout>
-
             <View
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
-                android:background="?attr/colorSurface"
-                android:layout_marginTop="24dp"
+                android:background="?attr/colorSurface" android:layout_marginTop="24dp"
                 android:layout_marginBottom="16dp"/>
 
             <com.google.android.material.button.MaterialButton
@@ -224,7 +139,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:paddingVertical="16dp"
-                android:text="@string/sign_out"
+                android:text="Çıkış Yap"
                 android:textAlignment="viewStart"
                 android:textColor="@color/button_red"
                 app:icon="@drawable/ic_logout_24dp"
