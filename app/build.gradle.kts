@@ -73,5 +73,8 @@ dependencies {
 
     implementation("com.google.code.gson:gson:2.13.2")
 
+    // work manager
+    implementation("androidx.work:work-runtime:2.9.0")
+
 
 }
