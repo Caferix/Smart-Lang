@@ -9,7 +9,7 @@ import java.util.List;
 public class AlarmReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
-        // 🆕 Uygulama açıksa bildirim gösterme
+        // Uygulama açıksa bildirim gösterme
         if (isAppInForeground(context)) {
             // Sonraki alarmı planla ama bildirim gösterme
             AlarmScheduler.scheduleNext(context);
@@ -26,7 +26,7 @@ public class AlarmReceiver extends BroadcastReceiver {
         AlarmScheduler.scheduleNext(context);
     }
 
-    // 🆕 Uygulama ön planda mı kontrol et
+    // Uygulama ön planda mı kontrol et
     private boolean isAppInForeground(Context context) {
         ActivityManager activityManager = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
         if (activityManager == null) return false;

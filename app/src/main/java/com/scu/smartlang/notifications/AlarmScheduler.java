@@ -10,7 +10,7 @@ import java.util.Calendar;
 public class AlarmScheduler {
     private static final String PREFS_NAME = "SmartLangPrefs";
     private static final int REQUEST_CODE = 2001;
-    private static final int INTERVAL_MINUTES = 60; // Her saat tekrarla
+    private static final int INTERVAL_MINUTES = 60; // belirlenen aralıkta tekrarlama periyodu
 
     public static void scheduleNext(Context context) {
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
@@ -21,6 +21,7 @@ public class AlarmScheduler {
             return;
         }
 
+        // BU KISIM GAMEACTIVITY MİMARİYE UYGUN HALE GETİRİLİNCE EKLENECEK
         // Bugün çalışma yapıldı mı kontrol et
 //        if (hasStudiedToday(context)) {
 //            // Yarına kadar alarmı ertele
@@ -110,12 +111,12 @@ public class AlarmScheduler {
         }
     }
 
-    // 🆕 Bugün çalışma yapıldı mı kontrol et
+    // Bugün çalışma yapıldı mı kontrol et
     private static boolean hasStudiedToday(Context context) {
         SharedPreferences prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         long lastStudyTimestamp = prefs.getLong("last_study_timestamp", 0);
 
-        if (lastStudyTimestamp == 0) return false; // Hiç çalışma yok
+        if (lastStudyTimestamp == 0) return false;
 
         Calendar lastStudy = Calendar.getInstance();
         lastStudy.setTimeInMillis(lastStudyTimestamp);
@@ -127,7 +128,7 @@ public class AlarmScheduler {
                 lastStudy.get(Calendar.DAY_OF_YEAR) == today.get(Calendar.DAY_OF_YEAR);
     }
 
-    // 🆕 Yarının başlangıç saatine alarm kur
+    // Yarının başlangıç saatine alarm kur
     private static void scheduleForTomorrow(Context context, SharedPreferences prefs) {
         int startHour = prefs.getInt("start_time_hour", 9);
         int startMinute = prefs.getInt("start_time_minute", 0);

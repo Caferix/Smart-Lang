@@ -21,7 +21,7 @@ public class NotificationHelper {
     public static final String CHANNEL_ID = "reminder_channel";
     private static final int NOTIFICATION_ID = 1001;
 
-    // 🎯 Rastgele başlıklar (emoji ile zenginleştirilmiş)
+    // 🎯 Rastgele başlıklar
     private static final String[] TITLES = {
             "📚 Kelime Zamanı!",
             "✨ Öğrenme Vakti!",
@@ -47,7 +47,7 @@ public class NotificationHelper {
             "Öğrenmeye devam et, ilerlemene şaşıracaksın!"
     };
 
-    // 🎨 Bildirim kanalı oluştur (renkli ve özelleştirilmiş)
+    // 🎨 Bildirim kanalı oluştur
     public static void createChannel(Context context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             // Ses ayarları
@@ -77,7 +77,7 @@ public class NotificationHelper {
         }
     }
 
-    // 🔔 Renkli ve çeşitlendirilmiş bildirim göster
+    //  Renkli ve çeşitlendirilmiş bildirim göster
     public static void showReminder(Context context, String customTitle, String customMessage) {
         // Android 13+ için bildirim izni kontrolü
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -128,7 +128,7 @@ public class NotificationHelper {
             builder.setLights(Color.parseColor("#4CAF50"), 1000, 2000);
         }
 
-        // 🔔 Bildirimi göster
+        // Bildirimi göster
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
         notificationManager.notify(NOTIFICATION_ID, builder.build());
     }
