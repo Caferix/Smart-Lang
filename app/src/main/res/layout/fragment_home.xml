@@ -4,185 +4,247 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?android:attr/colorBackground"> <ScrollView
-    android:layout_width="0dp"
-    android:layout_height="0dp"
-    android:fillViewport="true"
-    app:layout_constraintBottom_toBottomOf="parent"
-    app:layout_constraintEnd_toEndOf="parent"
-    app:layout_constraintStart_toStartOf="parent"
-    app:layout_constraintTop_toTopOf="parent">
+    android:background="?android:attr/colorBackground">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:paddingHorizontal="24dp"
-        android:paddingTop="16dp"
-        android:paddingBottom="24dp">
+    <ScrollView
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:fillViewport="true"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
 
-        <TextView
-            android:id="@+id/tv_welcome_title"
-            android:layout_width="0dp"
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textColor="?android:attr/textColorPrimary" android:textSize="22sp"
-            android:textStyle="bold"
-            app:layout_constraintEnd_toStartOf="@id/iv_notification_icon"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            tools:text="Hoş Geldin, Kullanıcı Adı!" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_language_selector"
-            style="@style/Widget.MaterialComponents.Button.TextButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="İngilizce (Değiştir)"
-            android:textColor="@color/text_link_blue"
-            android:textSize="14sp"
-            android:textStyle="bold"
-            app:icon="@drawable/ic_arrow_drop_down_24dp"
-            app:iconGravity="end"
-            app:iconTint="@color/text_link_blue"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tv_welcome_title" />
-
-        <ImageView
-            android:id="@+id/iv_notification_icon"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:contentDescription="Bildirimler"
-            android:src="@drawable/ic_notification_24dp"
-            app:tint="@color/button_red"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="@id/tv_welcome_title" />
-
-
-        <androidx.cardview.widget.CardView
-            android:id="@+id/cv_progress_card"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            app:cardBackgroundColor="?attr/colorSurface" app:cardCornerRadius="16dp"
-            app:cardElevation="0dp"
-            app:contentPadding="16dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/btn_language_selector">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical">
-
-                <TextView
-                    android:id="@+id/tv_user_level_xp"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textColor="?android:attr/textColorPrimary" android:textSize="16sp"
-                    android:textStyle="bold"
-                    tools:text="Level 1 | 0/100 XP" />
-
-                <ProgressBar
-                    android:id="@+id/progress_xp"
-                    style="?android:attr/progressBarStyleHorizontal"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
-                    android:max="100"
-                    android:progress="0"
-                    android:progressTint="@color/button_green"
-                    android:scaleY="4" />
-
-                <TextView
-                    android:id="@+id/tv_streak_count"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="12dp"
-                    android:drawablePadding="8dp"
-                    android:gravity="center_vertical"
-                    android:text="Seri: 0 Gün"
-                    android:textColor="?android:attr/textColorPrimary" android:textSize="14sp"
-                    app:drawableStartCompat="@drawable/ic_fire_24dp"
-                    app:drawableTint="@color/button_red" />
-            </LinearLayout>
-        </androidx.cardview.widget.CardView>
-
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_start_daily_lesson"
-            style="@style/Widget.MaterialComponents.Button.UnelevatedButton"
-            android:layout_width="0dp"
-            android:layout_height="100dp"
-            android:layout_marginTop="32dp"
-            android:backgroundTint="@color/button_green"
-            android:gravity="center"
-            android:text="GÜNLÜK DERSE BAŞLA"
-            android:textColor="@color/white"
-            android:textSize="18sp"
-            android:textStyle="bold"
-            app:cornerRadius="16dp"
-            app:icon="@drawable/ic_play_arrow_24dp"
-            app:iconGravity="textStart"
-            app:iconPadding="16dp"
-            app:iconSize="32dp"
-            app:iconTint="@color/white"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/cv_progress_card" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_start_game"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-            android:layout_width="0dp"
-            android:layout_height="80dp"
-            android:layout_marginTop="16dp"
-            android:gravity="center"
-            android:text="OYUN OYNA"
-            android:textColor="@color/button_blue"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            app:cornerRadius="16dp"
-            app:icon="@drawable/ic_gamepad_24dp"
-            app:iconGravity="textStart"
-            app:iconSize="32dp"
-            app:iconTint="@color/button_blue"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/btn_start_daily_lesson"
-            app:strokeColor="@color/button_blue"
-            app:strokeWidth="2dp" />
-
-        <TextView
-            android:id="@+id/tv_courses_title"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="32dp"
-            android:text="Tüm Kurs Modülleri"
-            android:textColor="?android:attr/textColorPrimary" android:textSize="20sp"
-            android:textStyle="bold"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/btn_start_game" />
-
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:orientation="vertical"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tv_courses_title">
+            android:paddingHorizontal="24dp"
+            android:paddingTop="16dp"
+            android:paddingBottom="24dp">
 
             <TextView
-                android:layout_width="match_parent"
+                android:id="@+id/tv_welcome_title"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:minHeight="120dp"
-                android:text="Kurs Modülleri Buraya Gelecek..."
-                android:gravity="center"
-                android:padding="32dp"
-                android:textColor="?android:attr/textColorSecondary" android:background="@drawable/bg_input_field"
-                android:textSize="16sp"/>
-        </LinearLayout>
+                android:textColor="?android:attr/textColorPrimary"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                app:layout_constraintEnd_toStartOf="@id/iv_notification_icon"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                tools:text="Hoş Geldin!" />
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
-</ScrollView>
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_language_selector"
+                style="@style/Widget.MaterialComponents.Button.TextButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/language_selector_text"
+                android:textColor="@color/text_link_blue"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                app:icon="@drawable/ic_arrow_drop_down_24dp"
+                app:iconGravity="end"
+                app:iconTint="@color/text_link_blue"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tv_welcome_title" />
+
+            <ImageView
+                android:id="@+id/iv_notification_icon"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:contentDescription="Bildirimler"
+                android:src="@drawable/ic_notifications_24dp"
+                app:tint="@color/button_red"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="@id/tv_welcome_title" />
+
+            <androidx.cardview.widget.CardView
+                android:id="@+id/cv_progress_card"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                app:cardBackgroundColor="?attr/colorSurface"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="0dp"
+                app:contentPadding="16dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/btn_language_selector">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/tv_user_level_xp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="?android:attr/textColorPrimary"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        tools:text="Level 1 | 0/100 XP" />
+
+                    <ProgressBar
+                        android:id="@+id/progress_xp"
+                        style="?android:attr/progressBarStyleHorizontal"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:max="100"
+                        android:progress="0"
+                        android:progressTint="@color/button_green"
+                        android:scaleY="4" />
+
+                    <TextView
+                        android:id="@+id/tv_streak_count"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:drawablePadding="8dp"
+                        android:gravity="center_vertical"
+                        android:text="Seri: 0 Gün"
+                        android:textColor="?android:attr/textColorPrimary"
+                        android:textSize="14sp"
+                        app:drawableStartCompat="@drawable/ic_fire_24dp"
+                        app:drawableTint="@color/button_red" />
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_start_daily_lesson"
+                style="@style/Widget.MaterialComponents.Button.UnelevatedButton"
+                android:layout_width="0dp"
+                android:layout_height="100dp"
+                android:layout_marginTop="32dp"
+                android:backgroundTint="@color/button_green"
+                android:gravity="center"
+                android:text="@string/daily_lesson_button_title"
+                android:textColor="@color/white"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                app:cornerRadius="16dp"
+                app:icon="@drawable/ic_play_arrow_24dp"
+                app:iconGravity="textStart"
+                app:iconPadding="16dp"
+                app:iconSize="32dp"
+                app:iconTint="@color/white"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/cv_progress_card" />
+
+            <TextView
+                android:id="@+id/tv_games_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:text="@string/games_section_title"
+                android:textColor="?android:attr/textColorPrimary"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/btn_start_daily_lesson" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_start_game_match"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="60dp"
+                android:layout_marginTop="12dp"
+                android:gravity="center_vertical|start"
+                android:paddingStart="20dp"
+                android:text="@string/game_match_title"
+                android:textColor="@color/button_blue"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                app:cornerRadius="12dp"
+                app:icon="@drawable/ic_gamepad_24dp"
+                app:iconGravity="textStart"
+                app:iconTint="@color/button_blue"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tv_games_title"
+                app:strokeColor="@color/button_blue"
+                app:strokeWidth="2dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_start_game_puzzle"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="60dp"
+                android:layout_marginTop="8dp"
+                android:gravity="center_vertical|start"
+                android:paddingStart="20dp"
+                android:text="@string/game_puzzle_title"
+                android:textColor="@color/purple_700"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                app:cornerRadius="12dp"
+                app:icon="@drawable/ic_gamepad_24dp"
+                app:iconGravity="textStart"
+                app:iconTint="@color/purple_700"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/btn_start_game_match"
+                app:strokeColor="@color/purple_700"
+                app:strokeWidth="2dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_start_ai"
+                style="@style/Widget.MaterialComponents.Button.UnelevatedButton"
+                android:layout_width="0dp"
+                android:layout_height="60dp"
+                android:layout_marginTop="8dp"
+                android:backgroundTint="@color/dark_background"
+                android:gravity="center_vertical|start"
+                android:paddingStart="20dp"
+                android:text="@string/ai_practice_title"
+                android:textColor="@color/white"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                app:cornerRadius="12dp"
+                app:icon="@drawable/ic_launcher_foreground"
+                app:iconGravity="textStart"
+                app:iconTint="@color/white"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/btn_start_game_puzzle" />
+
+
+            <TextView
+                android:id="@+id/tv_courses_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="32dp"
+                android:text="@string/courses_title"
+                android:textColor="?android:attr/textColorPrimary"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/btn_start_ai" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:orientation="vertical"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tv_courses_title">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:minHeight="120dp"
+                    android:text="@string/module_placeholder"
+                    android:gravity="center"
+                    android:padding="32dp"
+                    android:textColor="?android:attr/textColorSecondary"
+                    android:background="@drawable/bg_input_field"
+                    android:textSize="16sp"/>
+            </LinearLayout>
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </ScrollView>
 </androidx.constraintlayout.widget.ConstraintLayout>

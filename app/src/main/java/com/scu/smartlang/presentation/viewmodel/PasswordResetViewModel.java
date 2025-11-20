@@ -39,25 +39,11 @@ public class PasswordResetViewModel extends ViewModel {
         sendPasswordResetEmailUseCase.execute(email)
                 .thenAccept(aVoid -> {
                     _isLoading.postValue(false);
-                    _successMessage.postValue("Password reset email sent. Please check your inbox.");
+                    _successMessage.postValue("Sıfırlama e-postası gönderildi. Lütfen kutunuzu kontrol edin.");
                 })
                 .exceptionally(throwable -> {
                     _isLoading.postValue(false);
-                    _errorMessage.postValue(throwable.getMessage());
-                    return null;
-                });
-    }
-
-    public void updatePassword(String newPassword) {
-        _isLoading.setValue(true);
-        updatePasswordUseCase.execute(newPassword)
-                .thenAccept(aVoid -> {
-                    _isLoading.postValue(false);
-                    _successMessage.postValue("Password updated successfully");
-                })
-                .exceptionally(throwable -> {
-                    _isLoading.postValue(false);
-                    _errorMessage.postValue(throwable.getMessage());
+                    _errorMessage.postValue(parseFirebaseError(throwable));
                     return null;
                 });
     }
@@ -65,6 +51,7 @@ public class PasswordResetViewModel extends ViewModel {
     public void updatePasswordWithReauthentication(String currentPassword, String newPassword) {
         _isLoading.setValue(true);
 
+        // Bu Use Case'in içinde re-authentication (yeniden doğrulama) yapılıyor
         updatePasswordUseCase.executeWithReauth(currentPassword, newPassword)
                 .thenAccept(aVoid -> {
                     _isLoading.postValue(false);
@@ -73,7 +60,7 @@ public class PasswordResetViewModel extends ViewModel {
                 .exceptionally(throwable -> {
                     _isLoading.postValue(false);
 
-                    // Firebase hata mesajını kullanıcı dostu Türkçe'ye çevir
+                    // Hata mesajını çevir
                     String userFriendlyMessage = parseFirebaseError(throwable);
                     _errorMessage.postValue(userFriendlyMessage);
 
@@ -81,25 +68,23 @@ public class PasswordResetViewModel extends ViewModel {
                 });
     }
 
-
-      // Firebase hata mesajlarını kullanıcı dostu Türkçe mesajlara çevirir
+    // Firebase hata mesajlarını kullanıcı dostu Türkçe mesajlara çevirir
     private String parseFirebaseError(Throwable throwable) {
         if (throwable == null || throwable.getMessage() == null) {
-            return "Bir hata oluştu. Lütfen tekrar deneyin.";
+            return "Bilinmeyen bir hata oluştu. Lütfen tekrar deneyin.";
         }
 
         String errorMessage = throwable.getMessage().toLowerCase();
 
-        // Firebase Authentication hata kodları
         if (errorMessage.contains("invalid_login_credentials") ||
                 errorMessage.contains("wrong-password") ||
-                errorMessage.contains("incorrect-malformed")||
+                errorMessage.contains("incorrect-malformed") ||
                 errorMessage.contains("invalid-credential")) {
             return "Mevcut şifreniz yanlış. Lütfen tekrar deneyin.";
         }
 
         if (errorMessage.contains("user-not-found")) {
-            return "Kullanıcı bulunamadı. Lütfen giriş yapın.";
+            return "Kullanıcı bulunamadı.";
         }
 
         if (errorMessage.contains("requires-recent-login")) {
@@ -107,25 +92,15 @@ public class PasswordResetViewModel extends ViewModel {
         }
 
         if (errorMessage.contains("weak-password")) {
-            return "Şifreniz çok zayıf. Daha güçlü bir şifre seçin.";
+            return "Şifreniz çok zayıf. En az 6 karakter olmalı.";
         }
 
-        if (errorMessage.contains("network")) {
-            return "İnternet bağlantınızı kontrol edin.";
+        if (errorMessage.contains("email adresi gerekli")) {
+            return "Email adresi boş bırakılamaz.";
         }
 
-        if (errorMessage.contains("too-many-requests")) {
-            return "Çok fazla deneme yaptınız. Lütfen daha sonra tekrar deneyin.";
-        }
-
-        // Use case'den gelen validasyon hataları
-        if (errorMessage.contains("şifre en az 6 karakter") ||
-                errorMessage.contains("mevcut şifre gerekli")) {
-            return throwable.getMessage();
-        }
-
-        // Bilinmeyen hata - detaylı mesaj yerine genel mesaj
-        return "Şifre değiştirilemedi. Lütfen tekrar deneyin.";
+        // Bilinmeyen hata
+        return "İşlem tamamlanamadı: " + throwable.getMessage();
     }
 
     public void clearMessages() {
