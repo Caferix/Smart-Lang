@@ -1,5 +1,6 @@
 package com.scu.smartlang.presentation.ui.home;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,6 +17,7 @@ import androidx.navigation.NavController;
 import androidx.navigation.NavOptions;
 import androidx.navigation.fragment.NavHostFragment;
 
+import com.scu.smartlang.GameActivity;
 import com.scu.smartlang.R;
 import com.scu.smartlang.domain.model.User;
 import com.scu.smartlang.presentation.ui.auth.AuthResultState;
@@ -47,6 +49,18 @@ public class HomeFragment extends Fragment {
         return inflater.inflate(R.layout.fragment_home, container, false);
     }
 
+    /**
+     * 1. DÜZELTME: Bu metot, fragment ekrana her geldiğinde (oyundan geri dönüldüğünde de) çalışır.
+     */
+    @Override
+    public void onResume() {
+        super.onResume();
+        // Verilerin en güncel halini çekmek için ViewModel'a komut ver.
+        if (userViewModel != null) {
+            userViewModel.fetchUserProfile();
+        }
+    }
+
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -60,7 +74,6 @@ public class HomeFragment extends Fragment {
         tvStreakCount = view.findViewById(R.id.tv_streak_count);
         btnStartDailyLesson = view.findViewById(R.id.btn_start_daily_lesson);
         ivNotificationIcon = view.findViewById(R.id.iv_notification_icon);
-
         btnLanguageSelector = view.findViewById(R.id.btn_language_selector);
         btnStartGame = view.findViewById(R.id.btn_start_game);
 
@@ -72,27 +85,19 @@ public class HomeFragment extends Fragment {
                 progressXp.setIndeterminate(true);
 
             } else if (authResult instanceof AuthResultState.Success) {
-                AuthResultState.Success success = (AuthResultState.Success) authResult;
-                User user = success.getUser();
+                User user = ((AuthResultState.Success) authResult).getUser();
                 updateUiWithUser(user);
                 progressXp.setIndeterminate(false);
 
             } else if (authResult instanceof AuthResultState.Error) {
-                AuthResultState.Error error = (AuthResultState.Error) authResult;
-                Toast.makeText(getContext(), "Profil yükleme hatası: " + error.getMessage(), Toast.LENGTH_LONG).show();
-                // Hata durumunda da giriş ekranına yönlendirdik
+                Toast.makeText(getContext(), "Profil yükleme hatası: " + ((AuthResultState.Error) authResult).getMessage(), Toast.LENGTH_LONG).show();
                 navigateToSignIn();
 
             } else if (authResult instanceof AuthResultState.SignedOut || authResult instanceof AuthResultState.EmailNotVerified) {
-                // Oturum yoksa veya e-posta doğrulanmamışsa (fetchUserProfile bunu da kontrol ediyor)
-                // HomeFragment'ta kalmanın anlamı yok. Giriş ekranına geri dön.
                 Toast.makeText(getContext(), "Oturum bulunamadı, lütfen tekrar giriş yapın.", Toast.LENGTH_SHORT).show();
                 navigateToSignIn();
             }
         });
-
-        // Profil verisini çek
-        //userViewModel.fetchUserProfile();
 
         // Buton ve Listener kurulumu
         setupListenersAndText();
@@ -108,36 +113,61 @@ public class HomeFragment extends Fragment {
 
         btnStartDailyLesson.setOnClickListener(v -> Toast.makeText(getContext(), "Günlük derse başlama akışı!", Toast.LENGTH_SHORT).show());
         ivNotificationIcon.setOnClickListener(v -> Toast.makeText(getContext(), "Bildirimler açılıyor.", Toast.LENGTH_SHORT).show());
+        btnLanguageSelector.setOnClickListener(v -> Toast.makeText(getContext(), "Dil seçme menüsü açılacak.", Toast.LENGTH_SHORT).show());
 
-        btnLanguageSelector.setOnClickListener(v -> Toast.makeText(getContext(), "Dil seçme menüsü açılacak (Çoklu dil desteği yakında!)", Toast.LENGTH_SHORT).show());
-        btnStartGame.setOnClickListener(v -> Toast.makeText(getContext(), "Oyun modülü başlatılıyor!", Toast.LENGTH_SHORT).show());
+        btnStartGame.setOnClickListener(v -> {
+            Intent intent = new Intent(getActivity(), GameActivity.class);
+            startActivity(intent);
+        });
     }
 
-
-      //Kullanıcı verileri ile UI'ı günceller.
+    /**
+     * 2. DÜZELTME: Artık `GameActivity`'deki gibi dinamik XP hesaplaması yapıyor.
+     */
     private void updateUiWithUser(User user) {
-        String userName = user.getUserName();
-        int currentXp = user.getXp();
-        int currentLevel = user.getLevel();
-        String welcomeName = (userName != null && !userName.isEmpty()) ? userName : user.getEmail().split("@")[0];
-        int progressPercent = (currentXp % 100);
-        int xpTarget = 100;
+        if (user == null) return;
 
+        String userName = user.getUserName();
+        String welcomeName = (userName != null && !userName.isEmpty()) ? userName : user.getEmail().split("@")[0];
         tvWelcomeTitle.setText(String.format("Hoş Geldin, %s!", welcomeName));
-        tvUserLevelXp.setText(String.format("Level %d | %d/%d XP", currentLevel, progressPercent, xpTarget));
-        progressXp.setMax(xpTarget);
-        progressXp.setProgress(progressPercent);
+
+        // --- DİNAMİK XP HESAPLAMA MANTIĞI ---
+        int currentLevel = user.getLevel();
+        int totalXp = user.getXp(); // Toplam XP veritabanından geliyor
+
+        int requiredXpForNextLevel = calculateRequiredXp(currentLevel);
+        int xpForCurrentLevel = totalXp - calculateTotalXpForLevel(currentLevel);
+
+        tvUserLevelXp.setText(String.format("Level %d | %d/%d XP", currentLevel, xpForCurrentLevel, requiredXpForNextLevel));
+        progressXp.setMax(requiredXpForNextLevel);
+        progressXp.setProgress(xpForCurrentLevel);
+        // ---------------------------------
+
         tvStreakCount.setText("Seri: 0 Gün");
     }
 
-    private void navigateToSignIn() {
-        // NavController'ı tekrar al (eğer null olabilme ihtimali varsa)
-        NavController navController = NavHostFragment.findNavController(this);
+    /**
+     * 3. DÜZELTME: GameActivity'den kopyalanan yardımcı metotlar.
+     */
+    private int calculateTotalXpForLevel(int level) {
+        int totalXp = 0;
+        for (int i = 1; i < level; i++) {
+            totalXp += calculateRequiredXp(i);
+        }
+        return totalXp;
+    }
 
-        // Geri yığınını (back stack) temizleyerek SignInFragment'a git
-        NavOptions navOptions = new NavOptions.Builder()
-                .setPopUpTo(R.id.main_nav_graph, true)
-                .build();
-        navController.navigate(R.id.signInFragment, null, navOptions);
+    private int calculateRequiredXp(int level) {
+        return 100 + (level - 1) * 25;
+    }
+
+    private void navigateToSignIn() {
+        if (isAdded()) {
+            NavController navController = NavHostFragment.findNavController(this);
+            NavOptions navOptions = new NavOptions.Builder()
+                    .setPopUpTo(R.id.main_nav_graph, true)
+                    .build();
+            navController.navigate(R.id.signInFragment, null, navOptions);
+        }
     }
 }
