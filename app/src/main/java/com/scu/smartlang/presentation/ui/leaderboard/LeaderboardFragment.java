@@ -11,14 +11,13 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import com.scu.smartlang.R;
 import com.scu.smartlang.presentation.ui.auth.AuthResultState;
-import com.scu.smartlang.presentation.viewmodel.AuthViewModel;
-import com.scu.smartlang.presentation.viewmodel.ProfileViewModel;
+import com.scu.smartlang.presentation.viewmodel.UserViewModel;
 import dagger.hilt.android.AndroidEntryPoint;
 
 @AndroidEntryPoint
 public class LeaderboardFragment extends Fragment {
 
-    private ProfileViewModel profileViewModel;
+    private UserViewModel userViewModel;
     private TextView tvLeaderboardContent;
 
     @Nullable
@@ -31,18 +30,18 @@ public class LeaderboardFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        profileViewModel = new ViewModelProvider(this).get(ProfileViewModel.class);
+        userViewModel = new ViewModelProvider(this).get(UserViewModel.class);
 
         // Layout'unda bir TextView ID'si tanımlı olmalı, örneğin: tv_leaderboard_title'ın altındaki bir textview
         // Şimdilik sadece başlığı güncelleyelim veya log basalım.
 
         // Kullanıcı kendi puanını görsün
-        profileViewModel.getUserProfile().observe(getViewLifecycleOwner(), state -> {
+        userViewModel.getUserProfile().observe(getViewLifecycleOwner(), state -> {
             if (state instanceof AuthResultState.Success) {
                 // Burada ileride tüm kullanıcıları listeleyen bir logic kurulacak.
                 // Şimdilik kullanıcının kendi sırasını (temsili) gösterelim.
             }
         });
-        profileViewModel.fetchUserProfile();
+        userViewModel.fetchUserProfile();
     }
 }
