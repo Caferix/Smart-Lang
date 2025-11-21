@@ -43,7 +43,7 @@ public class MainActivity extends AppCompatActivity {
         navController = navHostFragment.getNavController();
         navView = findViewById(R.id.nav_view);
 
-        // 2. NavGraph'ı yükle - DÜZELTME BURADA: R.id yerine R.navigation kullanılmalı
+        // 2. NavGraph'ı yükle
         NavGraph navGraph = navController.getNavInflater().inflate(R.navigation.main_nav_graph);
 
         // 3. OTURUM KONTROLÜ: Başlangıç noktasını dinamik olarak ayarla
@@ -61,12 +61,14 @@ public class MainActivity extends AppCompatActivity {
         // 5. Bottom Navigation'ı NavController ile bağla
         NavigationUI.setupWithNavController(navView, navController);
 
-        // 6. BottomNav Görünürlük Mantığı
+        // 6. BottomNav Görünürlük Mantığı - GÜNCELLENEN KISIM
         navController.addOnDestinationChangedListener((controller, destination, arguments) -> {
             int destinationId = destination.getId();
 
+            // Profil sayfasında (navigation_profile) da alt menünün görünmesini sağlıyoruz
             if (destinationId == R.id.navigation_home ||
                     destinationId == R.id.navigation_leaderboard ||
+                    destinationId == R.id.navigation_profile || // YENİ EKLENDİ
                     destinationId == R.id.navigation_settings) {
                 navView.setVisibility(View.VISIBLE);
             } else {
