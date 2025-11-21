@@ -116,26 +116,6 @@
         app:layout_constraintTop_toBottomOf="@id/cv_stats" />
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rv_incoming_requests"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="16dp"
-        android:visibility="gone"
-        app:layout_constraintTop_toBottomOf="@id/tv_friends_title"
-        android:layout_marginTop="8dp" />
-
-    <Button
-        android:id="@+id/btn_send_friend_request"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:text="Arkadaş Ekle"
-        android:visibility="gone"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tv_friends_title" /> <!-- cv_stats'tan tv_friends_title'a değiştirildi -->
-
-    <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rv_friends"
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -144,8 +124,7 @@
         android:clipToPadding="false"
         android:paddingBottom="16dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/btn_send_friend_request" >
-
-    </androidx.recyclerview.widget.RecyclerView>
+        app:layout_constraintTop_toBottomOf="@id/tv_friends_title"
+        tools:listitem="@layout/item_friend" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
