@@ -40,7 +40,6 @@
         android:name="com.scu.smartlang.presentation.ui.auth.ForgotPasswordFragment"
         android:label="ForgotPasswordFragment" />
 
-
     <fragment
         android:id="@+id/navigation_home"
         android:name="com.scu.smartlang.presentation.ui.home.HomeFragment"
@@ -51,21 +50,24 @@
         android:id="@+id/navigation_leaderboard"
         android:name="com.scu.smartlang.presentation.ui.leaderboard.LeaderboardFragment"
         android:label="Puan Durumu"
-        tools:layout="@layout/fragment_leaderboard" />
+        tools:layout="@layout/fragment_leaderboard">
+        <action
+            android:id="@+id/action_navigation_leaderboard_to_navigation_profile"
+            app:destination="@id/navigation_profile" />
+    </fragment>
 
     <fragment
         android:id="@+id/navigation_settings"
         android:name="com.scu.smartlang.presentation.ui.settings.SettingsFragment"
         android:label="Ayarlar"
         tools:layout="@layout/fragment_settings">
-
         <action
             android:id="@+id/action_navigation_settings_to_editProfileFragment"
-            app:destination="@id/editProfileFragment" /> <action
-        android:id="@+id/action_navigation_settings_to_changePasswordFragment"
-        app:destination="@id/changePasswordFragment" />
+            app:destination="@id/editProfileFragment" />
+        <action
+            android:id="@+id/action_navigation_settings_to_changePasswordFragment"
+            app:destination="@id/changePasswordFragment" />
     </fragment>
-
 
     <fragment
         android:id="@+id/editProfileFragment"
@@ -78,10 +80,27 @@
         android:name="com.scu.smartlang.presentation.ui.auth.ChangePasswordFragment"
         android:label="Şifre Değiştir"
         tools:layout="@layout/fragment_change_password" />
+
     <fragment
         android:id="@+id/navigation_profile"
         android:name="com.scu.smartlang.presentation.ui.profile.ProfileFragment"
         android:label="Profilim"
-        tools:layout="@layout/fragment_profile" />
+        tools:layout="@layout/fragment_profile">
+        <argument
+            android:name="userId"
+            app:argType="string"
+            app:nullable="true"
+            android:defaultValue="@null" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/navigation_search"
+        android:name="com.scu.smartlang.presentation.ui.search.SearchFragment"
+        android:label="Kullanıcı Ara"
+        tools:layout="@layout/fragment_search">
+        <action
+            android:id="@+id/action_navigation_search_to_navigation_profile"
+            app:destination="@id/navigation_profile" />
+    </fragment>
 
 </navigation>

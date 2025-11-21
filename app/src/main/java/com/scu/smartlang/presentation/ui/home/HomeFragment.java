@@ -39,6 +39,7 @@ public class HomeFragment extends Fragment {
     private MaterialButton btnStartGamePuzzle; // Kelime Bulmaca
     private MaterialButton btnStartAi;         // AI Butonu
     private ImageView ivNotificationIcon;
+    private TextView tvNotificationBadge;
 
     private static final String DAILY_LESSON_TITLE = "GÜNLÜK DERSE BAŞLA";
     private static final String DEFAULT_MODULE_PLACEHOLDER = "(Henüz ders atanmadı)";
@@ -72,11 +73,20 @@ public class HomeFragment extends Fragment {
         btnStartDailyLesson = view.findViewById(R.id.btn_start_daily_lesson);
         ivNotificationIcon = view.findViewById(R.id.iv_notification_icon);
         btnLanguageSelector = view.findViewById(R.id.btn_language_selector);
+        tvNotificationBadge = view.findViewById(R.id.tv_notification_badge);
 
         // Yeni Butonlar
         btnStartGameMatch = view.findViewById(R.id.btn_start_game_match);
         btnStartGamePuzzle = view.findViewById(R.id.btn_start_game_puzzle);
         btnStartAi = view.findViewById(R.id.btn_start_ai);
+
+        userViewModel.getUserProfile().observe(getViewLifecycleOwner(), authResult -> {
+            if (authResult instanceof AuthResultState.Success) {
+                User user = ((AuthResultState.Success) authResult).getUser();
+                updateUiWithUser(user);
+                updateNotificationBadge(user.getUnreadNotifications()); // 🆕
+            }
+        });
 
 
         // Kullanıcı Profilini Gözlemle
@@ -148,6 +158,15 @@ public class HomeFragment extends Fragment {
             NavController navController = NavHostFragment.findNavController(this);
             NavOptions navOptions = new NavOptions.Builder().setPopUpTo(R.id.main_nav_graph, true).build();
             navController.navigate(R.id.signInFragment, null, navOptions);
+        }
+    }
+
+    private void updateNotificationBadge(int count) {
+        if (count > 0) {
+            tvNotificationBadge.setText(count > 99 ? "99+" : String.valueOf(count));
+            tvNotificationBadge.setVisibility(View.VISIBLE);
+        } else {
+            tvNotificationBadge.setVisibility(View.GONE);
         }
     }
 }

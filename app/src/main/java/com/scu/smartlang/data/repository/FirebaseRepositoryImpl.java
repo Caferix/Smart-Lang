@@ -6,12 +6,24 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FieldPath;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
 import com.scu.smartlang.data.mapper.UserDataMapper;
 import com.scu.smartlang.data.remote.firebase.FirebaseAuth;
 import com.scu.smartlang.data.remote.firebase.models.UserDto;
+import com.scu.smartlang.domain.model.Friend;
+import com.scu.smartlang.domain.model.FriendRequest;
 import com.scu.smartlang.domain.model.User;
 import com.scu.smartlang.domain.repository.FirebaseRepository;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -316,6 +328,194 @@ public class FirebaseRepositoryImpl implements FirebaseRepository {
                 });
 
         return future;
+    }
+
+    @Override
+    public CompletableFuture<Void> sendFriendRequest(String fromUid, String toUid) {
+        return taskToFuture(db.collection("users").document(fromUid).get())
+                .thenCompose(fromDoc -> {
+                    UserDto fromUser = fromDoc.toObject(UserDto.class);
+                    String senderName = fromUser.getUserName() != null ? fromUser.getUserName() : "Bir kullanıcı";
+
+                    Map<String, Object> request = new HashMap<>();
+                    request.put("fromUid", fromUid);
+                    request.put("toUid", toUid);
+                    request.put("status", "PENDING");
+                    request.put("senderName", senderName); // 🆕 Gönderen adı
+                    request.put("createdAt", FieldValue.serverTimestamp());
+
+                    // ✅ DÜZELTME: Kullanıcının alt koleksiyonuna kaydet
+                    return taskToFuture(
+                            db.collection("users").document(toUid)
+                                    .collection("friendRequests")
+                                    .add(request)
+                    ).thenCompose(docRef -> {
+                        // 🆕 Badge sayacını artır
+                        return taskToFuture(
+                                db.collection("users").document(toUid)
+                                        .update("unreadNotifications", FieldValue.increment(1))
+                        );
+                    });
+                });
+    }
+    @Override
+    public CompletableFuture<Void> acceptFriendRequest(String requestId, String acceptorUid) {
+        // ✅ DÜZELTME: Doğrudan kullanıcının alt koleksiyonundan al
+        DocumentReference requestRef = db.collection("users")
+                .document(acceptorUid)
+                .collection("friendRequests")
+                .document(requestId);
+
+        return taskToFuture(requestRef.get())
+                .thenCompose(ds -> {
+                    if (!ds.exists()) {
+                        CompletableFuture<Void> failed = new CompletableFuture<>();
+                        failed.completeExceptionally(new Exception("Request not found"));
+                        return failed;
+                    }
+
+                    String fromUid = ds.getString("fromUid");
+                    String toUid = ds.getString("toUid");
+
+                    // İsteği kabul edildi olarak işaretle
+                    CompletableFuture<Void> updateStatus = taskToFuture(
+                            requestRef.update("status", "ACCEPTED")
+                    );
+
+                    // Her iki kullanıcının friends alt koleksiyonuna ekle
+                    Map<String, Object> friendForAcceptor = new HashMap<>();
+                    friendForAcceptor.put("uid", fromUid);
+                    friendForAcceptor.put("createdAt", FieldValue.serverTimestamp());
+
+                    Map<String, Object> friendForRequester = new HashMap<>();
+                    friendForRequester.put("uid", toUid);
+                    friendForRequester.put("createdAt", FieldValue.serverTimestamp());
+
+                    CompletableFuture<DocumentReference> addToAcceptor = taskToFuture(
+                            db.collection("users").document(acceptorUid)
+                                    .collection("friends").add(friendForAcceptor)
+                    );
+
+                    CompletableFuture<DocumentReference> addToRequester = taskToFuture(
+                            db.collection("users").document(fromUid)
+                                    .collection("friends").add(friendForRequester)
+                    );
+
+                    return CompletableFuture.allOf(updateStatus, addToAcceptor, addToRequester);
+                });
+    }
+
+    @Override
+    public CompletableFuture<List<FriendRequest>> getIncomingFriendRequests(String uid) {
+        return taskToFuture(
+                db.collection("users")
+                        .document(uid)
+                        .collection("friendRequests")
+                        .whereEqualTo("toUid", uid)
+                        .whereEqualTo("status", "PENDING")
+                        .get()
+        ).thenApply(qs -> {
+            List<FriendRequest> list = new ArrayList<>();
+            for (DocumentSnapshot ds : qs.getDocuments()) {
+                FriendRequest req = new FriendRequest();
+                req.setId(ds.getId());
+                req.setFromUid(ds.getString("fromUid"));
+                req.setToUid(ds.getString("toUid"));
+
+                String statusStr = ds.getString("status");
+                if ("PENDING".equals(statusStr)) {
+                    req.setStatus(FriendRequest.Status.PENDING);
+                } else if ("ACCEPTED".equals(statusStr)) {
+                    req.setStatus(FriendRequest.Status.ACCEPTED);
+                } else if ("REJECTED".equals(statusStr)) {
+                    req.setStatus(FriendRequest.Status.REJECTED);
+                }
+
+                req.setCreatedAt(ds.getDate("createdAt"));
+                list.add(req);
+            }
+            return list;
+        });
+    }
+
+    @Override
+    public CompletableFuture<List<Friend>> getFriends(String uid) {
+        return taskToFuture(db.collection(USERS_COLLECTION)
+                .document(uid)
+                .collection("friends")
+                .get())
+                .thenCompose(qs -> {
+                    List<CompletableFuture<Friend>> futures = new ArrayList<>();
+                    for (DocumentSnapshot ds : qs.getDocuments()) {
+                        String friendUid = ds.getString("uid");
+                        futures.add(getUserProfile(friendUid).thenApply(user -> {
+                            if (user == null) return null;
+                            return new Friend(user.getUid(), user.getUserName(), user.getLevel(), user.getProfileImageUrl());
+                        }));
+                    }
+                    return CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
+                            .thenApply(v -> {
+                                List<Friend> res = new ArrayList<>();
+                                for (CompletableFuture<Friend> f : futures) {
+                                    try { Friend fr = f.get(); if (fr != null) res.add(fr); } catch (Exception ignored) {}
+                                }
+                                return res;
+                            });
+                });
+    }
+
+    @Override
+    public CompletableFuture<List<User>> getLeaderboard(int limit) {
+        // order by xp desc first then level desc (or reverse depending on desired)
+        // Note: composite index may be required in Firestore console.
+        Query query = db.collection(USERS_COLLECTION)
+                .orderBy("xp", com.google.firebase.firestore.Query.Direction.DESCENDING)
+                .orderBy("level", com.google.firebase.firestore.Query.Direction.DESCENDING)
+                .limit(limit);
+        return taskToFuture(query.get())
+                .thenApply(qs -> {
+                    List<User> list = new ArrayList<>();
+                    for (DocumentSnapshot ds : qs.getDocuments()) {
+                        UserDto dto = ds.toObject(UserDto.class);
+                        list.add(userMapper.mapToDomain(dto));
+                    }
+                    return list;
+                });
+    }
+
+    @Override
+    public CompletableFuture<User> getUserById(String uid) {
+        CompletableFuture<User> future = new CompletableFuture<>();
+        db.collection("users").document(uid).get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        User user = documentSnapshot.toObject(User.class);
+                        future.complete(user);
+                    } else {
+                        future.complete(null);
+                    }
+                })
+                .addOnFailureListener(future::completeExceptionally);
+        return future;
+    }
+
+    @Override
+    public CompletableFuture<List<User>> searchUsersByName(String query) {
+        return taskToFuture(
+                db.collection(USERS_COLLECTION)
+                        .orderBy("userName")
+                        .startAt(query)
+                        .endAt(query + "\uf8ff")
+                        .limit(20)
+                        .get()
+        ).thenApply(qs -> {
+            List<User> users = new ArrayList<>();
+            for (DocumentSnapshot ds : qs.getDocuments()) {
+                UserDto dto = ds.toObject(UserDto.class);
+                users.add(userMapper.mapToDomain(dto));
+            }
+            return users;
+        });
     }
 
 

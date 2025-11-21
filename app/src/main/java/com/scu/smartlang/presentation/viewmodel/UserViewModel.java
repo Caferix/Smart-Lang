@@ -1,18 +1,29 @@
 package com.scu.smartlang.presentation.viewmodel;
 
+import android.util.Log;
+
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.scu.smartlang.domain.model.Friend;
+import com.scu.smartlang.domain.model.FriendRequest;
 import com.scu.smartlang.domain.model.User;
 import com.scu.smartlang.domain.repository.FirebaseRepository; // Repository'yi kullanacağız
+import com.scu.smartlang.domain.usecase.user.AcceptFriendRequestUseCase;
 import com.scu.smartlang.domain.usecase.user.GetCurrentUserProfileUseCase;
+import com.scu.smartlang.domain.usecase.user.GetFriendRequestsUseCase;
+import com.scu.smartlang.domain.usecase.user.GetFriendsUseCase;
+import com.scu.smartlang.domain.usecase.user.GetUserByIdUseCase;
 import com.scu.smartlang.domain.usecase.user.LoginUserUseCase;
 import com.scu.smartlang.domain.usecase.user.RegisterUserUseCase;
 import com.scu.smartlang.domain.usecase.user.ResendVerificationEmailUseCase;
+import com.scu.smartlang.domain.usecase.user.SendFriendRequestUseCase;
 import com.scu.smartlang.domain.usecase.user.SignOutUserUseCase;
 import com.scu.smartlang.presentation.ui.auth.AuthResultState;
 
+import java.util.List;
 import java.util.concurrent.CancellationException;
 
 import javax.inject.Inject;
@@ -26,31 +37,46 @@ public class UserViewModel extends ViewModel {
     private final GetCurrentUserProfileUseCase getCurrentUserProfileUseCase;
     private final SignOutUserUseCase signOutUserUseCase;
     private final ResendVerificationEmailUseCase resendVerificationEmailUseCase;
-
-    // YENİ: Repository'yi doğrudan buraya ekledik (veya UpdateUserProfileUseCase yazılabilir)
     private final FirebaseRepository firebaseRepository;
-
     private final MutableLiveData<AuthResultState> _authResult = new MutableLiveData<>();
     public LiveData<AuthResultState> getAuthResult() { return _authResult; }
-
     private final MutableLiveData<AuthResultState> _userProfile = new MutableLiveData<>();
     public LiveData<AuthResultState> getUserProfile() { return _userProfile; }
-
+    private final GetFriendsUseCase getFriendsUseCase;
+    private final GetFriendRequestsUseCase getFriendRequestsUseCase;
+    private final SendFriendRequestUseCase sendFriendRequestUseCase;
+    private final AcceptFriendRequestUseCase acceptFriendRequestUseCase;
+    private final MutableLiveData<List<Friend>> friends = new MutableLiveData<>();
+    private final MutableLiveData<List<FriendRequest>> incomingRequests = new MutableLiveData<>();
+    private final GetUserByIdUseCase getUserByIdUseCase;
+    private final MutableLiveData<User> viewedUser = new MutableLiveData<>();
+    private final MutableLiveData<List<User>> searchResults = new MutableLiveData<>();
     @Inject
     public UserViewModel(
+            FirebaseRepository firebaseRepository, // Inject ediyoruz
             RegisterUserUseCase registerUserUseCase,
             LoginUserUseCase loginUserUseCase,
             GetCurrentUserProfileUseCase getCurrentUserProfileUseCase,
             SignOutUserUseCase signOutUserUseCase,
             ResendVerificationEmailUseCase resendVerificationEmailUseCase,
-            FirebaseRepository firebaseRepository // Inject ediyoruz
+            GetFriendsUseCase getFriendsUseCase,
+            GetFriendRequestsUseCase getFriendRequestsUseCase,
+            SendFriendRequestUseCase sendFriendRequestUseCase,
+            AcceptFriendRequestUseCase acceptFriendRequestUseCase,
+            GetUserByIdUseCase getUserByIdUseCase
+
     ) {
+        this.firebaseRepository = firebaseRepository;
         this.registerUserUseCase = registerUserUseCase;
         this.loginUserUseCase = loginUserUseCase;
         this.getCurrentUserProfileUseCase = getCurrentUserProfileUseCase;
         this.signOutUserUseCase = signOutUserUseCase;
         this.resendVerificationEmailUseCase = resendVerificationEmailUseCase;
-        this.firebaseRepository = firebaseRepository;
+        this.getFriendsUseCase = getFriendsUseCase;
+        this.getFriendRequestsUseCase = getFriendRequestsUseCase;
+        this.sendFriendRequestUseCase = sendFriendRequestUseCase;
+        this.acceptFriendRequestUseCase = acceptFriendRequestUseCase;
+        this.getUserByIdUseCase = getUserByIdUseCase;
     }
 
     public void registerUser(String email, String password, String userName) {
@@ -172,6 +198,67 @@ public class UserViewModel extends ViewModel {
         _authResult.setValue(null);
     }
 
+    public LiveData<List<Friend>> getFriends() { return friends; }
+    public LiveData<List<FriendRequest>> getIncomingRequests() { return incomingRequests; }
+
+    public void fetchFriends(String uid) {
+        getFriendsUseCase.execute(uid).thenAccept(friends::postValue);
+    }
+
+    public void fetchIncomingRequests(String uid) {
+        getFriendRequestsUseCase.execute(uid).thenAccept(incomingRequests::postValue);
+    }
+
+    public void sendFriendRequest(String fromUid, String toUid) {
+        sendFriendRequestUseCase.execute(fromUid, toUid);
+    }
+
+    public void acceptFriendRequest(String requestId, String acceptorUid) {
+        acceptFriendRequestUseCase.execute(requestId, acceptorUid)
+                .thenRun(() -> {
+                    // refresh lists after acceptance
+                    fetchFriends(acceptorUid);
+                    fetchIncomingRequests(acceptorUid);
+                });
+    }
+
+    public LiveData<User> getViewedUser() {
+        return viewedUser;
+    }
+
+    public void fetchUserById(String userId) {
+        getUserByIdUseCase.execute(userId).thenAccept(user -> {
+            if (user != null) {
+                viewedUser.postValue(user);
+            }
+        }).exceptionally(throwable -> {
+            Log.e("UserViewModel", "fetchUserById failed", throwable);
+            return null;
+        });
+    }
+
+    public LiveData<List<User>> getSearchResults() {
+        return searchResults;
+    }
+
+    public void searchUsers(String query) {
+        firebaseRepository.searchUsersByName(query).thenAccept(users -> {
+            searchResults.postValue(users);
+        });
+    }
+
+    public void clearNotificationBadge() {
+        firebaseRepository.getCurrentUserId().thenAccept(uid -> {
+            if (uid != null) {
+                FirebaseFirestore.getInstance()
+                        .collection("users")
+                        .document(uid)
+                        .update("unreadNotifications", 0)
+                        .addOnFailureListener(e ->
+                                android.util.Log.e("UserViewModel", "Badge sıfırlanamadı", e));
+            }
+        });
+    }
     private Throwable getRootCause(Throwable throwable) {
         if (throwable instanceof CancellationException || throwable.getCause() == null) {
             return throwable;

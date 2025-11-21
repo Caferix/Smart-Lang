@@ -1,7 +1,10 @@
 package com.scu.smartlang.domain.repository;
 
+import com.scu.smartlang.domain.model.Friend;
+import com.scu.smartlang.domain.model.FriendRequest;
 import com.scu.smartlang.domain.model.User;
 
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 public interface FirebaseRepository {
@@ -20,8 +23,15 @@ public interface FirebaseRepository {
     //Password operations
     CompletableFuture<Void> sendPasswordResetEmail(String email);
     CompletableFuture<Void> updatePassword(String newPassword);
-
     CompletableFuture<Void> resendVerificationEmail();
-
     CompletableFuture<Void> reauthenticateAndUpdatePassword (String currentPassword, String newPassword);
+
+    // Friendship operations
+    CompletableFuture<Void> sendFriendRequest(String fromUid, String toUid);
+    CompletableFuture<Void> acceptFriendRequest(String requestId, String acceptorUid);
+    CompletableFuture<List<FriendRequest>> getIncomingFriendRequests(String uid);
+    CompletableFuture<List<Friend>> getFriends(String uid);
+    CompletableFuture<List<User>> getLeaderboard(int limit);
+    CompletableFuture<User> getUserById(String uid);
+    CompletableFuture<List<User>> searchUsersByName(String query);
 }
