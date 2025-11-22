@@ -43,15 +43,14 @@ public class MainActivity extends AppCompatActivity {
         navController = navHostFragment.getNavController();
         navView = findViewById(R.id.nav_view);
 
-        // 2. NavGraph'ı yükle - DÜZELTME BURADA: R.id yerine R.navigation kullanılmalı
+        // 2. NavGraph'ı yükle
         NavGraph navGraph = navController.getNavInflater().inflate(R.navigation.main_nav_graph);
 
-        // 3. OTURUM KONTROLÜ: Başlangıç noktasını dinamik olarak ayarla
+        // 3. OTURUM KONTROLÜ (NORMALE DÖNDÜ)
+        // Kullanıcı giriş yapmışsa Ana Sayfa'ya, yapmamışsa Giriş Ekranı'na gider.
         if (firebaseAuth.getCurrentUser() != null) {
-            // Oturum açıksa, Ana Sayfa'dan başla
             navGraph.setStartDestination(R.id.navigation_home);
         } else {
-            // Oturum kapalıysa, Giriş Ekranı'ndan başla
             navGraph.setStartDestination(R.id.signInFragment);
         }
 
@@ -65,6 +64,7 @@ public class MainActivity extends AppCompatActivity {
         navController.addOnDestinationChangedListener((controller, destination, arguments) -> {
             int destinationId = destination.getId();
 
+            // Ana sekmelerde alt barı göster, diğerlerinde (oyun, giriş vb.) gizle
             if (destinationId == R.id.navigation_home ||
                     destinationId == R.id.navigation_leaderboard ||
                     destinationId == R.id.navigation_settings) {

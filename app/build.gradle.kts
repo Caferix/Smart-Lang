@@ -2,7 +2,6 @@ import org.gradle.kotlin.dsl.annotationProcessor
 import org.gradle.kotlin.dsl.implementation
 
 plugins {
-
     alias(libs.plugins.android.application)
     alias(libs.plugins.hilt.android)
     id("com.google.gms.google-services")
@@ -54,12 +53,10 @@ dependencies {
     implementation (libs.hilt.lifecycle.viewmodel)
     annotationProcessor (libs.hilt.compiler)
 
-
-
     //BoM for the Firebase platform
     implementation(platform(libs.firebase.bom))
-    //Firebase
 
+    //Firebase
     implementation(libs.firebase.auth)
     implementation(libs.firebase.firestore)
     implementation(libs.firebase.storage)
@@ -67,4 +64,6 @@ dependencies {
 
     implementation(libs.play.services.auth)
 
+    // --- LOTTIE ANIMATION LIBRARY (EKLENDİ) ---
+    implementation("com.airbnb.android:lottie:6.1.0")
 }

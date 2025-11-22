@@ -19,7 +19,7 @@
             android:id="@+id/action_signInFragment_to_navigation_home"
             app:destination="@id/navigation_home"
             app:popUpTo="@id/main_nav_graph"
-            app:popUpToInclusive="true"/>
+            app:popUpToInclusive="true" />
     </fragment>
 
     <fragment
@@ -32,7 +32,7 @@
             android:id="@+id/action_signUpFragment_to_navigation_home"
             app:destination="@id/navigation_home"
             app:popUpTo="@id/main_nav_graph"
-            app:popUpToInclusive="true"/>
+            app:popUpToInclusive="true" />
     </fragment>
 
     <fragment
@@ -52,5 +52,11 @@
         android:name="com.scu.smartlang.presentation.ui.settings.SettingsFragment"
         android:label="Ayarlar"
         tools:layout="@layout/fragment_settings" />
+
+    <fragment
+        android:id="@+id/sentenceGameFragment"
+        android:name="com.scu.smartlang.presentation.ui.sentence.SentenceGameFragment"
+        android:label="Boşluk Doldurma"
+        tools:layout="@layout/fragment_sentence_game" />
 
 </navigation>
