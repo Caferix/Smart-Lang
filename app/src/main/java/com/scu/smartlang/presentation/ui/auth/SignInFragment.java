@@ -36,6 +36,7 @@ public class SignInFragment extends Fragment {
     private TextView tvInitialLoading;
     private TextView tvError;
     private boolean isManualSignIn = false;
+    private TextView forgotPasswordTextView;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
@@ -59,8 +60,9 @@ public class SignInFragment extends Fragment {
         tvInitialLoading = view.findViewById(R.id.tv_initial_loading);
         tvError = view.findViewById(R.id.tv_error);
         Button btnResendEmail = view.findViewById(R.id.btn_resend_email);
+        forgotPasswordTextView = view.findViewById(R.id.tv_forgot_password);
 
-        // TEMİZLEME DÜZELTMESİ
+        // TEMİZLEME DÜZELTMESİ (Önemli. Silinmeyecek.)
         // Fragment yüklendiğinde, ViewModel'deki son kayıt sonucunu (EmailNotVerified gibi)
         // hemen ve koşulsuz olarak temizle. Bu, observerın sadece kullanıcının
         // Giriş yap butonuna bastıktan sonraki yeni durumları görmesini sağlar.
@@ -193,6 +195,12 @@ public class SignInFragment extends Fragment {
         btnGoToSignUp.setOnClickListener(v -> {
             navController.navigate(R.id.action_signInFragment_to_signUpFragment);
         });
+
+        if (forgotPasswordTextView != null) {
+            forgotPasswordTextView.setOnClickListener(v -> {
+                navController.navigate(R.id.action_signInFragment_to_forgotPasswordFragment);
+            });
+        }
     }
 
 

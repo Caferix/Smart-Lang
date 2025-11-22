@@ -38,4 +38,24 @@
     <!-- Buton kenarlık -->
     <color name="sl_stroke">#DADCE0</color>
     <color name="sl_btn_bg">#FFFFFF</color>
+    <color name="purple_500">#FF6200EE</color>
+    <color name="purple_700">#FF3700B3</color>
+
+
+    <!-- YENİ OYUN PALETİ -->
+    <color name="game_bg_start">#6D55A4</color> <!-- Gradyan Başlangıç Rengi -->
+    <color name="game_bg_end">#3B2A63</color>   <!-- Gradyan Bitiş Rengi -->
+
+    <color name="game_button_bg">#4C3A7A</color> <!-- Buton Arka Planı -->
+    <color name="game_button_stroke">#9575CD</color> <!-- Buton Çerçevesi -->
+    <color name="game_button_text">#E8E4F1</color>  <!-- Buton Yazı Rengi -->
+
+    <color name="game_button_selected_bg">#9575CD</color> <!-- Seçili Buton Arka Planı -->
+    <color name="game_button_selected_text">#FFFFFFFF</color> <!-- Seçili Buton Yazı Rengi -->
+
+    <color name="game_correct_glow">#4CAF50</color> <!-- Doğru Cevap Işıltısı -->
+    <color name="game_wrong_glow">#F44336</color>   <!-- Yanlış Cevap Işıltısı -->
+
+    <color name="game_xp_bar_progress">#81C784</color> <!-- XP Bar Dolu Rengi -->
+    <color name="game_xp_bar_bg">#4C3A7A</color>
 </resources>

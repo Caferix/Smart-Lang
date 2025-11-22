@@ -46,11 +46,12 @@ public class MainActivity extends AppCompatActivity {
         // 2. NavGraph'ı yükle
         NavGraph navGraph = navController.getNavInflater().inflate(R.navigation.main_nav_graph);
 
-        // 3. OTURUM KONTROLÜ (NORMALE DÖNDÜ)
-        // Kullanıcı giriş yapmışsa Ana Sayfa'ya, yapmamışsa Giriş Ekranı'na gider.
+        // 3. OTURUM KONTROLÜ: Başlangıç noktasını dinamik olarak ayarla
         if (firebaseAuth.getCurrentUser() != null) {
+            // Oturum açıksa, Ana Sayfa'dan başla
             navGraph.setStartDestination(R.id.navigation_home);
         } else {
+            // Oturum kapalıysa, Giriş Ekranı'ndan başla
             navGraph.setStartDestination(R.id.signInFragment);
         }
 
@@ -60,13 +61,14 @@ public class MainActivity extends AppCompatActivity {
         // 5. Bottom Navigation'ı NavController ile bağla
         NavigationUI.setupWithNavController(navView, navController);
 
-        // 6. BottomNav Görünürlük Mantığı
+        // 6. BottomNav Görünürlük Mantığı - GÜNCELLENEN KISIM
         navController.addOnDestinationChangedListener((controller, destination, arguments) -> {
             int destinationId = destination.getId();
 
-            // Ana sekmelerde alt barı göster, diğerlerinde (oyun, giriş vb.) gizle
+            // Profil sayfasında (navigation_profile) da alt menünün görünmesini sağlıyoruz
             if (destinationId == R.id.navigation_home ||
                     destinationId == R.id.navigation_leaderboard ||
+                    destinationId == R.id.navigation_profile || // YENİ EKLENDİ
                     destinationId == R.id.navigation_settings) {
                 navView.setVisibility(View.VISIBLE);
             } else {

@@ -36,6 +36,10 @@ android {
 
 dependencies {
 
+    // Lottie Animasyon Kütüphanesi
+    implementation("com.airbnb.android:lottie:6.1.0") // En güncel sürümü kontrol edebilirsiniz
+
+
     implementation(libs.appcompat)
     implementation(libs.material)
     implementation(libs.activity)
@@ -66,4 +70,10 @@ dependencies {
 
     // --- LOTTIE ANIMATION LIBRARY (EKLENDİ) ---
     implementation("com.airbnb.android:lottie:6.1.0")
+    implementation("com.google.code.gson:gson:2.13.2")
+
+    // work manager
+    implementation("androidx.work:work-runtime:2.9.0")
+
+
 }
