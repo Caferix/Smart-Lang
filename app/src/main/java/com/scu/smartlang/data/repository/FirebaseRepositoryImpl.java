@@ -332,35 +332,62 @@ public class FirebaseRepositoryImpl implements FirebaseRepository {
 
     @Override
     public CompletableFuture<Void> sendFriendRequest(String fromUid, String toUid) {
-        return taskToFuture(db.collection("users").document(fromUid).get())
-                .thenCompose(fromDoc -> {
-                    UserDto fromUser = fromDoc.toObject(UserDto.class);
-                    String senderName = fromUser.getUserName() != null ? fromUser.getUserName() : "Bir kullanıcı";
+        // ✅ 1. Zaten arkadaş mı kontrol et
+        return taskToFuture(
+                db.collection("users").document(fromUid)
+                        .collection("friends")
+                        .whereEqualTo("uid", toUid)
+                        .limit(1)
+                        .get()
+        ).thenCompose(friendCheck -> {
+            if (!friendCheck.isEmpty()) {
+                CompletableFuture<Void> failed = new CompletableFuture<>();
+                failed.completeExceptionally(new Exception("Bu kullanıcı zaten arkadaşınız"));
+                return failed;
+            }
 
-                    Map<String, Object> request = new HashMap<>();
-                    request.put("fromUid", fromUid);
-                    request.put("toUid", toUid);
-                    request.put("status", "PENDING");
-                    request.put("senderName", senderName); // 🆕 Gönderen adı
-                    request.put("createdAt", FieldValue.serverTimestamp());
+            // ✅ 2. Bekleyen istek var mı kontrol et
+            return taskToFuture(
+                    db.collection("users").document(toUid)
+                            .collection("friendRequests")
+                            .whereEqualTo("fromUid", fromUid)
+                            .whereEqualTo("status", "PENDING")
+                            .limit(1)
+                            .get()
+            ).thenCompose(requestCheck -> {
+                if (!requestCheck.isEmpty()) {
+                    CompletableFuture<Void> failed = new CompletableFuture<>();
+                    failed.completeExceptionally(new Exception("Zaten bekleyen bir istek var"));
+                    return failed;
+                }
 
-                    // ✅ DÜZELTME: Kullanıcının alt koleksiyonuna kaydet
-                    return taskToFuture(
-                            db.collection("users").document(toUid)
-                                    .collection("friendRequests")
-                                    .add(request)
-                    ).thenCompose(docRef -> {
-                        // 🆕 Badge sayacını artır
-                        return taskToFuture(
-                                db.collection("users").document(toUid)
-                                        .update("unreadNotifications", FieldValue.increment(1))
-                        );
-                    });
-                });
+                // ✅ 3. Gönderenin adını al ve isteği oluştur
+                return taskToFuture(db.collection("users").document(fromUid).get())
+                        .thenCompose(fromDoc -> {
+                            UserDto fromUser = fromDoc.toObject(UserDto.class);
+                            String senderName = fromUser.getUserName() != null ? fromUser.getUserName() : "Bir kullanıcı";
+
+                            Map<String, Object> request = new HashMap<>();
+                            request.put("fromUid", fromUid);
+                            request.put("toUid", toUid);
+                            request.put("status", "PENDING");
+                            request.put("senderName", senderName);
+                            request.put("createdAt", FieldValue.serverTimestamp());
+
+                            return taskToFuture(
+                                    db.collection("users").document(toUid)
+                                            .collection("friendRequests")
+                                            .add(request)
+                            ).thenCompose(docRef -> taskToFuture(
+                                    db.collection("users").document(toUid)
+                                            .update("unreadNotifications", FieldValue.increment(1))
+                            ));
+                        });
+            });
+        });
     }
     @Override
     public CompletableFuture<Void> acceptFriendRequest(String requestId, String acceptorUid) {
-        // ✅ DÜZELTME: Doğrudan kullanıcının alt koleksiyonundan al
         DocumentReference requestRef = db.collection("users")
                 .document(acceptorUid)
                 .collection("friendRequests")
@@ -370,19 +397,13 @@ public class FirebaseRepositoryImpl implements FirebaseRepository {
                 .thenCompose(ds -> {
                     if (!ds.exists()) {
                         CompletableFuture<Void> failed = new CompletableFuture<>();
-                        failed.completeExceptionally(new Exception("Request not found"));
+                        failed.completeExceptionally(new Exception("İstek bulunamadı"));
                         return failed;
                     }
 
                     String fromUid = ds.getString("fromUid");
                     String toUid = ds.getString("toUid");
 
-                    // İsteği kabul edildi olarak işaretle
-                    CompletableFuture<Void> updateStatus = taskToFuture(
-                            requestRef.update("status", "ACCEPTED")
-                    );
-
-                    // Her iki kullanıcının friends alt koleksiyonuna ekle
                     Map<String, Object> friendForAcceptor = new HashMap<>();
                     friendForAcceptor.put("uid", fromUid);
                     friendForAcceptor.put("createdAt", FieldValue.serverTimestamp());
@@ -390,6 +411,8 @@ public class FirebaseRepositoryImpl implements FirebaseRepository {
                     Map<String, Object> friendForRequester = new HashMap<>();
                     friendForRequester.put("uid", toUid);
                     friendForRequester.put("createdAt", FieldValue.serverTimestamp());
+
+                    CompletableFuture<Void> deleteRequest = taskToFuture(requestRef.delete());
 
                     CompletableFuture<DocumentReference> addToAcceptor = taskToFuture(
                             db.collection("users").document(acceptorUid)
@@ -401,7 +424,21 @@ public class FirebaseRepositoryImpl implements FirebaseRepository {
                                     .collection("friends").add(friendForRequester)
                     );
 
-                    return CompletableFuture.allOf(updateStatus, addToAcceptor, addToRequester);
+                    return CompletableFuture.allOf(deleteRequest, addToAcceptor, addToRequester)
+                            .thenCompose(v -> taskToFuture(
+                                    db.collection("users").document(acceptorUid)
+                                            .update("unreadNotifications", FieldValue.increment(-1))
+                            ));
+                });
+    }
+
+    @Override
+    public CompletableFuture<Integer> getUnreadNotificationsCount(String uid) {
+        return taskToFuture(db.collection("users").document(uid).get())
+                .thenApply(ds -> {
+                    if (!ds.exists()) return 0;
+                    Long count = ds.getLong("unreadNotifications");
+                    return count != null ? count.intValue() : 0;
                 });
     }
 
@@ -423,20 +460,23 @@ public class FirebaseRepositoryImpl implements FirebaseRepository {
                 req.setToUid(ds.getString("toUid"));
 
                 String statusStr = ds.getString("status");
-                if ("PENDING".equals(statusStr)) {
-                    req.setStatus(FriendRequest.Status.PENDING);
-                } else if ("ACCEPTED".equals(statusStr)) {
-                    req.setStatus(FriendRequest.Status.ACCEPTED);
-                } else if ("REJECTED".equals(statusStr)) {
-                    req.setStatus(FriendRequest.Status.REJECTED);
-                }
+                if ("PENDING".equals(statusStr)) req.setStatus(FriendRequest.Status.PENDING);
 
                 req.setCreatedAt(ds.getDate("createdAt"));
+
+                // Gönderen bilgilerini ekle
+                String senderName = ds.getString("senderName");
+                if (senderName != null) req.setSenderName(senderName);
+
+                String senderProfile = ds.getString("senderProfileImageUrl");
+                if (senderProfile != null) req.setSenderProfileImageUrl(senderProfile);
+
                 list.add(req);
             }
             return list;
         });
     }
+
 
     @Override
     public CompletableFuture<List<Friend>> getFriends(String uid) {
@@ -462,6 +502,41 @@ public class FirebaseRepositoryImpl implements FirebaseRepository {
                                 return res;
                             });
                 });
+    }
+
+    @Override
+    public CompletableFuture<String> checkFriendshipStatus(String currentUid, String otherUid) {
+        // 1. Zaten arkadaşlar mı?
+        return taskToFuture(
+                db.collection("users").document(currentUid)
+                        .collection("friends").whereEqualTo("uid", otherUid).limit(1).get()
+        ).thenCompose(friendSnapshot -> {
+            if (!friendSnapshot.isEmpty()) {
+                return CompletableFuture.completedFuture("FRIENDS");
+            }
+
+            // 2. Mevcut kullanıcı istek göndermiş mi?
+            return taskToFuture(
+                    db.collection("users").document(otherUid)
+                            .collection("friendRequests").whereEqualTo("fromUid", currentUid).limit(1).get()
+            ).thenCompose(sentRequestSnapshot -> {
+                if (!sentRequestSnapshot.isEmpty()) {
+                    return CompletableFuture.completedFuture("REQUEST_SENT");
+                }
+
+                // 3. Diğer kullanıcı istek göndermiş mi? (Gelen kutusu)
+                return taskToFuture(
+                        db.collection("users").document(currentUid)
+                                .collection("friendRequests").whereEqualTo("fromUid", otherUid).limit(1).get()
+                ).thenCompose(receivedRequestSnapshot -> {
+                    if (!receivedRequestSnapshot.isEmpty()) {
+                        return CompletableFuture.completedFuture("REQUEST_RECEIVED");
+                    }
+                    // 4. Hiçbir ilişki yok
+                    return CompletableFuture.completedFuture("NONE");
+                });
+            });
+        });
     }
 
     @Override

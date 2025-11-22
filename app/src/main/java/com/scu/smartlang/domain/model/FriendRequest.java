@@ -10,6 +10,8 @@ public class FriendRequest {
     private String toUid;
     private Status status;
     private Date createdAt;
+    private String senderName;
+    private String senderProfileImageUrl;
 
     public FriendRequest() {}
 
@@ -32,4 +34,20 @@ public class FriendRequest {
     public void setToUid(String toUid) { this.toUid = toUid; }
     public void setStatus(Status status) { this.status = status; }
     public void setCreatedAt(Date createdAt) { this.createdAt = createdAt; }
+
+    public String getSenderName() {
+        return senderName;
+    }
+
+    public void setSenderName(String senderName) {
+        this.senderName = senderName;
+    }
+
+    public String getSenderProfileImageUrl() {
+        return senderProfileImageUrl;
+    }
+
+    public void setSenderProfileImageUrl(String senderProfileImageUrl) {
+        this.senderProfileImageUrl = senderProfileImageUrl;
+    }
 }

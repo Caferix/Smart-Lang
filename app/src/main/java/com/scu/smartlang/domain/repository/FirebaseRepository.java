@@ -34,4 +34,6 @@ public interface FirebaseRepository {
     CompletableFuture<List<User>> getLeaderboard(int limit);
     CompletableFuture<User> getUserById(String uid);
     CompletableFuture<List<User>> searchUsersByName(String query);
+    CompletableFuture<Integer> getUnreadNotificationsCount(String uid);
+    CompletableFuture<String> checkFriendshipStatus(String currentUid, String otherUid);
 }

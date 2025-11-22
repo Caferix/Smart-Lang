@@ -15,6 +15,7 @@ import com.scu.smartlang.domain.usecase.user.AcceptFriendRequestUseCase;
 import com.scu.smartlang.domain.usecase.user.GetCurrentUserProfileUseCase;
 import com.scu.smartlang.domain.usecase.user.GetFriendRequestsUseCase;
 import com.scu.smartlang.domain.usecase.user.GetFriendsUseCase;
+import com.scu.smartlang.domain.usecase.user.GetUnreadNotificationsCountUseCase;
 import com.scu.smartlang.domain.usecase.user.GetUserByIdUseCase;
 import com.scu.smartlang.domain.usecase.user.LoginUserUseCase;
 import com.scu.smartlang.domain.usecase.user.RegisterUserUseCase;
@@ -25,6 +26,7 @@ import com.scu.smartlang.presentation.ui.auth.AuthResultState;
 
 import java.util.List;
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.CompletableFuture;
 
 import javax.inject.Inject;
 import dagger.hilt.android.lifecycle.HiltViewModel;
@@ -51,6 +53,10 @@ public class UserViewModel extends ViewModel {
     private final GetUserByIdUseCase getUserByIdUseCase;
     private final MutableLiveData<User> viewedUser = new MutableLiveData<>();
     private final MutableLiveData<List<User>> searchResults = new MutableLiveData<>();
+    private final GetUnreadNotificationsCountUseCase getUnreadNotificationsCountUseCase;
+    private final MutableLiveData<String> friendshipStatus = new MutableLiveData<>();
+
+
     @Inject
     public UserViewModel(
             FirebaseRepository firebaseRepository, // Inject ediyoruz
@@ -63,7 +69,8 @@ public class UserViewModel extends ViewModel {
             GetFriendRequestsUseCase getFriendRequestsUseCase,
             SendFriendRequestUseCase sendFriendRequestUseCase,
             AcceptFriendRequestUseCase acceptFriendRequestUseCase,
-            GetUserByIdUseCase getUserByIdUseCase
+            GetUserByIdUseCase getUserByIdUseCase,
+            GetUnreadNotificationsCountUseCase getUnreadNotificationsCountUseCase
 
     ) {
         this.firebaseRepository = firebaseRepository;
@@ -77,12 +84,13 @@ public class UserViewModel extends ViewModel {
         this.sendFriendRequestUseCase = sendFriendRequestUseCase;
         this.acceptFriendRequestUseCase = acceptFriendRequestUseCase;
         this.getUserByIdUseCase = getUserByIdUseCase;
+        this.getUnreadNotificationsCountUseCase = getUnreadNotificationsCountUseCase;
     }
 
     public void registerUser(String email, String password, String userName) {
         _authResult.setValue(new AuthResultState.Loading());
         registerUserUseCase.execute(email, password, userName)
-                .thenAccept(user -> signOutUserUseCase.execute()
+                .thenAccept(user -> signOutUserUseCase.execute() // The user is signed out here after creation.
                         .thenRun(() -> _authResult.postValue(new AuthResultState.EmailNotVerified()))
                         .exceptionally(e -> {
                             _authResult.postValue(new AuthResultState.EmailNotVerified());
@@ -132,8 +140,6 @@ public class UserViewModel extends ViewModel {
                     return null;
                 });
     }
-
-    // --- EKSİK OLAN GÜNCELLEME METOTLARI ---
 
     // 1. Profil (İsim vb.) Güncelleme
     public void updateUserProfile(User user) {
@@ -187,6 +193,7 @@ public class UserViewModel extends ViewModel {
 
     public void signOut() {
         signOutUserUseCase.execute();
+        clearAllDataOnSignOut();
     }
 
     public void resendVerificationEmail() {
@@ -209,16 +216,30 @@ public class UserViewModel extends ViewModel {
         getFriendRequestsUseCase.execute(uid).thenAccept(incomingRequests::postValue);
     }
 
-    public void sendFriendRequest(String fromUid, String toUid) {
-        sendFriendRequestUseCase.execute(fromUid, toUid);
+    public CompletableFuture<Void> sendFriendRequest(String fromUid, String toUid) {
+        return sendFriendRequestUseCase.execute(fromUid, toUid);
     }
 
     public void acceptFriendRequest(String requestId, String acceptorUid) {
         acceptFriendRequestUseCase.execute(requestId, acceptorUid)
                 .thenRun(() -> {
-                    // refresh lists after acceptance
                     fetchFriends(acceptorUid);
-                    fetchIncomingRequests(acceptorUid);
+                    fetchIncomingRequests(acceptorUid); // ✅ Listeyi yenile
+                })
+                .exceptionally(e -> {
+                    android.util.Log.e("UserViewModel", "İstek kabul hatası", e);
+                    return null;
+                });
+    }
+
+    public LiveData<String> getFriendshipStatus() { return friendshipStatus; }
+
+    public void checkFriendshipStatus(String currentUid, String otherUid) { // 🆕 YENİ
+        firebaseRepository.checkFriendshipStatus(currentUid, otherUid)
+                .thenAccept(friendshipStatus::postValue)
+                .exceptionally(e -> {
+                    Log.e("UserViewModel", "Friendship status check failed", e);
+                    return null;
                 });
     }
 
@@ -259,10 +280,46 @@ public class UserViewModel extends ViewModel {
             }
         });
     }
+
+    public CompletableFuture<Integer> getUnreadNotificationsCount(String uid) {
+        return getUnreadNotificationsCountUseCase.execute(uid);
+    }
+
+    public CompletableFuture<String> getCurrentUserId() {
+        return firebaseRepository.getCurrentUserId();
+    }
+
+    public CompletableFuture<Void> getIncomingFriendRequests(String uid) {
+        return getFriendRequestsUseCase.execute(uid)
+                .thenAccept(requests -> incomingRequests.postValue(requests));
+    }
+
+    public CompletableFuture<Void> sendFriendRequestAndUpdateStatus(String fromUid, String toUid) {
+        return sendFriendRequestUseCase.execute(fromUid, toUid)
+                .thenCompose(aVoid -> firebaseRepository.checkFriendshipStatus(fromUid, toUid)
+                        .thenAccept(friendshipStatus::postValue));
+    }
     private Throwable getRootCause(Throwable throwable) {
         if (throwable instanceof CancellationException || throwable.getCause() == null) {
             return throwable;
         }
         return throwable.getCause();
+    }
+
+    public void clearAllDataOnSignOut() {
+        _authResult.postValue(null);
+        _userProfile.postValue(null);
+        viewedUser.postValue(null);
+        friends.postValue(new java.util.ArrayList<>());
+        incomingRequests.postValue(new java.util.ArrayList<>());
+        searchResults.postValue(new java.util.ArrayList<>());
+        friendshipStatus.postValue(null);
+    }
+
+    @Override
+    protected void onCleared() {
+        super.onCleared();
+        // ViewModel yok edildiğinde tüm gözlemcileri ve kaynakları temizle
+        Log.d("UserViewModel", "ViewModel cleared.");
     }
 }

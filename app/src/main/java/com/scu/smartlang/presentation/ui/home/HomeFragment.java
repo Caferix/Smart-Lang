@@ -56,6 +56,7 @@ public class HomeFragment extends Fragment {
         super.onResume();
         if (userViewModel != null) {
             userViewModel.fetchUserProfile();
+            refreshNotificationBadge(); // Badge'i güncelle
         }
     }
 
@@ -130,7 +131,16 @@ public class HomeFragment extends Fragment {
         btnStartAi.setOnClickListener(v ->
                 Toast.makeText(getContext(), "AI Asistan ile sohbet yakında!", Toast.LENGTH_SHORT).show());
 
-        ivNotificationIcon.setOnClickListener(v -> Toast.makeText(getContext(), "Bildirimler", Toast.LENGTH_SHORT).show());
+        // Badge güncellemesi için listener
+        ivNotificationIcon.setOnClickListener(v -> {
+            // Arkadaşlık istekleri sayfasına git
+            NavHostFragment.findNavController(this)
+                    .navigate(R.id.action_to_friend_requests);
+        });
+
+        // Badge'i güncelle
+        refreshNotificationBadge();
+
         btnLanguageSelector.setOnClickListener(v -> Toast.makeText(getContext(), "Dil seçimi", Toast.LENGTH_SHORT).show());
     }
 
@@ -168,5 +178,23 @@ public class HomeFragment extends Fragment {
         } else {
             tvNotificationBadge.setVisibility(View.GONE);
         }
+    }
+    private void refreshNotificationBadge() {
+        userViewModel.getCurrentUserId().thenAccept(uid -> {
+            if (uid != null && isAdded()) { // ✅ Fragment kontrolü ekle
+                userViewModel.getUnreadNotificationsCount(uid)
+                        .thenAccept(count -> {
+                            if (isAdded()) { // ✅ Tekrar kontrol
+                                requireActivity().runOnUiThread(() -> {
+                                    updateNotificationBadge(count);
+                                });
+                            }
+                        })
+                        .exceptionally(e -> {
+                            android.util.Log.e("HomeFragment", "Badge güncellenemedi", e);
+                            return null;
+                        });
+            }
+        });
     }
 }
