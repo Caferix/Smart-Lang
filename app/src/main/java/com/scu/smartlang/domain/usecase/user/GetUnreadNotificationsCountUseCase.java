@@ -1,14 +1,16 @@
 package com.scu.smartlang.domain.usecase.user;
 
-import com.scu.smartlang.domain.repository.FirebaseRepository;
+import com.scu.smartlang.domain.repository.UserProfileRepository;
+
 import java.util.concurrent.CompletableFuture;
 import javax.inject.Inject;
 
+
 public class GetUnreadNotificationsCountUseCase {
-    private final FirebaseRepository repository;
+    private final UserProfileRepository repository;
 
     @Inject
-    public GetUnreadNotificationsCountUseCase(FirebaseRepository repository) {
+    public GetUnreadNotificationsCountUseCase(UserProfileRepository repository) {
         this.repository = repository;
     }
 

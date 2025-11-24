@@ -1,16 +1,16 @@
 package com.scu.smartlang.domain.usecase.user;
 
-import com.scu.smartlang.domain.repository.FirebaseRepository;
+import com.scu.smartlang.domain.repository.SocialRepository;
 
 import java.util.concurrent.CompletableFuture;
 
 import javax.inject.Inject;
 
 public class SendFriendRequestUseCase {
-    private final FirebaseRepository repository;
+    private final SocialRepository repository;
 
     @Inject
-    public SendFriendRequestUseCase(FirebaseRepository repository) {
+    public SendFriendRequestUseCase(SocialRepository repository) {
         this.repository = repository;
     }
 

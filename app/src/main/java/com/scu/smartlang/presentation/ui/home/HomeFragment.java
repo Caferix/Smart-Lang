@@ -21,14 +21,16 @@ import com.scu.smartlang.GameActivity;
 import com.scu.smartlang.R;
 import com.scu.smartlang.domain.model.User;
 import com.scu.smartlang.presentation.ui.auth.AuthResultState;
-import com.scu.smartlang.presentation.viewmodel.UserViewModel;
+import com.scu.smartlang.presentation.viewmodel.AuthViewModel;
+import com.scu.smartlang.presentation.viewmodel.ProfileViewModel;
 import com.google.android.material.button.MaterialButton;
 import dagger.hilt.android.AndroidEntryPoint;
+import com.scu.smartlang.presentation.viewmodel.AuthViewModel;
+import com.scu.smartlang.presentation.viewmodel.ProfileViewModel;
 
 @AndroidEntryPoint
 public class HomeFragment extends Fragment {
 
-    private UserViewModel userViewModel;
     private TextView tvWelcomeTitle;
     private TextView tvUserLevelXp;
     private ProgressBar progressXp;
@@ -40,6 +42,8 @@ public class HomeFragment extends Fragment {
     private MaterialButton btnStartAi;         // AI Butonu
     private ImageView ivNotificationIcon;
     private TextView tvNotificationBadge;
+    private ProfileViewModel profileViewModel;
+    private AuthViewModel authViewModel;
 
     private static final String DAILY_LESSON_TITLE = "GÜNLÜK DERSE BAŞLA";
     private static final String DEFAULT_MODULE_PLACEHOLDER = "(Henüz ders atanmadı)";
@@ -54,9 +58,9 @@ public class HomeFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        if (userViewModel != null) {
-            userViewModel.fetchUserProfile();
-            refreshNotificationBadge(); // Badge'i güncelle
+        if (profileViewModel != null) {
+            profileViewModel.fetchUserProfile();
+            profileViewModel.fetchUnreadNotificationsCount(); // Badge'i güncelle
         }
     }
 
@@ -64,7 +68,8 @@ public class HomeFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        userViewModel = new ViewModelProvider(requireActivity()).get(UserViewModel.class);
+        profileViewModel = new ViewModelProvider(requireActivity()).get(ProfileViewModel.class);
+        authViewModel = new ViewModelProvider(requireActivity()).get(AuthViewModel.class);
 
         // View'ları bağla
         tvWelcomeTitle = view.findViewById(R.id.tv_welcome_title);
@@ -81,7 +86,7 @@ public class HomeFragment extends Fragment {
         btnStartGamePuzzle = view.findViewById(R.id.btn_start_game_puzzle);
         btnStartAi = view.findViewById(R.id.btn_start_ai);
 
-        userViewModel.getUserProfile().observe(getViewLifecycleOwner(), authResult -> {
+        profileViewModel.getUserProfile().observe(getViewLifecycleOwner(), authResult -> {
             if (authResult instanceof AuthResultState.Success) {
                 User user = ((AuthResultState.Success) authResult).getUser();
                 updateUiWithUser(user);
@@ -91,7 +96,7 @@ public class HomeFragment extends Fragment {
 
 
         // Kullanıcı Profilini Gözlemle
-        userViewModel.getUserProfile().observe(getViewLifecycleOwner(), authResult -> {
+        profileViewModel.getUserProfile().observe(getViewLifecycleOwner(), authResult -> {
             if (authResult instanceof AuthResultState.Loading) {
                 tvWelcomeTitle.setText("Yükleniyor...");
                 progressXp.setIndeterminate(true);
@@ -138,8 +143,13 @@ public class HomeFragment extends Fragment {
                     .navigate(R.id.action_to_friend_requests);
         });
 
-        // Badge'i güncelle
-        refreshNotificationBadge();
+        ivNotificationIcon.setOnClickListener(v -> {
+            NavHostFragment.findNavController(this).navigate(R.id.action_to_friend_requests);
+        });
+
+        // ilk bildirim sayısını çek
+        profileViewModel.fetchUnreadNotificationsCount();
+
 
         btnLanguageSelector.setOnClickListener(v -> Toast.makeText(getContext(), "Dil seçimi", Toast.LENGTH_SHORT).show());
     }
@@ -178,23 +188,5 @@ public class HomeFragment extends Fragment {
         } else {
             tvNotificationBadge.setVisibility(View.GONE);
         }
-    }
-    private void refreshNotificationBadge() {
-        userViewModel.getCurrentUserId().thenAccept(uid -> {
-            if (uid != null && isAdded()) { // ✅ Fragment kontrolü ekle
-                userViewModel.getUnreadNotificationsCount(uid)
-                        .thenAccept(count -> {
-                            if (isAdded()) { // ✅ Tekrar kontrol
-                                requireActivity().runOnUiThread(() -> {
-                                    updateNotificationBadge(count);
-                                });
-                            }
-                        })
-                        .exceptionally(e -> {
-                            android.util.Log.e("HomeFragment", "Badge güncellenemedi", e);
-                            return null;
-                        });
-            }
-        });
     }
 }

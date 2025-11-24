@@ -1,16 +1,16 @@
 package com.scu.smartlang.presentation.viewmodel;
 
 import android.util.Log;
-
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
-
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.scu.smartlang.domain.model.Friend;
 import com.scu.smartlang.domain.model.FriendRequest;
 import com.scu.smartlang.domain.model.User;
-import com.scu.smartlang.domain.repository.FirebaseRepository; // Repository'yi kullanacağız
+import com.scu.smartlang.domain.repository.AuthRepository;
+import com.scu.smartlang.domain.repository.SocialRepository;
+import com.scu.smartlang.domain.repository.UserProfileRepository;
 import com.scu.smartlang.domain.usecase.user.AcceptFriendRequestUseCase;
 import com.scu.smartlang.domain.usecase.user.GetCurrentUserProfileUseCase;
 import com.scu.smartlang.domain.usecase.user.GetFriendRequestsUseCase;
@@ -23,11 +23,9 @@ import com.scu.smartlang.domain.usecase.user.ResendVerificationEmailUseCase;
 import com.scu.smartlang.domain.usecase.user.SendFriendRequestUseCase;
 import com.scu.smartlang.domain.usecase.user.SignOutUserUseCase;
 import com.scu.smartlang.presentation.ui.auth.AuthResultState;
-
 import java.util.List;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
-
 import javax.inject.Inject;
 import dagger.hilt.android.lifecycle.HiltViewModel;
 
@@ -39,7 +37,9 @@ public class UserViewModel extends ViewModel {
     private final GetCurrentUserProfileUseCase getCurrentUserProfileUseCase;
     private final SignOutUserUseCase signOutUserUseCase;
     private final ResendVerificationEmailUseCase resendVerificationEmailUseCase;
-    private final FirebaseRepository firebaseRepository;
+    private final AuthRepository authRepository;
+    private final UserProfileRepository userProfileRepository;
+    private final SocialRepository socialRepository;
     private final MutableLiveData<AuthResultState> _authResult = new MutableLiveData<>();
     public LiveData<AuthResultState> getAuthResult() { return _authResult; }
     private final MutableLiveData<AuthResultState> _userProfile = new MutableLiveData<>();
@@ -59,7 +59,9 @@ public class UserViewModel extends ViewModel {
 
     @Inject
     public UserViewModel(
-            FirebaseRepository firebaseRepository, // Inject ediyoruz
+            AuthRepository authRepository,
+            UserProfileRepository userProfileRepository,
+            SocialRepository socialRepository,
             RegisterUserUseCase registerUserUseCase,
             LoginUserUseCase loginUserUseCase,
             GetCurrentUserProfileUseCase getCurrentUserProfileUseCase,
@@ -71,9 +73,10 @@ public class UserViewModel extends ViewModel {
             AcceptFriendRequestUseCase acceptFriendRequestUseCase,
             GetUserByIdUseCase getUserByIdUseCase,
             GetUnreadNotificationsCountUseCase getUnreadNotificationsCountUseCase
-
     ) {
-        this.firebaseRepository = firebaseRepository;
+        this.authRepository = authRepository;
+        this.userProfileRepository = userProfileRepository;
+        this.socialRepository = socialRepository;
         this.registerUserUseCase = registerUserUseCase;
         this.loginUserUseCase = loginUserUseCase;
         this.getCurrentUserProfileUseCase = getCurrentUserProfileUseCase;
@@ -141,11 +144,9 @@ public class UserViewModel extends ViewModel {
                 });
     }
 
-    // 1. Profil (İsim vb.) Güncelleme
     public void updateUserProfile(User user) {
-        firebaseRepository.updateUserProfile(user)
+        userProfileRepository.updateUserProfile(user)
                 .thenRun(() -> {
-                    // Başarılı olursa yerel veriyi güncelle
                     _userProfile.postValue(new AuthResultState.Success(user));
                 })
                 .exceptionally(throwable -> {
@@ -154,33 +155,25 @@ public class UserViewModel extends ViewModel {
                 });
     }
 
-    // 2. Oyun İlerlemesi (XP/Level) Güncelleme
     public void updateUserProgress(int newLevel, int xpInNewLevel) {
-        // Mevcut kullanıcıyı al
         AuthResultState state = _userProfile.getValue();
         if (state instanceof AuthResultState.Success) {
             User currentUser = ((AuthResultState.Success) state).getUser();
             if (currentUser != null) {
                 currentUser.setLevel(newLevel);
                 currentUser.setXp(xpInNewLevel);
-
-                // Repository üzerinden güncelle (Clean Architecture)
                 updateUserProfile(currentUser);
             }
         }
     }
     public void updateUserName(String newName) {
-        // Mevcut kullanıcıyı al
         AuthResultState state = _userProfile.getValue();
         if (state instanceof AuthResultState.Success) {
             User currentUser = ((AuthResultState.Success) state).getUser();
             if (currentUser != null) {
                 currentUser.setUserName(newName);
-
-                // Repository üzerinden güncelleme
-                firebaseRepository.updateUserProfile(currentUser)
+                userProfileRepository.updateUserProfile(currentUser)
                         .thenRun(() -> {
-                            // Başarılı olursa yerel veriyi ve UI'ı güncelle
                             _userProfile.postValue(new AuthResultState.Success(currentUser));
                         })
                         .exceptionally(throwable -> {
@@ -224,7 +217,7 @@ public class UserViewModel extends ViewModel {
         acceptFriendRequestUseCase.execute(requestId, acceptorUid)
                 .thenRun(() -> {
                     fetchFriends(acceptorUid);
-                    fetchIncomingRequests(acceptorUid); // ✅ Listeyi yenile
+                    fetchIncomingRequests(acceptorUid);
                 })
                 .exceptionally(e -> {
                     android.util.Log.e("UserViewModel", "İstek kabul hatası", e);
@@ -234,8 +227,8 @@ public class UserViewModel extends ViewModel {
 
     public LiveData<String> getFriendshipStatus() { return friendshipStatus; }
 
-    public void checkFriendshipStatus(String currentUid, String otherUid) { // 🆕 YENİ
-        firebaseRepository.checkFriendshipStatus(currentUid, otherUid)
+    public void checkFriendshipStatus(String currentUid, String otherUid) {
+        socialRepository.checkFriendshipStatus(currentUid, otherUid)
                 .thenAccept(friendshipStatus::postValue)
                 .exceptionally(e -> {
                     Log.e("UserViewModel", "Friendship status check failed", e);
@@ -263,13 +256,13 @@ public class UserViewModel extends ViewModel {
     }
 
     public void searchUsers(String query) {
-        firebaseRepository.searchUsersByName(query).thenAccept(users -> {
+        socialRepository.searchUsersByName(query).thenAccept(users -> {
             searchResults.postValue(users);
         });
     }
 
     public void clearNotificationBadge() {
-        firebaseRepository.getCurrentUserId().thenAccept(uid -> {
+        authRepository.getCurrentUserId().thenAccept(uid -> {
             if (uid != null) {
                 FirebaseFirestore.getInstance()
                         .collection("users")
@@ -286,7 +279,7 @@ public class UserViewModel extends ViewModel {
     }
 
     public CompletableFuture<String> getCurrentUserId() {
-        return firebaseRepository.getCurrentUserId();
+        return authRepository.getCurrentUserId();
     }
 
     public CompletableFuture<Void> getIncomingFriendRequests(String uid) {
@@ -296,7 +289,7 @@ public class UserViewModel extends ViewModel {
 
     public CompletableFuture<Void> sendFriendRequestAndUpdateStatus(String fromUid, String toUid) {
         return sendFriendRequestUseCase.execute(fromUid, toUid)
-                .thenCompose(aVoid -> firebaseRepository.checkFriendshipStatus(fromUid, toUid)
+                .thenCompose(aVoid -> socialRepository.checkFriendshipStatus(fromUid, toUid)
                         .thenAccept(friendshipStatus::postValue));
     }
     private Throwable getRootCause(Throwable throwable) {
@@ -319,7 +312,6 @@ public class UserViewModel extends ViewModel {
     @Override
     protected void onCleared() {
         super.onCleared();
-        // ViewModel yok edildiğinde tüm gözlemcileri ve kaynakları temizle
         Log.d("UserViewModel", "ViewModel cleared.");
     }
 }
