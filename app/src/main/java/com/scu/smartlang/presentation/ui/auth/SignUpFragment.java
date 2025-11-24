@@ -14,7 +14,8 @@ import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 
 import com.scu.smartlang.R;
-import com.scu.smartlang.presentation.viewmodel.UserViewModel;
+import com.scu.smartlang.presentation.viewmodel.AuthViewModel;
+import com.scu.smartlang.presentation.viewmodel.ProfileViewModel;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 
@@ -24,7 +25,8 @@ import dagger.hilt.android.AndroidEntryPoint;
 @AndroidEntryPoint
 public class SignUpFragment extends Fragment {
 
-    private UserViewModel userViewModel;
+    private ProfileViewModel profileViewModel;
+    private AuthViewModel authViewModel;
     private TextInputEditText etUsername;
     private TextInputEditText etEmail;
     private TextInputEditText etPassword;
@@ -43,8 +45,8 @@ public class SignUpFragment extends Fragment {
 
         navController = NavHostFragment.findNavController(this); // NavController başlatıldı
 
-        userViewModel = new ViewModelProvider(this).get(UserViewModel.class);
-
+        profileViewModel = new ViewModelProvider(this).get(ProfileViewModel.class);
+        authViewModel = new ViewModelProvider(this).get(AuthViewModel.class);
 
         etUsername = view.findViewById(R.id.et_username_signup);
         etEmail = view.findViewById(R.id.et_email_signup);
@@ -61,13 +63,13 @@ public class SignUpFragment extends Fragment {
                 Toast.makeText(getContext(), "Lütfen tüm alanları doldurun", Toast.LENGTH_SHORT).show();
             } else {
 
-                userViewModel.registerUser(email, password, userName);
+                authViewModel.registerUser(email, password, userName);
                 if (btnSignUp != null) btnSignUp.setEnabled(false); // Kayıt başlatıldığında butonu pasifleştir.
             }
         });
 
 
-        userViewModel.getAuthResult().observe(getViewLifecycleOwner(), authResult -> {
+        authViewModel.getAuthResult().observe(getViewLifecycleOwner(), authResult -> {
             // Observer tetiklendiğinde butonu tekrar etkinleştir (Loading dışındaki her durum için)
             if (!(authResult instanceof AuthResultState.Loading) && btnSignUp != null) {
                 btnSignUp.setEnabled(true);

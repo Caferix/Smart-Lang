@@ -20,7 +20,8 @@ import androidx.navigation.NavOptions;
 import androidx.navigation.fragment.NavHostFragment;
 
 import com.scu.smartlang.R;
-import com.scu.smartlang.presentation.viewmodel.UserViewModel;
+import com.scu.smartlang.presentation.viewmodel.AuthViewModel;
+import com.scu.smartlang.presentation.viewmodel.ProfileViewModel;
 
 import dagger.hilt.android.AndroidEntryPoint;
 
@@ -28,7 +29,8 @@ import dagger.hilt.android.AndroidEntryPoint;
 public class SignInFragment extends Fragment {
 
     private static final String TAG = "SignInFragment";
-    private UserViewModel userViewModel;
+    private ProfileViewModel profileViewModel;
+    private AuthViewModel authViewModel;
     private NavController navController;
     private EditText etEmail, etPassword;
     private Button btnSignIn, btnGoToSignUp;
@@ -49,8 +51,8 @@ public class SignInFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         navController = NavHostFragment.findNavController(this);
-        userViewModel = new ViewModelProvider(requireActivity()).get(UserViewModel.class);
-
+        profileViewModel = new ViewModelProvider(requireActivity()).get(ProfileViewModel.class);
+        authViewModel = new ViewModelProvider(this).get(AuthViewModel.class);
         // UI Elemanlarının Tanımlanması
         etEmail = view.findViewById(R.id.et_email);
         etPassword = view.findViewById(R.id.et_password);
@@ -67,7 +69,7 @@ public class SignInFragment extends Fragment {
         // hemen ve koşulsuz olarak temizle. Bu, observerın sadece kullanıcının
         // Giriş yap butonuna bastıktan sonraki yeni durumları görmesini sağlar.
         Log.d(TAG, "Zorunlu Temizleme: SignInFragment yüklendi, AuthResult durumu sıfırlanıyor.");
-        userViewModel.clearAuthResultState();
+        authViewModel.clearAuthResultState();
         // TEMİZLEME SONU
 
 
@@ -75,10 +77,10 @@ public class SignInFragment extends Fragment {
         setLoadingState(true, true);
 
         // OTURUM KONTROLÜ
-        userViewModel.fetchUserProfile();
+        profileViewModel.fetchUserProfile();
 
         // Açılışta Oturum Kontrolü Sonucunu Dinle (Sadece oturum var mı/doğrulanmış mı kontrolü)
-        userViewModel.getUserProfile().observe(getViewLifecycleOwner(), authResult -> {
+        profileViewModel.getUserProfile().observe(getViewLifecycleOwner(), authResult -> {
             // If initial loading message is visible, ignore Loading state as before
             if (authResult instanceof AuthResultState.Loading && tvInitialLoading.getVisibility() == View.VISIBLE) {
                 return;
@@ -111,7 +113,7 @@ public class SignInFragment extends Fragment {
         });
 
         // Manuel Giriş/Kayıt Sonuçlarını Dinle (loginUser()'dan gelen)
-        userViewModel.getAuthResult().observe(getViewLifecycleOwner(), authResult -> {
+        authViewModel.getAuthResult().observe(getViewLifecycleOwner(), authResult -> {
             // Temizleme sinyalini (null) yakala. Bu, manuel clearAuthResultState() çağrımızdan sonraki durumdur.
             if (authResult == null) {
                 isManualSignIn = false;
@@ -171,7 +173,7 @@ public class SignInFragment extends Fragment {
         // E-posta Tekrar Gönderme
         if (btnResendEmail != null) {
             btnResendEmail.setOnClickListener(v -> {
-                userViewModel.resendVerificationEmail();
+                authViewModel.resendVerificationEmail();
             });
         }
 
@@ -189,7 +191,7 @@ public class SignInFragment extends Fragment {
             // Giriş denemesi başladığında hata metnini kapat.
             tvError.setVisibility(View.GONE);
 
-            userViewModel.loginUser(email, password);
+            authViewModel.loginUser(email, password);
         });
 
         btnGoToSignUp.setOnClickListener(v -> {

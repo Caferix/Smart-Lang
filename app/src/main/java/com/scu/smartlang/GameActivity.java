@@ -8,13 +8,11 @@ import androidx.lifecycle.ViewModelProvider;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ObjectAnimator;
-import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -27,13 +25,10 @@ import com.scu.smartlang.domain.model.User;
 import com.scu.smartlang.domain.model.Word;
 import com.scu.smartlang.presentation.ui.auth.AuthResultState;
 import com.scu.smartlang.presentation.viewmodel.ProfileViewModel;
-import com.scu.smartlang.presentation.viewmodel.UserViewModel;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
 
 import dagger.hilt.android.AndroidEntryPoint;
 

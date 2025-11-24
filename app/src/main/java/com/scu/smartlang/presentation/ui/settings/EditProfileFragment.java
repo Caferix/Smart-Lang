@@ -16,7 +16,7 @@ import com.scu.smartlang.R;
 import com.scu.smartlang.domain.model.User;
 import com.scu.smartlang.presentation.ui.auth.AuthResultState;
 import com.scu.smartlang.presentation.viewmodel.ProfileViewModel;
-import com.scu.smartlang.presentation.viewmodel.UserViewModel;
+
 import dagger.hilt.android.AndroidEntryPoint;
 
 @AndroidEntryPoint

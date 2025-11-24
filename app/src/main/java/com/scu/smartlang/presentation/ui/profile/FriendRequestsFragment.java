@@ -15,14 +15,14 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.scu.smartlang.R;
-import com.scu.smartlang.presentation.viewmodel.UserViewModel;
+import com.scu.smartlang.presentation.viewmodel.SocialViewModel;
 
 import dagger.hilt.android.AndroidEntryPoint;
 
 @AndroidEntryPoint
 public class FriendRequestsFragment extends Fragment implements FriendRequestsAdapter.OnRequestActionListener {
 
-    private UserViewModel userViewModel;
+    private SocialViewModel socialViewModel;
     private RecyclerView recyclerView;
     private FriendRequestsAdapter adapter;
 
@@ -36,7 +36,7 @@ public class FriendRequestsFragment extends Fragment implements FriendRequestsAd
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        userViewModel = new ViewModelProvider(requireActivity()).get(UserViewModel.class);
+        socialViewModel = new ViewModelProvider(requireActivity()).get(SocialViewModel.class);
 
         recyclerView = view.findViewById(R.id.rv_friend_requests);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -45,7 +45,7 @@ public class FriendRequestsFragment extends Fragment implements FriendRequestsAd
         recyclerView.setAdapter(adapter);
 
         // LiveData ile istekleri gözlemle
-        userViewModel.getIncomingRequests().observe(getViewLifecycleOwner(), requests -> {
+        socialViewModel.getIncomingRequests().observe(getViewLifecycleOwner(), requests -> {
             if (requests != null) {
                 adapter.updateList(requests);
             }
@@ -55,18 +55,18 @@ public class FriendRequestsFragment extends Fragment implements FriendRequestsAd
     }
 
     private void loadRequests() {
-        userViewModel.getCurrentUserId().thenAccept(uid -> {
+        socialViewModel.getCurrentUserId().thenAccept(uid -> {
             if (uid != null) {
-                userViewModel.fetchIncomingRequests(uid);
+                socialViewModel.fetchIncomingRequests(uid);
             }
         });
     }
 
     @Override
     public void onAccept(String requestId) {
-        userViewModel.getCurrentUserId().thenAccept(uid -> {
+        socialViewModel.getCurrentUserId().thenAccept(uid -> {
             if (uid != null) {
-                userViewModel.acceptFriendRequest(requestId, uid);
+                socialViewModel.acceptFriendRequest(requestId, uid);
                 Toast.makeText(getContext(), "İstek kabul edildi", Toast.LENGTH_SHORT).show();
                 loadRequests(); // Listeyi yenile
             }

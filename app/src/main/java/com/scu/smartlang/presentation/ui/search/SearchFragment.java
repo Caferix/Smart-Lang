@@ -17,7 +17,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.textfield.TextInputEditText;
 import com.scu.smartlang.R;
-import com.scu.smartlang.presentation.viewmodel.UserViewModel;
+import com.scu.smartlang.presentation.viewmodel.SocialViewModel;
 
 import java.util.ArrayList;
 
@@ -26,7 +26,7 @@ import dagger.hilt.android.AndroidEntryPoint;
 @AndroidEntryPoint
 public class SearchFragment extends Fragment {
 
-    private UserViewModel userViewModel;
+    private SocialViewModel socialViewModel;
     private TextInputEditText etSearch;
     private RecyclerView rvResults;
     private SearchResultAdapter adapter;
@@ -41,7 +41,7 @@ public class SearchFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        userViewModel = new ViewModelProvider(this).get(UserViewModel.class);
+        socialViewModel = new ViewModelProvider(this).get(SocialViewModel.class);
 
         etSearch = view.findViewById(R.id.et_search);
         rvResults = view.findViewById(R.id.rv_search_results);
@@ -64,7 +64,7 @@ public class SearchFragment extends Fragment {
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 if (s.length() >= 2) {
-                    userViewModel.searchUsers(s.toString());
+                    socialViewModel.searchUsers(s.toString());
                 } else {
                     adapter.updateList(new ArrayList<>());
                 }
@@ -74,7 +74,7 @@ public class SearchFragment extends Fragment {
             public void afterTextChanged(Editable s) {}
         });
 
-        userViewModel.getSearchResults().observe(getViewLifecycleOwner(), users -> {
+        socialViewModel.getSearchResults().observe(getViewLifecycleOwner(), users -> {
             if (users != null) {
                 adapter.updateList(users);
             }

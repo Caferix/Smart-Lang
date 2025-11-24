@@ -2,8 +2,6 @@
 package com.scu.smartlang.presentation.ui.profile;
 
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,18 +21,17 @@ import com.scu.smartlang.R;
 import com.scu.smartlang.domain.model.Friend;
 import com.scu.smartlang.domain.model.User;
 import com.scu.smartlang.presentation.ui.auth.AuthResultState;
-import com.scu.smartlang.presentation.viewmodel.UserViewModel;
+import com.scu.smartlang.presentation.viewmodel.ProfileViewModel;
+import com.scu.smartlang.presentation.viewmodel.SocialViewModel;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 import dagger.hilt.android.AndroidEntryPoint;
 
 @AndroidEntryPoint
 public class ProfileFragment extends Fragment {
 
-    private UserViewModel userViewModel;
 
     private TextView tvName;
     private TextView tvLevelLabel;
@@ -48,6 +45,8 @@ public class ProfileFragment extends Fragment {
     private String viewUserId = null;
     private String currentUid = null;
     private boolean isMyProfile = false;
+    private SocialViewModel socialViewModel;
+    private ProfileViewModel profileViewModel;
 
     @Override
     public View onCreateView(
@@ -65,7 +64,8 @@ public class ProfileFragment extends Fragment {
     ) {
         super.onViewCreated(view, savedInstanceState);
 
-        userViewModel = new ViewModelProvider(requireActivity()).get(UserViewModel.class);
+        socialViewModel = new ViewModelProvider(requireActivity()).get(SocialViewModel.class);
+        profileViewModel = new ViewModelProvider(requireActivity()).get(ProfileViewModel.class);
 
         setupViews(view);
 
@@ -73,7 +73,7 @@ public class ProfileFragment extends Fragment {
             viewUserId = getArguments().getString("userId");
         }
 
-        userViewModel.getCurrentUserId().thenAccept(uid -> {
+        socialViewModel.getCurrentUserId().thenAccept(uid -> {
             currentUid = uid;
             if (!isAdded()) return;
             requireActivity().runOnUiThread(this::setupProfileView);
@@ -100,41 +100,41 @@ public class ProfileFragment extends Fragment {
 
         if (isMyProfile) {
             btnSendFriendRequest.setVisibility(View.GONE);
-            userViewModel.fetchUserProfile();
+            profileViewModel.fetchUserProfile();
             if (currentUid != null) {
-                userViewModel.fetchFriends(currentUid);
+                socialViewModel.fetchFriends(currentUid);
             }
         } else {
             btnSendFriendRequest.setVisibility(View.VISIBLE);
             btnSendFriendRequest.setOnClickListener(v -> sendFriendRequest());
-            userViewModel.fetchUserById(viewUserId);
-            userViewModel.fetchFriends(viewUserId);
+            socialViewModel.fetchUserById(viewUserId);
+            socialViewModel.fetchFriends(viewUserId);
             if (currentUid != null) {
-                userViewModel.checkFriendshipStatus(currentUid, viewUserId);
+                socialViewModel.checkFriendshipStatus(currentUid, viewUserId);
             }
         }
     }
 
     private void observeViewModel() {
         if (isMyProfile) {
-            userViewModel.getUserProfile().observe(getViewLifecycleOwner(), state -> {
+            profileViewModel.getUserProfile().observe(getViewLifecycleOwner(), state -> {
                 if (state instanceof AuthResultState.Success) {
                     User user = ((AuthResultState.Success) state).getUser();
                     updateUi(user);
                 }
             });
         } else {
-            userViewModel.getViewedUser().observe(getViewLifecycleOwner(), user -> {
+            socialViewModel.getViewedUser().observe(getViewLifecycleOwner(), user -> {
                 if (user != null) updateUi(user);
             });
 
-            userViewModel.getFriendshipStatus().observe(
+            socialViewModel.getFriendshipStatus().observe(
                     getViewLifecycleOwner(),
                     this::updateFriendRequestButton
             );
         }
 
-        userViewModel.getFriends().observe(getViewLifecycleOwner(), friends -> {
+        socialViewModel.getFriends().observe(getViewLifecycleOwner(), friends -> {
             if (friends == null) return;
             List<FriendsAdapter.FriendModel> models = new ArrayList<>();
             for (Friend f : friends) {
@@ -204,33 +204,12 @@ public class ProfileFragment extends Fragment {
         }
     }
 
-    private void sendFriendRequest(){
-        if (currentUid == null || viewUserId == null || currentUid.equals(viewUserId)) return;
-
-        btnSendFriendRequest.setEnabled(false);
-        btnSendFriendRequest.setText("Gönderiliyor...");
-
-        userViewModel.sendFriendRequestAndUpdateStatus(currentUid, viewUserId)
-                .exceptionally(throwable -> {
-                    if (isAdded()) {
-                        requireActivity().runOnUiThread(() -> {
-                            // Tam hata mesajını logla
-                            android.util.Log.e("ProfileFragment", "Friend request failed", throwable);
-
-                            // Root cause'u al
-                            Throwable cause = throwable;
-                            while (cause.getCause() != null) {
-                                cause = cause.getCause();
-                            }
-
-                            String errorMsg = cause.getMessage() != null ? cause.getMessage() : "Bilinmeyen hata";
-                            Toast.makeText(getContext(), "Hata: " + errorMsg, Toast.LENGTH_LONG).show();
-
-                            updateFriendRequestButton("NONE");
-                        });
-                    }
-                    return null;
-                });
+    private void sendFriendRequest() {
+        if (currentUid != null && viewUserId != null) {
+            socialViewModel.sendFriendRequest(currentUid, viewUserId);
+            Toast.makeText(getContext(), "Arkadaşlık isteği gönderildi.", Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(getContext(), "İstek gönderilemedi. Lütfen tekrar deneyin.", Toast.LENGTH_SHORT).show();
+        }
     }
-
 }
