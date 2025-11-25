@@ -8,13 +8,11 @@ import androidx.lifecycle.ViewModelProvider;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.ObjectAnimator;
-import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -26,13 +24,11 @@ import com.google.android.material.button.MaterialButton;
 import com.scu.smartlang.domain.model.User;
 import com.scu.smartlang.domain.model.Word;
 import com.scu.smartlang.presentation.ui.auth.AuthResultState;
-import com.scu.smartlang.presentation.viewmodel.UserViewModel;
+import com.scu.smartlang.presentation.viewmodel.ProfileViewModel;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
 
 import dagger.hilt.android.AndroidEntryPoint;
 
@@ -40,7 +36,7 @@ import dagger.hilt.android.AndroidEntryPoint;
 public class GameActivity extends AppCompatActivity {
 
     // --- UI ve ViewModel Değişkenleri ---
-    private UserViewModel userViewModel;
+    private ProfileViewModel profileViewModel;
     private TextView tvGameUserLevel, tvGameUserXp;
     private ImageView correctFeedback, wrongFeedback;
     private LinearLayout englishWordsColumn, turkishWordsColumn;
@@ -74,7 +70,7 @@ public class GameActivity extends AppCompatActivity {
 
         initializeViews();
         setupListeners();
-        userViewModel.fetchUserProfile();
+        profileViewModel.fetchUserProfile();
         setupUserProfileObserver();
 
         startNewRound();
@@ -87,7 +83,7 @@ public class GameActivity extends AppCompatActivity {
     }
 
     private void initializeViews() {
-        userViewModel = new ViewModelProvider(this).get(UserViewModel.class);
+        profileViewModel = new ViewModelProvider(this).get(ProfileViewModel.class);
         englishWordsColumn = findViewById(R.id.english_words_column);
         turkishWordsColumn = findViewById(R.id.turkish_words_column);
         tvGameUserLevel = findViewById(R.id.tv_game_user_level);
@@ -123,7 +119,7 @@ public class GameActivity extends AppCompatActivity {
     }
 
     private void setupUserProfileObserver() {
-        userViewModel.getUserProfile().observe(this, authResult -> {
+        profileViewModel.getUserProfile().observe(this, authResult -> {
             if (authResult instanceof AuthResultState.Success) {
                 currentUser = ((AuthResultState.Success) authResult).getUser();
                 if (currentUser != null) {
@@ -225,7 +221,7 @@ public class GameActivity extends AppCompatActivity {
 
     private void saveProgress() {
         if (currentUser == null || sessionXpGain == 0) return;
-        userViewModel.updateUserProgress(currentUser.getLevel(), currentUser.getXp());
+        profileViewModel.updateUserProfile(currentUser);
     }
 
     private void populateButtons() {

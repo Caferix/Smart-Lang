@@ -28,7 +28,7 @@ import com.google.android.material.button.MaterialButton;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.scu.smartlang.R;
 import com.scu.smartlang.notifications.AlarmScheduler;
-import com.scu.smartlang.presentation.viewmodel.UserViewModel;
+import com.scu.smartlang.presentation.viewmodel.AuthViewModel;
 import dagger.hilt.android.AndroidEntryPoint;
 
 import java.util.Locale;
@@ -36,7 +36,7 @@ import java.util.Locale;
 @AndroidEntryPoint
 public class SettingsFragment extends Fragment {
 
-    private UserViewModel userViewModel;
+    private AuthViewModel authViewModel;
     private MaterialButton btnEditProfile, btnChangePassword, btnSignOut;
     private SwitchMaterial switchDarkMode, switchNotifications;
     private LinearLayout layoutStartTime, layoutEndTime;
@@ -83,7 +83,7 @@ public class SettingsFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        userViewModel = new ViewModelProvider(this).get(UserViewModel.class);
+        authViewModel = new ViewModelProvider(this).get(AuthViewModel.class);
         SharedPreferences prefs = requireActivity().getSharedPreferences(PREFS_NAME, android.content.Context.MODE_PRIVATE);
         NavController navController = NavHostFragment.findNavController(this);
 
@@ -172,7 +172,7 @@ public class SettingsFragment extends Fragment {
 
         // Çıkış Yap
         btnSignOut.setOnClickListener(v -> {
-            userViewModel.signOut();
+            authViewModel.signOut();
             NavOptions navOptions = new NavOptions.Builder().setPopUpTo(R.id.main_nav_graph, true).build();
             navController.navigate(R.id.signInFragment, null, navOptions);
         });

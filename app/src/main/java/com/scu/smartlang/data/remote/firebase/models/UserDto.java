@@ -13,6 +13,7 @@ public class UserDto {
     private int level;
     private String profileImageUrl;
     private UserStatsDto stats;
+    private int unreadNotifications = 0;
 
     @ServerTimestamp
     private Date createdAt;
@@ -22,7 +23,7 @@ public class UserDto {
 
     // Tam kurucu metot
     public UserDto(String uid, String userName, String email, boolean emailVerified, int xp,
-                   int level, String profileImageUrl, Date createdAt, UserStatsDto stats) {
+                   int level, String profileImageUrl, Date createdAt, UserStatsDto stats, int unreadNotifications) {
         this.uid = uid;
         this.userName = userName;
         this.email = email;
@@ -32,6 +33,7 @@ public class UserDto {
         this.profileImageUrl = profileImageUrl;
         this.createdAt = createdAt;
         this.stats = stats;
+        this.unreadNotifications = unreadNotifications;
     }
 
     // Getters and Setters
@@ -62,4 +64,6 @@ public class UserDto {
 
     public UserStatsDto getStats() { return stats; }
     public void setStats(UserStatsDto stats) { this.stats = stats; }
+    public int getUnreadNotifications() { return unreadNotifications; }
+    public void setUnreadNotifications(int unreadNotifications) { this.unreadNotifications = unreadNotifications; }
 }
