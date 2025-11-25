@@ -15,13 +15,13 @@ import com.google.android.material.button.MaterialButton;
 import com.scu.smartlang.R;
 import com.scu.smartlang.domain.model.User;
 import com.scu.smartlang.presentation.ui.auth.AuthResultState;
-import com.scu.smartlang.presentation.viewmodel.UserViewModel;
+import com.scu.smartlang.presentation.viewmodel.ProfileViewModel;
+
 import dagger.hilt.android.AndroidEntryPoint;
 
 @AndroidEntryPoint
 public class EditProfileFragment extends Fragment {
-
-    private UserViewModel userViewModel;
+    private ProfileViewModel profileViewModel;
     private EditText etUsername;
     private MaterialButton btnSave;
     private User currentUser;
@@ -35,7 +35,7 @@ public class EditProfileFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        userViewModel = new ViewModelProvider(this).get(UserViewModel.class);
+        profileViewModel = new ViewModelProvider(this).get(ProfileViewModel.class);
 
         etUsername = view.findViewById(R.id.et_username);
         btnSave = view.findViewById(R.id.btn_save);
@@ -47,7 +47,7 @@ public class EditProfileFragment extends Fragment {
 
     private void loadUserData() {
         // Mevcut kullanıcı verisini çek ve EditText'e yaz
-        userViewModel.getUserProfile().observe(getViewLifecycleOwner(), state -> {
+        profileViewModel.getUserProfile().observe(getViewLifecycleOwner(), state -> {
             if (state instanceof AuthResultState.Success) {
                 currentUser = ((AuthResultState.Success) state).getUser();
                 // Kullanıcı adı daha önce set edilmediyse, veritabanından gelen değeri set et
@@ -56,7 +56,7 @@ public class EditProfileFragment extends Fragment {
                 }
             }
         });
-        userViewModel.fetchUserProfile();
+        profileViewModel.fetchUserProfile();
     }
 
     private void saveChanges(View view) {
@@ -69,7 +69,8 @@ public class EditProfileFragment extends Fragment {
 
         if (currentUser != null) {
             // Sadece ismi güncelle
-            userViewModel.updateUserName(newName);
+            currentUser.setUserName(newName);
+            profileViewModel.updateUserProfile(currentUser);
             Toast.makeText(getContext(), "Profil başarıyla güncellendi!", Toast.LENGTH_SHORT).show();
             // Kayıttan sonra bir önceki ekrana (Ayarlar) dön
             Navigation.findNavController(view).navigateUp();

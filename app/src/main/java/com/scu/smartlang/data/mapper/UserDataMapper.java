@@ -22,7 +22,8 @@ public class UserDataMapper {
                     domainUser.getLevel(),
                     domainUser.getProfileImageUrl(),
                     domainUser.getCreatedAt(),
-                    domainUser.getStats() != null ? null : null
+                    domainUser.getStats() != null ? null : null,
+                    domainUser.getUnreadNotifications()
             );
         }
     }
@@ -40,7 +41,8 @@ public class UserDataMapper {
                     userDto.getLevel(),
                     userDto.getProfileImageUrl(),
                     userDto.getCreatedAt(),
-                    userDto.getStats() != null ? null : null
+                    userDto.getStats() != null ? null : null,
+                    userDto.getUnreadNotifications()
             );
         }
     }

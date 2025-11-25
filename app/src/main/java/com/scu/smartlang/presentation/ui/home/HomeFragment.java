@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -20,25 +21,33 @@ import com.scu.smartlang.GameActivity;
 import com.scu.smartlang.R;
 import com.scu.smartlang.domain.model.User;
 import com.scu.smartlang.presentation.ui.auth.AuthResultState;
-import com.scu.smartlang.presentation.viewmodel.UserViewModel;
+import com.scu.smartlang.presentation.viewmodel.AuthViewModel;
+import com.scu.smartlang.presentation.viewmodel.ProfileViewModel;
 import com.google.android.material.button.MaterialButton;
 import dagger.hilt.android.AndroidEntryPoint;
+import com.scu.smartlang.presentation.viewmodel.AuthViewModel;
+import com.scu.smartlang.presentation.viewmodel.ProfileViewModel;
 
 @AndroidEntryPoint
 public class HomeFragment extends Fragment {
 
-    private UserViewModel userViewModel;
     private TextView tvWelcomeTitle;
     private TextView tvUserLevelXp;
     private ProgressBar progressXp;
     private TextView tvStreakCount;
     private MaterialButton btnStartDailyLesson;
-    private MaterialButton btnStartGameMatch;
-    private MaterialButton btnStartGamePuzzle;
-    private MaterialButton btnStartAi;
+    private MaterialButton btnLanguageSelector;
+    private MaterialButton btnStartGameMatch; // Kelime Eşleştirme
+    private MaterialButton btnStartGamePuzzle; // Kelime Bulmaca
+    private MaterialButton btnStartAi;         // AI Butonu
+    private ImageView ivNotificationIcon;
+    private TextView tvNotificationBadge;
+    private ProfileViewModel profileViewModel;
+    private AuthViewModel authViewModel;
 
     private static final String DAILY_LESSON_TITLE = "GÜNLÜK DERSE BAŞLA";
-    private static final String DEFAULT_MODULE_PLACEHOLDER = "(Temel Zamirler)"; // Placeholder metni düzelttim
+    private static final String DEFAULT_MODULE_PLACEHOLDER = "(Henüz ders atanmadı)";
+
 
     @Nullable
     @Override
@@ -49,8 +58,9 @@ public class HomeFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        if (userViewModel != null) {
-            userViewModel.fetchUserProfile();
+        if (profileViewModel != null) {
+            profileViewModel.fetchUserProfile();
+            profileViewModel.fetchUnreadNotificationsCount(); // Badge'i güncelle
         }
     }
 
@@ -58,7 +68,8 @@ public class HomeFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        userViewModel = new ViewModelProvider(requireActivity()).get(UserViewModel.class);
+        profileViewModel = new ViewModelProvider(requireActivity()).get(ProfileViewModel.class);
+        authViewModel = new ViewModelProvider(requireActivity()).get(AuthViewModel.class);
 
         // View'ları bağla
         tvWelcomeTitle = view.findViewById(R.id.tv_welcome_title);
@@ -66,29 +77,43 @@ public class HomeFragment extends Fragment {
         progressXp = view.findViewById(R.id.progress_xp);
         tvStreakCount = view.findViewById(R.id.tv_streak_count);
         btnStartDailyLesson = view.findViewById(R.id.btn_start_daily_lesson);
+        ivNotificationIcon = view.findViewById(R.id.iv_notification_icon);
+        btnLanguageSelector = view.findViewById(R.id.btn_language_selector);
+        tvNotificationBadge = view.findViewById(R.id.tv_notification_badge);
 
-        // Kaldırılan view'ların tanımları silindi (Notification, Language, Courses)
-
+        // Yeni Butonlar
         btnStartGameMatch = view.findViewById(R.id.btn_start_game_match);
         btnStartGamePuzzle = view.findViewById(R.id.btn_start_game_puzzle);
         btnStartAi = view.findViewById(R.id.btn_start_ai);
 
+
         // Kullanıcı Profilini Gözlemle
-        userViewModel.getUserProfile().observe(getViewLifecycleOwner(), authResult -> {
+        profileViewModel.getUserProfile().observe(getViewLifecycleOwner(), authResult -> {
             if (authResult instanceof AuthResultState.Loading) {
                 tvWelcomeTitle.setText("Yükleniyor...");
                 progressXp.setIndeterminate(true);
             } else if (authResult instanceof AuthResultState.Success) {
                 User user = ((AuthResultState.Success) authResult).getUser();
+
+                // GÜVENLİK KONTROLÜ: User nesnesi null ise UI güncellemesini atla.
+                // Bu, veri tam yüklenmeden çökmesini engeller.
+                if (user == null) {
+                    return;
+                }
+
                 updateUiWithUser(user);
+                updateNotificationBadge(user.getUnreadNotifications()); // Bildirim rozetini güncelle
                 progressXp.setIndeterminate(false);
+
             } else if (authResult instanceof AuthResultState.Error) {
                 Toast.makeText(getContext(), "Hata: " + ((AuthResultState.Error) authResult).getMessage(), Toast.LENGTH_LONG).show();
                 navigateToSignIn();
             } else if (authResult instanceof AuthResultState.SignedOut || authResult instanceof AuthResultState.EmailNotVerified) {
+                // Oturum kapalıysa veya e-posta doğrulanmamışsa giriş ekranına yönlendir.
                 navigateToSignIn();
             }
         });
+
 
         setupListenersAndText();
     }
@@ -100,19 +125,36 @@ public class HomeFragment extends Fragment {
 
         btnStartDailyLesson.setOnClickListener(v -> Toast.makeText(getContext(), "Günlük ders yakında!", Toast.LENGTH_SHORT).show());
 
-        // Oyun 1: Kelime Eşleştirme
+        // Oyun 1: Kelime Eşleştirme (Mevcut GameActivity)
         btnStartGameMatch.setOnClickListener(v -> {
             Intent intent = new Intent(getActivity(), GameActivity.class);
             startActivity(intent);
         });
 
-        // Oyun 2: Kelime Bulmaca
+        // Oyun 2: Kelime Bulmaca (Placeholder)
         btnStartGamePuzzle.setOnClickListener(v ->
                 Toast.makeText(getContext(), "Kelime Bulmaca çok yakında!", Toast.LENGTH_SHORT).show());
 
         // AI Butonu
         btnStartAi.setOnClickListener(v ->
                 Toast.makeText(getContext(), "AI Asistan ile sohbet yakında!", Toast.LENGTH_SHORT).show());
+
+        // Badge güncellemesi için listener
+        ivNotificationIcon.setOnClickListener(v -> {
+            // Arkadaşlık istekleri sayfasına git
+            NavHostFragment.findNavController(this)
+                    .navigate(R.id.action_to_friend_requests);
+        });
+
+        ivNotificationIcon.setOnClickListener(v -> {
+            NavHostFragment.findNavController(this).navigate(R.id.action_to_friend_requests);
+        });
+
+        // ilk bildirim sayısını çek
+        profileViewModel.fetchUnreadNotificationsCount();
+
+
+        btnLanguageSelector.setOnClickListener(v -> Toast.makeText(getContext(), "Dil seçimi", Toast.LENGTH_SHORT).show());
     }
 
     private void updateUiWithUser(User user) {
@@ -139,6 +181,15 @@ public class HomeFragment extends Fragment {
             NavController navController = NavHostFragment.findNavController(this);
             NavOptions navOptions = new NavOptions.Builder().setPopUpTo(R.id.main_nav_graph, true).build();
             navController.navigate(R.id.signInFragment, null, navOptions);
+        }
+    }
+
+    private void updateNotificationBadge(int count) {
+        if (count > 0) {
+            tvNotificationBadge.setText(count > 99 ? "99+" : String.valueOf(count));
+            tvNotificationBadge.setVisibility(View.VISIBLE);
+        } else {
+            tvNotificationBadge.setVisibility(View.GONE);
         }
     }
 }

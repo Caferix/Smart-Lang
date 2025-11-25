@@ -40,32 +40,38 @@
         android:name="com.scu.smartlang.presentation.ui.auth.ForgotPasswordFragment"
         android:label="ForgotPasswordFragment" />
 
-
     <fragment
         android:id="@+id/navigation_home"
         android:name="com.scu.smartlang.presentation.ui.home.HomeFragment"
         android:label="Ana Sayfa"
-        tools:layout="@layout/fragment_home" />
+        tools:layout="@layout/fragment_home">
+    <action
+        android:id="@+id/action_to_friend_requests"
+        app:destination="@id/friendRequestsFragment" />
+    </fragment>
 
     <fragment
         android:id="@+id/navigation_leaderboard"
         android:name="com.scu.smartlang.presentation.ui.leaderboard.LeaderboardFragment"
         android:label="Puan Durumu"
-        tools:layout="@layout/fragment_leaderboard" />
+        tools:layout="@layout/fragment_leaderboard">
+        <action
+            android:id="@+id/action_navigation_leaderboard_to_navigation_profile"
+            app:destination="@id/navigation_profile" />
+    </fragment>
 
     <fragment
         android:id="@+id/navigation_settings"
         android:name="com.scu.smartlang.presentation.ui.settings.SettingsFragment"
         android:label="Ayarlar"
         tools:layout="@layout/fragment_settings">
-
         <action
             android:id="@+id/action_navigation_settings_to_editProfileFragment"
-            app:destination="@id/editProfileFragment" /> <action
-        android:id="@+id/action_navigation_settings_to_changePasswordFragment"
-        app:destination="@id/changePasswordFragment" />
+            app:destination="@id/editProfileFragment" />
+        <action
+            android:id="@+id/action_navigation_settings_to_changePasswordFragment"
+            app:destination="@id/changePasswordFragment" />
     </fragment>
-
 
     <fragment
         android:id="@+id/editProfileFragment"
@@ -78,10 +84,52 @@
         android:name="com.scu.smartlang.presentation.ui.auth.ChangePasswordFragment"
         android:label="Şifre Değiştir"
         tools:layout="@layout/fragment_change_password" />
+
     <fragment
         android:id="@+id/navigation_profile"
         android:name="com.scu.smartlang.presentation.ui.profile.ProfileFragment"
         android:label="Profilim"
-        tools:layout="@layout/fragment_profile" />
+        tools:layout="@layout/fragment_profile">
+        <argument
+            android:name="userId"
+            app:argType="string"
+            app:nullable="true"
+            android:defaultValue="@null" />
+
+        <action
+            android:id="@+id/action_navigation_profile_self"
+            app:destination="@id/navigation_profile" />
+        <action
+            android:id="@+id/action_navigation_profile_to_otherUserFragment"
+            app:destination="@id/otherUserFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/navigation_search"
+        android:name="com.scu.smartlang.presentation.ui.search.SearchFragment"
+        android:label="Kullanıcı Ara"
+        tools:layout="@layout/fragment_search">
+        <action
+            android:id="@+id/action_navigation_search_to_navigation_profile"
+            app:destination="@id/navigation_profile" />
+        <action
+            android:id="@+id/action_navigation_search_to_otherUserFragment"
+            app:destination="@id/otherUserFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/friendRequestsFragment"
+        android:name="com.scu.smartlang.presentation.ui.profile.FriendRequestsFragment"
+        android:label="Arkadaşlık İstekleri"
+        tools:layout="@layout/fragment_friend_requests">
+        <action
+            android:id="@+id/action_friendRequestsFragment_to_navigation_profile"
+            app:destination="@id/navigation_profile" />
+    </fragment>
+    <fragment
+        android:id="@+id/otherUserFragment"
+        android:name="com.scu.smartlang.presentation.ui.profile.OtherUserFragment"
+        android:label="fragment_other_user"
+        tools:layout="@layout/fragment_other_user" />
 
 </navigation>

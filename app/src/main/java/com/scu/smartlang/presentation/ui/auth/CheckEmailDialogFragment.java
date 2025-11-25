@@ -12,7 +12,7 @@ import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 
 import com.scu.smartlang.R;
-import com.scu.smartlang.presentation.viewmodel.UserViewModel; // Eklendi
+import com.scu.smartlang.presentation.viewmodel.AuthViewModel; // Eklendi
 
 /**
  * Kayıt başarılı olduktan sonra e-posta doğrulama talimatını gösteren sade iletişim kutusu.
@@ -39,9 +39,9 @@ public class CheckEmailDialogFragment extends DialogFragment {
 
             try {
                 // ViewModel'e Activity üzerinden erişim (Fragment'lar arası paylaşılan instance)
-                UserViewModel userViewModel = new ViewModelProvider(requireActivity()).get(UserViewModel.class);
+                AuthViewModel authViewModel = new ViewModelProvider(requireActivity()).get(AuthViewModel.class);
                 // ÖNCEKİ Auth sonucunu temizle (EmailNotVerified durumunu null'a çek)
-                userViewModel.clearAuthResultState();
+                authViewModel.clearAuthResultState();
 
                 // Navigasyonu gerçekleştirmek için NavController'ı doğrudan Fragment'tan bul
                 NavController navController = NavHostFragment.findNavController(this);
