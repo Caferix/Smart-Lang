@@ -5,7 +5,7 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 import com.scu.smartlang.domain.model.User;
 import com.scu.smartlang.domain.repository.AuthRepository;
-import com.scu.smartlang.domain.usecase.user.GetCurrentUserProfileUseCase;
+import com.scu.smartlang.domain.usecase.social.GetCurrentUserProfileUseCase;
 import com.scu.smartlang.domain.usecase.user.GetUnreadNotificationsCountUseCase;
 import com.scu.smartlang.domain.usecase.user.UpdateUserProfileUseCase;
 import com.scu.smartlang.presentation.ui.auth.AuthResultState;

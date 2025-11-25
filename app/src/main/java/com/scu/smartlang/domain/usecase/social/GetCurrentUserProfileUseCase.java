@@ -1,4 +1,4 @@
-package com.scu.smartlang.domain.usecase.user;
+package com.scu.smartlang.domain.usecase.social;
 
 import com.scu.smartlang.domain.model.User;
 import com.scu.smartlang.domain.repository.UserProfileRepository;

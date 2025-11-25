@@ -20,8 +20,9 @@ public class FriendRequestsAdapter extends RecyclerView.Adapter<RecyclerView.Vie
     private final OnRequestActionListener listener;
 
     public interface OnRequestActionListener {
-        void onAccept(String requestId);
+        void onAccept(String requestId, String requesterUid);
         void onViewProfile(String userId);
+        void onReject(String requestId);
     }
 
     public FriendRequestsAdapter(List<FriendRequest> requests, OnRequestActionListener listener) {
@@ -48,13 +49,14 @@ public class FriendRequestsAdapter extends RecyclerView.Adapter<RecyclerView.Vie
 
         TextView tvFromUser = holder.itemView.findViewById(R.id.tv_request_from);
         Button btnAccept = holder.itemView.findViewById(R.id.btn_accept_request);
-
+        Button btnReject = holder.itemView.findViewById(R.id.btn_reject_request);
         String display = request.getSenderName() != null
                 ? request.getSenderName()
                 : request.getFromUid();
         tvFromUser.setText(display);
 
-        btnAccept.setOnClickListener(v -> listener.onAccept(request.getId()));
+        btnAccept.setOnClickListener(v -> listener.onAccept(request.getId(), request.getFromUid()));
+        btnReject.setOnClickListener(v -> listener.onReject(request.getId()));
         holder.itemView.setOnClickListener(v -> listener.onViewProfile(request.getFromUid()));
     }
 

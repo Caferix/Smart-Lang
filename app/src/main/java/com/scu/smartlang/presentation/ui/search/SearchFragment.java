@@ -50,7 +50,7 @@ public class SearchFragment extends Fragment {
             // ProfileFragment'e git
             Bundle args = new Bundle();
             args.putString("userId", userId);
-            Navigation.findNavController(view).navigate(R.id.navigation_profile, args);
+            Navigation.findNavController(view).navigate(R.id.action_navigation_search_to_otherUserFragment, args);
 
         });
 

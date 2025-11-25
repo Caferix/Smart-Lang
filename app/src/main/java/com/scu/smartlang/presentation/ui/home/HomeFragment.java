@@ -86,14 +86,6 @@ public class HomeFragment extends Fragment {
         btnStartGamePuzzle = view.findViewById(R.id.btn_start_game_puzzle);
         btnStartAi = view.findViewById(R.id.btn_start_ai);
 
-        profileViewModel.getUserProfile().observe(getViewLifecycleOwner(), authResult -> {
-            if (authResult instanceof AuthResultState.Success) {
-                User user = ((AuthResultState.Success) authResult).getUser();
-                updateUiWithUser(user);
-                updateNotificationBadge(user.getUnreadNotifications()); // 🆕
-            }
-        });
-
 
         // Kullanıcı Profilini Gözlemle
         profileViewModel.getUserProfile().observe(getViewLifecycleOwner(), authResult -> {
@@ -102,15 +94,26 @@ public class HomeFragment extends Fragment {
                 progressXp.setIndeterminate(true);
             } else if (authResult instanceof AuthResultState.Success) {
                 User user = ((AuthResultState.Success) authResult).getUser();
+
+                // GÜVENLİK KONTROLÜ: User nesnesi null ise UI güncellemesini atla.
+                // Bu, veri tam yüklenmeden çökmesini engeller.
+                if (user == null) {
+                    return;
+                }
+
                 updateUiWithUser(user);
+                updateNotificationBadge(user.getUnreadNotifications()); // Bildirim rozetini güncelle
                 progressXp.setIndeterminate(false);
+
             } else if (authResult instanceof AuthResultState.Error) {
                 Toast.makeText(getContext(), "Hata: " + ((AuthResultState.Error) authResult).getMessage(), Toast.LENGTH_LONG).show();
                 navigateToSignIn();
             } else if (authResult instanceof AuthResultState.SignedOut || authResult instanceof AuthResultState.EmailNotVerified) {
+                // Oturum kapalıysa veya e-posta doğrulanmamışsa giriş ekranına yönlendir.
                 navigateToSignIn();
             }
         });
+
 
         setupListenersAndText();
     }

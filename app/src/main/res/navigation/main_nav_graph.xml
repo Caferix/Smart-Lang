@@ -99,6 +99,9 @@
         <action
             android:id="@+id/action_navigation_profile_self"
             app:destination="@id/navigation_profile" />
+        <action
+            android:id="@+id/action_navigation_profile_to_otherUserFragment"
+            app:destination="@id/otherUserFragment" />
     </fragment>
 
     <fragment
@@ -109,6 +112,9 @@
         <action
             android:id="@+id/action_navigation_search_to_navigation_profile"
             app:destination="@id/navigation_profile" />
+        <action
+            android:id="@+id/action_navigation_search_to_otherUserFragment"
+            app:destination="@id/otherUserFragment" />
     </fragment>
 
     <fragment
@@ -120,5 +126,10 @@
             android:id="@+id/action_friendRequestsFragment_to_navigation_profile"
             app:destination="@id/navigation_profile" />
     </fragment>
+    <fragment
+        android:id="@+id/otherUserFragment"
+        android:name="com.scu.smartlang.presentation.ui.profile.OtherUserFragment"
+        android:label="fragment_other_user"
+        tools:layout="@layout/fragment_other_user" />
 
 </navigation>

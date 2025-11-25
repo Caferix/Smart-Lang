@@ -51,6 +51,11 @@ public class FriendRequestsFragment extends Fragment implements FriendRequestsAd
             }
         });
 
+        socialViewModel.getFriendshipActionCompleted().observe(getViewLifecycleOwner(), aVoid -> {
+            Toast.makeText(getContext(), "İşlem tamamlandı.", Toast.LENGTH_SHORT).show();
+            loadRequests(); // Listeyi yeniden yükle
+        });
+
         loadRequests();
     }
 
@@ -63,12 +68,23 @@ public class FriendRequestsFragment extends Fragment implements FriendRequestsAd
     }
 
     @Override
-    public void onAccept(String requestId) {
+    public void onAccept(String requestId, String requesterUid) {
         socialViewModel.getCurrentUserId().thenAccept(uid -> {
             if (uid != null) {
-                socialViewModel.acceptFriendRequest(requestId, uid);
-                Toast.makeText(getContext(), "İstek kabul edildi", Toast.LENGTH_SHORT).show();
-                loadRequests(); // Listeyi yenile
+                socialViewModel.acceptFriendRequest(requestId, uid, requesterUid);
+                // Refresh the list after action
+                socialViewModel.fetchIncomingRequests(uid);
+            }
+        });
+    }
+
+    @Override
+    public void onReject(String requestId) {
+        socialViewModel.getCurrentUserId().thenAccept(uid -> {
+            if (uid != null) {
+                socialViewModel.rejectFriendRequest(requestId, uid);
+                // Refresh the list after action
+                socialViewModel.fetchIncomingRequests(uid);
             }
         });
     }

@@ -1,4 +1,4 @@
-package com.scu.smartlang.domain.usecase.user;
+package com.scu.smartlang.domain.usecase.social;
 
 import com.scu.smartlang.domain.repository.SocialRepository;
 
@@ -14,7 +14,7 @@ public class AcceptFriendRequestUseCase {
         this.repository = repository;
     }
 
-    public CompletableFuture<Void> execute(String requestId, String acceptorUid) {
-        return repository.acceptFriendRequest(requestId, acceptorUid);
+    public CompletableFuture<Void> execute(String requestId, String acceptorUid, String requesterUid) {
+        return repository.acceptFriendRequest(requestId, acceptorUid, requesterUid);
     }
 }

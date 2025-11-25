@@ -16,5 +16,10 @@
         android:id="@+id/btn_accept_request"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Kabul Et" />
+        android:text="Kabul Et"/>
+    <Button
+        android:id="@+id/btn_reject_request"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Reddet"/>
 </LinearLayout>

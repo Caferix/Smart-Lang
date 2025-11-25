@@ -8,11 +8,13 @@ import com.scu.smartlang.domain.model.FriendRequest;
 import com.scu.smartlang.domain.model.User;
 import com.scu.smartlang.domain.repository.AuthRepository;
 import com.scu.smartlang.domain.repository.SocialRepository;
-import com.scu.smartlang.domain.usecase.user.AcceptFriendRequestUseCase;
-import com.scu.smartlang.domain.usecase.user.GetFriendRequestsUseCase;
-import com.scu.smartlang.domain.usecase.user.GetFriendsUseCase;
-import com.scu.smartlang.domain.usecase.user.GetUserByIdUseCase;
-import com.scu.smartlang.domain.usecase.user.SendFriendRequestUseCase;
+import com.scu.smartlang.domain.usecase.social.AcceptFriendRequestUseCase;
+import com.scu.smartlang.domain.usecase.social.GetFriendRequestsUseCase;
+import com.scu.smartlang.domain.usecase.social.GetFriendsUseCase;
+import com.scu.smartlang.domain.usecase.social.GetUserByIdUseCase;
+import com.scu.smartlang.domain.usecase.social.RejectFriendRequestUseCase;
+import com.scu.smartlang.domain.usecase.social.RemoveFriendUseCase;
+import com.scu.smartlang.domain.usecase.social.SendFriendRequestUseCase;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -29,6 +31,8 @@ public class SocialViewModel extends ViewModel {
     private final SendFriendRequestUseCase sendFriendRequestUseCase;
     private final AcceptFriendRequestUseCase acceptFriendRequestUseCase;
     private final GetUserByIdUseCase getUserByIdUseCase;
+    private final RemoveFriendUseCase removeFriendUseCase;
+    private final RejectFriendRequestUseCase rejectFriendRequestUseCase;
 
     private final MutableLiveData<List<Friend>> _friends = new MutableLiveData<>();
     public LiveData<List<Friend>> getFriends() { return _friends; }
@@ -45,8 +49,18 @@ public class SocialViewModel extends ViewModel {
     private final MutableLiveData<String> _friendshipStatus = new MutableLiveData<>();
     public LiveData<String> getFriendshipStatus() { return _friendshipStatus; }
 
+    // UI'ı reaktif olarak güncellemek için kullanılacak LiveData
+    private final MutableLiveData<Void> _friendshipActionCompleted = new MutableLiveData<>();
+    public LiveData<Void> getFriendshipActionCompleted() {
+        return _friendshipActionCompleted;
+    }
+
     @Inject
-    public SocialViewModel(SocialRepository socialRepository, AuthRepository authRepository, GetFriendsUseCase getFriendsUseCase, GetFriendRequestsUseCase getFriendRequestsUseCase, SendFriendRequestUseCase sendFriendRequestUseCase, AcceptFriendRequestUseCase acceptFriendRequestUseCase, GetUserByIdUseCase getUserByIdUseCase) {
+    public SocialViewModel(SocialRepository socialRepository, AuthRepository authRepository,
+                           GetFriendsUseCase getFriendsUseCase, GetFriendRequestsUseCase getFriendRequestsUseCase,
+                           SendFriendRequestUseCase sendFriendRequestUseCase, AcceptFriendRequestUseCase acceptFriendRequestUseCase,
+                           GetUserByIdUseCase getUserByIdUseCase, RemoveFriendUseCase removeFriendUseCase,
+                           RejectFriendRequestUseCase rejectFriendRequestUseCase) {
         this.socialRepository = socialRepository;
         this.authRepository = authRepository;
         this.getFriendsUseCase = getFriendsUseCase;
@@ -54,6 +68,8 @@ public class SocialViewModel extends ViewModel {
         this.sendFriendRequestUseCase = sendFriendRequestUseCase;
         this.acceptFriendRequestUseCase = acceptFriendRequestUseCase;
         this.getUserByIdUseCase = getUserByIdUseCase;
+        this.removeFriendUseCase = removeFriendUseCase;
+        this.rejectFriendRequestUseCase = rejectFriendRequestUseCase;
     }
 
     public void fetchFriends(String uid) {
@@ -64,14 +80,24 @@ public class SocialViewModel extends ViewModel {
         getFriendRequestsUseCase.execute(uid).thenAccept(_incomingRequests::postValue);
     }
 
-    public CompletableFuture<Void> sendFriendRequest(String fromUid, String toUid) {
-        return sendFriendRequestUseCase.execute(fromUid, toUid)
-                .thenRun(() -> checkFriendshipStatus(fromUid, toUid)); // Durumu güncelle
+    public void sendFriendRequest(String fromUid, String toUid) {
+        sendFriendRequestUseCase.execute(fromUid, toUid)
+                .thenRun(() -> _friendshipActionCompleted.postValue(null));
     }
 
-    public void acceptFriendRequest(String requestId, String acceptorUid) {
-        acceptFriendRequestUseCase.execute(requestId, acceptorUid)
-                .thenRun(() -> fetchFriends(acceptorUid)); // Arkadaş listesini yenile
+    public void acceptFriendRequest(String requestId, String acceptorUid, String requesterUid) {
+        acceptFriendRequestUseCase.execute(requestId, acceptorUid, requesterUid)
+                .thenRun(() -> _friendshipActionCompleted.postValue(null));
+    }
+
+    public void rejectFriendRequest(String requestId, String recipientUid) {
+        rejectFriendRequestUseCase.execute(requestId, recipientUid)
+                .thenRun(() -> _friendshipActionCompleted.postValue(null));
+    }
+
+    public void removeFriend(String currentUserId, String friendToRemoveId) {
+        removeFriendUseCase.execute(currentUserId, friendToRemoveId)
+                .thenRun(() -> _friendshipActionCompleted.postValue(null));
     }
 
     public void checkFriendshipStatus(String currentUid, String otherUid) {

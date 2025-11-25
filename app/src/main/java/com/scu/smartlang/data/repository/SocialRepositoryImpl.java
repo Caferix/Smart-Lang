@@ -1,10 +1,12 @@
 package com.scu.smartlang.data.repository;
 
 import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.Query;
 import com.scu.smartlang.data.mapper.UserDataMapper;
 import com.scu.smartlang.data.remote.firebase.models.UserDto;
@@ -99,44 +101,37 @@ public class SocialRepositoryImpl implements SocialRepository {
     }
 
     @Override
-    public CompletableFuture<Void> acceptFriendRequest(String requestId, String acceptorUid) {
+    public CompletableFuture<Void> acceptFriendRequest(String requestId, String acceptorUid, String requesterUid) {
         DocumentReference requestRef = db.collection(USERS_COLLECTION)
                 .document(acceptorUid)
                 .collection("friendRequests")
                 .document(requestId);
 
-        return taskToFuture(requestRef.get())
-                .thenCompose(ds -> {
-                    if (!ds.exists()) {
-                        CompletableFuture<Void> failed = new CompletableFuture<>();
-                        failed.completeExceptionally(new Exception("İstek bulunamadı"));
-                        return failed;
-                    }
+        return taskToFuture(db.runTransaction(transaction -> {
+            if (requesterUid == null) {
+                throw new FirebaseFirestoreException("Requester UID cannot be null.",
+                        FirebaseFirestoreException.Code.INVALID_ARGUMENT);
+            }
 
-                    String fromUid = ds.getString("fromUid");
+            // 1. Add sender to acceptor's friends subcollection
+            DocumentReference acceptorFriendRef = db.collection(USERS_COLLECTION).document(acceptorUid)
+                    .collection("friends").document(requesterUid);
+            Map<String, Object> acceptorFriendData = new HashMap<>();
+            acceptorFriendData.put("uid", requesterUid);
+            transaction.set(acceptorFriendRef, acceptorFriendData);
 
-                    Map<String, Object> friendForAcceptor = new HashMap<>();
-                    friendForAcceptor.put("uid", fromUid);
-                    friendForAcceptor.put("createdAt", FieldValue.serverTimestamp());
+            // 2. Add acceptor to sender's friends subcollection
+            DocumentReference senderFriendRef = db.collection(USERS_COLLECTION).document(requesterUid)
+                    .collection("friends").document(acceptorUid);
+            Map<String, Object> senderFriendData = new HashMap<>();
+            senderFriendData.put("uid", acceptorUid);
+            transaction.set(senderFriendRef, senderFriendData);
 
-                    Map<String, Object> friendForRequester = new HashMap<>();
-                    friendForRequester.put("uid", acceptorUid);
-                    friendForRequester.put("createdAt", FieldValue.serverTimestamp());
+            // 3. Delete the friend request after accepting it
+            transaction.delete(requestRef);
 
-                    CompletableFuture<Void> deleteRequest = taskToFuture(requestRef.delete());
-
-                    CompletableFuture<DocumentReference> addToAcceptor = taskToFuture(
-                            db.collection(USERS_COLLECTION).document(acceptorUid)
-                                    .collection("friends").add(friendForAcceptor)
-                    );
-
-                    CompletableFuture<DocumentReference> addToRequester = taskToFuture(
-                            db.collection(USERS_COLLECTION).document(fromUid)
-                                    .collection("friends").add(friendForRequester)
-                    );
-
-                    return CompletableFuture.allOf(deleteRequest, addToAcceptor, addToRequester);
-                });
+            return null;
+        }));
     }
 
     @Override
@@ -244,21 +239,29 @@ public class SocialRepositoryImpl implements SocialRepository {
     public CompletableFuture<String> checkFriendshipStatus(String currentUid, String otherUid) {
         return taskToFuture(
                 db.collection(USERS_COLLECTION).document(currentUid)
-                        .collection("friends").whereEqualTo("uid", otherUid).limit(1).get()
+                        .collection("friends").document(otherUid).get()
         ).thenCompose(friendSnapshot -> {
-            if (!friendSnapshot.isEmpty()) {
+            if (friendSnapshot.exists()) {
                 return CompletableFuture.completedFuture("FRIENDS");
             }
+            // Check for a PENDING request sent by me
             return taskToFuture(
                     db.collection(USERS_COLLECTION).document(otherUid)
-                            .collection("friendRequests").whereEqualTo("fromUid", currentUid).limit(1).get()
+                            .collection("friendRequests")
+                            .whereEqualTo("fromUid", currentUid)
+                            .whereEqualTo("status", "PENDING") // Check for PENDING status
+                            .limit(1).get()
             ).thenCompose(sentRequestSnapshot -> {
                 if (!sentRequestSnapshot.isEmpty()) {
                     return CompletableFuture.completedFuture("REQUEST_SENT");
                 }
+                // Check for a PENDING request received from them
                 return taskToFuture(
                         db.collection(USERS_COLLECTION).document(currentUid)
-                                .collection("friendRequests").whereEqualTo("fromUid", otherUid).limit(1).get()
+                                .collection("friendRequests")
+                                .whereEqualTo("fromUid", otherUid)
+                                .whereEqualTo("status", "PENDING") // Check for PENDING status
+                                .limit(1).get()
                 ).thenCompose(receivedRequestSnapshot -> {
                     if (!receivedRequestSnapshot.isEmpty()) {
                         return CompletableFuture.completedFuture("REQUEST_RECEIVED");
@@ -267,5 +270,28 @@ public class SocialRepositoryImpl implements SocialRepository {
                 });
             });
         });
+    }
+
+
+    @Override
+    public CompletableFuture<Void> removeFriend(String currentUserId, String friendToRemoveId) {
+        // İki kullanıcının da "friends" koleksiyonundan birbirlerini sil
+        Task<Void> remove1 = db.collection("users").document(currentUserId)
+                .collection("friends").document(friendToRemoveId).delete();
+        Task<Void> remove2 = db.collection("users").document(friendToRemoveId)
+                .collection("friends").document(currentUserId).delete();
+
+        // İki işlem de tamamlandığında CompletableFuture'ı tamamla
+        return taskToFuture(Tasks.whenAll(remove1, remove2));
+    }
+
+    @Override
+    public CompletableFuture<Void> rejectFriendRequest(String requestId, String recipientUid) {
+        DocumentReference requestRef = db.collection(USERS_COLLECTION)
+                .document(recipientUid)
+                .collection("friendRequests")
+                .document(requestId);
+        // Instead of updating status, delete the request entirely.
+        return taskToFuture(requestRef.delete());
     }
 }

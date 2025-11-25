@@ -3,7 +3,7 @@ package com.scu.smartlang.presentation.viewmodel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
-import com.scu.smartlang.domain.usecase.user.GetCurrentUserProfileUseCase;
+import com.scu.smartlang.domain.usecase.social.GetCurrentUserProfileUseCase;
 import com.scu.smartlang.domain.usecase.user.LoginUserUseCase;
 import com.scu.smartlang.domain.usecase.user.RegisterUserUseCase;
 import com.scu.smartlang.domain.usecase.user.ResendVerificationEmailUseCase;

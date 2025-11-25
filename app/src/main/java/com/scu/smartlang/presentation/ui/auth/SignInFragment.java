@@ -52,7 +52,7 @@ public class SignInFragment extends Fragment {
 
         navController = NavHostFragment.findNavController(this);
         profileViewModel = new ViewModelProvider(requireActivity()).get(ProfileViewModel.class);
-        authViewModel = new ViewModelProvider(this).get(AuthViewModel.class);
+        authViewModel = new ViewModelProvider(requireActivity()).get(AuthViewModel.class);
         // UI Elemanlarının Tanımlanması
         etEmail = view.findViewById(R.id.et_email);
         etPassword = view.findViewById(R.id.et_password);
@@ -85,13 +85,25 @@ public class SignInFragment extends Fragment {
             if (authResult instanceof AuthResultState.Loading && tvInitialLoading.getVisibility() == View.VISIBLE) {
                 return;
             }
+
+            // YENİ DEĞİŞİKLİK: Manuel giriş işlemi devam ediyorsa, bu gözlemcinin herhangi bir
+            // navigasyon veya UI değişikliği yapmasını tamamen engelle.
+            // Bu, authViewModel gözlemcisi ile çakışmayı önler.
+            if (isManualSignIn) {
+                Log.d(TAG, "profileViewModel observer: Manuel giriş işlemi aktif, bu gözlemci atlanıyor.");
+                return;
+            }
+
             if (authResult instanceof AuthResultState.Success) {
-                // If a manual signin was requested, suppress the automatic-login toast/navigation
-                if (isManualSignIn) {
-                    // Let the manual flow (getAuthResult()) handle toasts/navigation
+                AuthResultState.Success success = (AuthResultState.Success) authResult;
+                if (success.getUser() == null) {
+                    Log.d(TAG, "Açılış oturum kontrolü: Success durumu alındı ama User nesnesi null. Form gösteriliyor.");
+                    setLoadingState(false, false);
                     return;
                 }
-                AuthResultState.Success success = (AuthResultState.Success) authResult;
+
+                // 'isManualSignIn' kontrolü yukarı taşındığı için buradan kaldırılabilir,
+                // ancak okunabilirlik için kalmasında bir sakınca yoktur.
                 String welcomeName = success.getUser().getUserName();
                 setLoadingState(false, false);
                 Toast.makeText(getContext(), "Hoş geldiniz! Otomatik giriş yapıldı. Kullanıcı: " + welcomeName, Toast.LENGTH_SHORT).show();
