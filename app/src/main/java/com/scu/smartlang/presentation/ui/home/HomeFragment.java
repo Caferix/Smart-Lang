@@ -5,7 +5,6 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -34,15 +33,12 @@ public class HomeFragment extends Fragment {
     private ProgressBar progressXp;
     private TextView tvStreakCount;
     private MaterialButton btnStartDailyLesson;
-    private MaterialButton btnLanguageSelector;
-    private MaterialButton btnStartGameMatch; // Kelime Eşleştirme
-    private MaterialButton btnStartGamePuzzle; // Kelime Bulmaca
-    private MaterialButton btnStartAi;         // AI Butonu
-    private ImageView ivNotificationIcon;
+    private MaterialButton btnStartGameMatch;
+    private MaterialButton btnStartGamePuzzle;
+    private MaterialButton btnStartAi;
 
     private static final String DAILY_LESSON_TITLE = "GÜNLÜK DERSE BAŞLA";
-    private static final String DEFAULT_MODULE_PLACEHOLDER = "(Henüz ders atanmadı)";
-
+    private static final String DEFAULT_MODULE_PLACEHOLDER = "(Temel Zamirler)"; // Placeholder metni düzelttim
 
     @Nullable
     @Override
@@ -70,14 +66,12 @@ public class HomeFragment extends Fragment {
         progressXp = view.findViewById(R.id.progress_xp);
         tvStreakCount = view.findViewById(R.id.tv_streak_count);
         btnStartDailyLesson = view.findViewById(R.id.btn_start_daily_lesson);
-        ivNotificationIcon = view.findViewById(R.id.iv_notification_icon);
-        btnLanguageSelector = view.findViewById(R.id.btn_language_selector);
 
-        // Yeni Butonlar
+        // Kaldırılan view'ların tanımları silindi (Notification, Language, Courses)
+
         btnStartGameMatch = view.findViewById(R.id.btn_start_game_match);
         btnStartGamePuzzle = view.findViewById(R.id.btn_start_game_puzzle);
         btnStartAi = view.findViewById(R.id.btn_start_ai);
-
 
         // Kullanıcı Profilini Gözlemle
         userViewModel.getUserProfile().observe(getViewLifecycleOwner(), authResult -> {
@@ -106,22 +100,19 @@ public class HomeFragment extends Fragment {
 
         btnStartDailyLesson.setOnClickListener(v -> Toast.makeText(getContext(), "Günlük ders yakında!", Toast.LENGTH_SHORT).show());
 
-        // Oyun 1: Kelime Eşleştirme (Mevcut GameActivity)
+        // Oyun 1: Kelime Eşleştirme
         btnStartGameMatch.setOnClickListener(v -> {
             Intent intent = new Intent(getActivity(), GameActivity.class);
             startActivity(intent);
         });
 
-        // Oyun 2: Kelime Bulmaca (Placeholder)
+        // Oyun 2: Kelime Bulmaca
         btnStartGamePuzzle.setOnClickListener(v ->
                 Toast.makeText(getContext(), "Kelime Bulmaca çok yakında!", Toast.LENGTH_SHORT).show());
 
         // AI Butonu
         btnStartAi.setOnClickListener(v ->
                 Toast.makeText(getContext(), "AI Asistan ile sohbet yakında!", Toast.LENGTH_SHORT).show());
-
-        ivNotificationIcon.setOnClickListener(v -> Toast.makeText(getContext(), "Bildirimler", Toast.LENGTH_SHORT).show());
-        btnLanguageSelector.setOnClickListener(v -> Toast.makeText(getContext(), "Dil seçimi", Toast.LENGTH_SHORT).show());
     }
 
     private void updateUiWithUser(User user) {

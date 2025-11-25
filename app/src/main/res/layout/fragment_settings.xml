@@ -86,7 +86,7 @@
 
                 <ImageView
                     android:layout_width="24dp"
-                    android:layout_height="34dp"
+                    android:layout_height="24dp"
                     android:layout_marginEnd="16dp"
                     android:contentDescription="Koyu Tema İkonu"
                     android:src="@drawable/ic_dark_mode_24dp"
