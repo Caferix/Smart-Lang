@@ -43,32 +43,35 @@ public class MainActivity extends AppCompatActivity {
         navController = navHostFragment.getNavController();
         navView = findViewById(R.id.nav_view);
 
-        // 2. NavGraph'ı yükle
-        NavGraph navGraph = navController.getNavInflater().inflate(R.navigation.main_nav_graph);
+        // === KRİTİK DÜZELTME BAŞLANGICI ===
+        // Bu blok sadece uygulama "soğuk başlatma" ile açıldığında çalışır.
+        // Tema değişimi gibi Activity'nin yeniden oluşturulduğu durumlarda (savedInstanceState != null)
+        // bu blok atlanır ve Navigation Component kullanıcının kaldığı son sayfayı (Ayarlar) hatırlar.
+        if (savedInstanceState == null) {
+            NavGraph navGraph = navController.getNavInflater().inflate(R.navigation.main_nav_graph);
 
-        // 3. OTURUM KONTROLÜ: Başlangıç noktasını dinamik olarak ayarla
-        if (firebaseAuth.getCurrentUser() != null) {
-            // Oturum açıksa, Ana Sayfa'dan başla
-            navGraph.setStartDestination(R.id.navigation_home);
-        } else {
-            // Oturum kapalıysa, Giriş Ekranı'ndan başla
-            navGraph.setStartDestination(R.id.signInFragment);
+            if (firebaseAuth.getCurrentUser() != null) {
+                // Oturum açıksa Ana Sayfa
+                navGraph.setStartDestination(R.id.navigation_home);
+            } else {
+                // Değilse Giriş Yap
+                navGraph.setStartDestination(R.id.signInFragment);
+            }
+
+            navController.setGraph(navGraph);
         }
-
-        // 4. NavController'a güncel NavGraph'ı ata
-        navController.setGraph(navGraph);
+        // === KRİTİK DÜZELTME SONU ===
 
         // 5. Bottom Navigation'ı NavController ile bağla
         NavigationUI.setupWithNavController(navView, navController);
 
-        // 6. BottomNav Görünürlük Mantığı - GÜNCELLENEN KISIM
+        // 6. BottomNav Görünürlük Mantığı
         navController.addOnDestinationChangedListener((controller, destination, arguments) -> {
             int destinationId = destination.getId();
 
-            // Profil sayfasında (navigation_profile) da alt menünün görünmesini sağlıyoruz
             if (destinationId == R.id.navigation_home ||
                     destinationId == R.id.navigation_leaderboard ||
-                    destinationId == R.id.navigation_profile || // YENİ EKLENDİ
+                    destinationId == R.id.navigation_profile ||
                     destinationId == R.id.navigation_settings) {
                 navView.setVisibility(View.VISIBLE);
             } else {

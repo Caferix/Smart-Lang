@@ -13,6 +13,22 @@
         android:background="@drawable/gradient_background_game"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <ImageView
+        android:id="@+id/iv_language_settings"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="16dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:clickable="true"
+        android:contentDescription="Dili Değiştir"
+        android:focusable="true"
+        android:padding="10dp"
+        android:src="@drawable/ic_translate_24dp"
+        app:tint="@color/white"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <androidx.cardview.widget.CardView
         android:id="@+id/cv_profile_image"
         android:layout_width="100dp"

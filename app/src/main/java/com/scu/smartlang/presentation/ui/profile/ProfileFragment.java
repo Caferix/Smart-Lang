@@ -4,8 +4,11 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView; // ImageView eklendi
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -27,7 +30,8 @@ public class ProfileFragment extends Fragment {
     private TextView tvName, tvLevel, tvXp;
     private ProgressBar pbXp;
     private RecyclerView rvFriends;
-    private FriendsAdapter friendsAdapter; // Adaptörü sınıf seviyesinde tutmak iyi olabilir
+    private ImageView ivLanguageSettings; // Buton yerine ImageView
+    private FriendsAdapter friendsAdapter;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
@@ -47,6 +51,14 @@ public class ProfileFragment extends Fragment {
         tvXp = view.findViewById(R.id.tv_xp_label);
         pbXp = view.findViewById(R.id.pb_profile_xp);
         rvFriends = view.findViewById(R.id.rv_friends);
+
+        // Yeni ikon tanımı
+        ivLanguageSettings = view.findViewById(R.id.iv_language_settings);
+
+        // İkona tıklayınca çalışacak kod
+        ivLanguageSettings.setOnClickListener(v ->
+                Toast.makeText(getContext(), "Dil seçme menüsü açılacak (Çoklu dil desteği yakında!)", Toast.LENGTH_SHORT).show()
+        );
 
         setupFriendsList();
         observeUserData();
@@ -90,10 +102,7 @@ public class ProfileFragment extends Fragment {
     }
 
     private void setupFriendsList() {
-        // Sabit isimler kaldırıldı.
-        // Arkadaşın buraya veritabanından veri çeken kodu entegre edecek.
         List<FriendsAdapter.FriendModel> emptyList = new ArrayList<>();
-
         friendsAdapter = new FriendsAdapter(emptyList);
         rvFriends.setLayoutManager(new LinearLayoutManager(getContext()));
         rvFriends.setAdapter(friendsAdapter);
