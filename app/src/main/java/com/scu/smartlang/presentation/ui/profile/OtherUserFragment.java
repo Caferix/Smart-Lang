@@ -13,6 +13,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.scu.smartlang.R;
@@ -20,11 +21,10 @@ import com.scu.smartlang.domain.model.Friend;
 import com.scu.smartlang.domain.model.User;
 import com.scu.smartlang.presentation.viewmodel.SocialViewModel;
 import java.util.ArrayList;
-import java.util.List;
 import dagger.hilt.android.AndroidEntryPoint;
 
 @AndroidEntryPoint
-public class OtherUserFragment extends Fragment {
+public class OtherUserFragment extends Fragment implements FriendsAdapter.OnFriendClickListener {
 
     private TextView tvName, tvLevelLabel, tvXpLabel;
     private ProgressBar pbXp;
@@ -61,6 +61,15 @@ public class OtherUserFragment extends Fragment {
         socialViewModel.getCurrentUserId().thenAccept(uid -> {
             currentUid = uid;
             if (!isAdded()) return;
+
+            if (viewUserId.equals(currentUid)) {
+                requireActivity().runOnUiThread(() -> {
+                    if (btnSendFriendRequest != null) {
+                        btnSendFriendRequest.setVisibility(View.GONE);
+                    }
+                });
+            }
+
             requireActivity().runOnUiThread(this::fetchData);
         });
     }
@@ -74,42 +83,38 @@ public class OtherUserFragment extends Fragment {
         btnSendFriendRequest = view.findViewById(R.id.btn_send_friend_request);
 
         rvFriends.setLayoutManager(new LinearLayoutManager(getContext()));
-        friendsAdapter = new FriendsAdapter(new ArrayList<>());
+        // Adaptörü tıklama dinleyicisi ile başlat
+        friendsAdapter = new FriendsAdapter(new ArrayList<>(), this);
         rvFriends.setAdapter(friendsAdapter);
 
         btnSendFriendRequest.setVisibility(View.VISIBLE);
     }
 
     private void fetchData() {
-        socialViewModel.fetchUserById(viewUserId);
-        socialViewModel.fetchFriends(viewUserId);
-        if (currentUid != null) {
+        // Görüntülenen kullanıcı mevcut kullanıcı değilse arkadaşlık durumunu kontrol et
+        if (currentUid != null && !currentUid.equals(viewUserId)) {
             socialViewModel.checkFriendshipStatus(currentUid, viewUserId);
         }
+        socialViewModel.fetchUserById(viewUserId);
+        socialViewModel.fetchFriends(viewUserId);
     }
 
     private void observeViewModel() {
         socialViewModel.getViewedUser().observe(getViewLifecycleOwner(), this::updateUi);
         socialViewModel.getFriendshipStatus().observe(getViewLifecycleOwner(), this::updateFriendRequestButton);
 
+        // Adaptörü doğrudan Friend listesi ile güncelle
         socialViewModel.getFriends().observe(getViewLifecycleOwner(), friends -> {
             if (friends == null || !isAdded()) {
-                friendsAdapter.updateList(new ArrayList<>()); // Listeyi temizle
+                friendsAdapter.updateList(new ArrayList<>());
                 return;
             }
-            List<FriendsAdapter.FriendModel> models = new ArrayList<>();
-            for (Friend f : friends) {
-                // Friend nesnesinden FriendModel nesnesi oluştur
-                models.add(new FriendsAdapter.FriendModel(f.getUserName(), f.getLevel()));
-            }
-            friendsAdapter.updateList(models); // Adaptörü doğru veriyle güncelle
+            friendsAdapter.updateList(friends);
         });
 
-        // Herhangi bir arkadaşlık aksiyonu (ekleme, çıkarma, kabul etme) tamamlandığında
-        // profil durumunu ve arkadaş listesini yeniden kontrol et.
         socialViewModel.getFriendshipActionCompleted().observe(getViewLifecycleOwner(), aVoid -> {
             Toast.makeText(getContext(), "İşlem tamamlandı.", Toast.LENGTH_SHORT).show();
-            fetchData(); // Tüm verileri yenile
+            fetchData();
         });
     }
 
@@ -149,9 +154,6 @@ public class OtherUserFragment extends Fragment {
             case "REQUEST_RECEIVED":
                 btnSendFriendRequest.setText("İsteği Kabul Et");
                 btnSendFriendRequest.setEnabled(true);
-                // Bu butona tıklandığında isteği kabul etme mantığı eklenebilir.
-                // Ancak genellikle bu işlem istek listesi ekranında yapılır.
-                // Şimdilik bu butonu istekler ekranına yönlendirmek daha doğru olabilir.
                 btnSendFriendRequest.setOnClickListener(v -> {
                     Toast.makeText(getContext(), "Lütfen isteği gelen kutunuzdan kabul edin.", Toast.LENGTH_LONG).show();
                 });
@@ -185,5 +187,19 @@ public class OtherUserFragment extends Fragment {
         } else {
             Toast.makeText(getContext(), "İstek gönderilemedi. Lütfen tekrar deneyin.", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    // Arkadaş listesindeki bir öğeye tıklandığında çalışacak metot
+    @Override
+    public void onFriendClick(Friend friend) {
+        // Tıklanan arkadaşın kendi profili ise navigasyon yapma
+        if (friend.getUid().equals(viewUserId)) {
+            return;
+        }
+        Bundle args = new Bundle();
+        args.putString("userId", friend.getUid());
+        // NavController ile aynı hedefe (kendi üzerine) yeni argümanlarla git
+        NavHostFragment.findNavController(this)
+                .navigate(R.id.navigation_profile, args);
     }
 }

@@ -1,22 +1,18 @@
 package com.scu.smartlang.domain.usecase.user;
 
-import androidx.lifecycle.LiveData;
-
 import com.scu.smartlang.domain.repository.UserProfileRepository;
-
 import java.util.concurrent.CompletableFuture;
 import javax.inject.Inject;
 
-
-public class GetUnreadNotificationsCountUseCase {
+public class ResetUnreadNotificationsCountUseCase {
     private final UserProfileRepository repository;
 
     @Inject
-    public GetUnreadNotificationsCountUseCase(UserProfileRepository repository) {
+    public ResetUnreadNotificationsCountUseCase(UserProfileRepository repository) {
         this.repository = repository;
     }
 
-    public LiveData<Integer> execute(String uid) {
-        return repository.getUnreadNotificationsCount(uid);
+    public CompletableFuture<Void> execute(String uid) {
+        return repository.resetUnreadNotificationsCount(uid);
     }
 }

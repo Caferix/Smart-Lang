@@ -1,13 +1,22 @@
 package com.scu.smartlang.data.repository;
 
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
+
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
 import com.scu.smartlang.data.mapper.UserDataMapper;
 import com.scu.smartlang.data.remote.firebase.FirebaseAuth;
 import com.scu.smartlang.data.remote.firebase.models.UserDto;
+import com.scu.smartlang.domain.model.FriendRequest;
 import com.scu.smartlang.domain.model.User;
 import com.scu.smartlang.domain.repository.UserProfileRepository;
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -71,18 +80,60 @@ public class UserProfileRepositoryImpl implements UserProfileRepository {
     }
 
     @Override
-    public CompletableFuture<Integer> getUnreadNotificationsCount(String uid) {
-        CompletableFuture<Integer> future = new CompletableFuture<>();
-        db.collection("users").document(uid).get()
-                .addOnSuccessListener(documentSnapshot -> {
-                    if (documentSnapshot.exists() && documentSnapshot.contains("unreadNotifications")) {
-                        Long count = documentSnapshot.getLong("unreadNotifications");
-                        future.complete(count != null ? count.intValue() : 0);
-                    } else {
-                        future.complete(0);
+    public LiveData<Integer> getUnreadNotificationsCount(String uid) {
+        MutableLiveData<Integer> countLiveData = new MutableLiveData<>();
+        db.collection(USERS_COLLECTION).document(uid)
+                .addSnapshotListener((snapshot, e) -> {
+                    if (e != null) {
+                        // Hata durumunda sayıyı 0 olarak kabul edebiliriz veya loglayabiliriz.
+                        countLiveData.postValue(0);
+                        return;
                     }
-                })
-                .addOnFailureListener(future::completeExceptionally);
-        return future;
+
+                    if (snapshot != null && snapshot.exists()) {
+                        Long count = snapshot.getLong("unreadNotifications");
+                        countLiveData.postValue(count != null ? count.intValue() : 0);
+                    } else {
+                        countLiveData.postValue(0);
+                    }
+                });
+        return countLiveData;
+    }
+
+    @Override
+    public CompletableFuture<Void> resetUnreadNotificationsCount(String uid) {
+        return taskToFuture(db.collection(USERS_COLLECTION)
+                .document(uid)
+                .update("unreadNotifications", 0));
+    }
+
+    @Override
+    public LiveData<List<FriendRequest>> getIncomingFriendRequests(String uid) {
+        MutableLiveData<List<FriendRequest>> requestsLiveData = new MutableLiveData<>();
+        Query query = db.collection("friend_requests")
+                .whereEqualTo("toUid", uid)
+                .whereEqualTo("status", "pending");
+
+        query.addSnapshotListener((snapshots, e) -> {
+            if (e != null) {
+                // Handle error
+                requestsLiveData.postValue(new ArrayList<>());
+                return;
+            }
+
+            List<FriendRequest> requests = new ArrayList<>();
+            if (snapshots != null) {
+                for (DocumentSnapshot doc : snapshots.getDocuments()) {
+                    FriendRequest request = doc.toObject(FriendRequest.class);
+                    if (request != null) {
+                        request.setId(doc.getId());
+                        requests.add(request);
+                    }
+                }
+            }
+            requestsLiveData.postValue(requests);
+        });
+
+        return requestsLiveData;
     }
 }

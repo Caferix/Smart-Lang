@@ -15,6 +15,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.scu.smartlang.R;
+import com.scu.smartlang.presentation.viewmodel.ProfileViewModel;
 import com.scu.smartlang.presentation.viewmodel.SocialViewModel;
 
 import dagger.hilt.android.AndroidEntryPoint;
@@ -23,6 +24,7 @@ import dagger.hilt.android.AndroidEntryPoint;
 public class FriendRequestsFragment extends Fragment implements FriendRequestsAdapter.OnRequestActionListener {
 
     private SocialViewModel socialViewModel;
+    private ProfileViewModel profileViewModel;
     private RecyclerView recyclerView;
     private FriendRequestsAdapter adapter;
 
@@ -37,6 +39,7 @@ public class FriendRequestsFragment extends Fragment implements FriendRequestsAd
         super.onViewCreated(view, savedInstanceState);
 
         socialViewModel = new ViewModelProvider(requireActivity()).get(SocialViewModel.class);
+        profileViewModel = new ViewModelProvider(requireActivity()).get(ProfileViewModel.class);
 
         recyclerView = view.findViewById(R.id.rv_friend_requests);
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -44,7 +47,6 @@ public class FriendRequestsFragment extends Fragment implements FriendRequestsAd
         adapter = new FriendRequestsAdapter(new java.util.ArrayList<>(), this);
         recyclerView.setAdapter(adapter);
 
-        // LiveData ile istekleri gözlemle
         socialViewModel.getIncomingRequests().observe(getViewLifecycleOwner(), requests -> {
             if (requests != null) {
                 adapter.updateList(requests);
@@ -53,10 +55,13 @@ public class FriendRequestsFragment extends Fragment implements FriendRequestsAd
 
         socialViewModel.getFriendshipActionCompleted().observe(getViewLifecycleOwner(), aVoid -> {
             Toast.makeText(getContext(), "İşlem tamamlandı.", Toast.LENGTH_SHORT).show();
-            loadRequests(); // Listeyi yeniden yükle
+            loadRequests();
         });
 
         loadRequests();
+
+        // Reset notification count when viewing this screen
+        profileViewModel.resetUnreadNotificationsCount();
     }
 
     private void loadRequests() {
@@ -72,8 +77,6 @@ public class FriendRequestsFragment extends Fragment implements FriendRequestsAd
         socialViewModel.getCurrentUserId().thenAccept(uid -> {
             if (uid != null) {
                 socialViewModel.acceptFriendRequest(requestId, uid, requesterUid);
-                // Refresh the list after action
-                socialViewModel.fetchIncomingRequests(uid);
             }
         });
     }
@@ -83,8 +86,6 @@ public class FriendRequestsFragment extends Fragment implements FriendRequestsAd
         socialViewModel.getCurrentUserId().thenAccept(uid -> {
             if (uid != null) {
                 socialViewModel.rejectFriendRequest(requestId, uid);
-                // Refresh the list after action
-                socialViewModel.fetchIncomingRequests(uid);
             }
         });
     }
