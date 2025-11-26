@@ -25,6 +25,8 @@ import com.scu.smartlang.presentation.viewmodel.AuthViewModel;
 import com.scu.smartlang.presentation.viewmodel.ProfileViewModel;
 import com.google.android.material.button.MaterialButton;
 import dagger.hilt.android.AndroidEntryPoint;
+import com.scu.smartlang.presentation.viewmodel.AuthViewModel;
+import com.scu.smartlang.presentation.viewmodel.ProfileViewModel;
 
 @AndroidEntryPoint
 public class HomeFragment extends Fragment {
@@ -96,6 +98,7 @@ public class HomeFragment extends Fragment {
                 Toast.makeText(getContext(), "Hata: " + ((AuthResultState.Error) authResult).getMessage(), Toast.LENGTH_LONG).show();
                 navigateToSignIn();
             } else if (authResult instanceof AuthResultState.SignedOut || authResult instanceof AuthResultState.EmailNotVerified) {
+                // Oturum kapalıysa veya e-posta doğrulanmamışsa giriş ekranına yönlendir.
                 navigateToSignIn();
             }
         });

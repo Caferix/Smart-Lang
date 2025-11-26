@@ -1,3 +1,4 @@
+// java
 package com.scu.smartlang.presentation.ui.profile;
 
 import android.os.Bundle;
@@ -136,6 +137,7 @@ public class ProfileFragment extends Fragment implements FriendsAdapter.OnFriend
             if (friends != null) {
                 friendsAdapter.updateList(friends);
             }
+            friendsAdapter.updateList(models);
         });
     }
 

@@ -16,6 +16,9 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.scu.smartlang.R;
 import com.scu.smartlang.presentation.viewmodel.LeaderboardViewModel;
 
+import com.scu.smartlang.presentation.ui.auth.AuthResultState;
+import com.scu.smartlang.presentation.viewmodel.AuthViewModel;
+import com.scu.smartlang.presentation.viewmodel.ProfileViewModel;
 import dagger.hilt.android.AndroidEntryPoint;
 
 @AndroidEntryPoint
@@ -24,6 +27,8 @@ public class LeaderboardFragment extends Fragment {
     private LeaderboardViewModel leaderboardViewModel;
     private LeaderboardAdapter leaderboardAdapter;
     private RecyclerView recyclerView;
+    private ProfileViewModel profileViewModel;
+    private TextView tvLeaderboardContent;
 
     @Nullable
     @Override
