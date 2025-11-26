@@ -1,23 +1,18 @@
 package com.scu.smartlang.domain.usecase.user;
 
-import com.scu.smartlang.domain.repository.FirebaseRepository;
+import com.scu.smartlang.domain.repository.AuthRepository;
 import java.util.concurrent.CompletableFuture;
 import javax.inject.Inject;
 
 public class SendPasswordResetEmailUseCase {
-    private final FirebaseRepository repository;
+    private final AuthRepository repository;
 
     @Inject
-    public SendPasswordResetEmailUseCase(FirebaseRepository repository) {
+    public SendPasswordResetEmailUseCase(AuthRepository repository) {
         this.repository = repository;
     }
 
     public CompletableFuture<Void> execute(String email) {
-        if (email == null || email.trim().isEmpty()) {
-            CompletableFuture<Void> failed = new CompletableFuture<>();
-            failed.completeExceptionally(new IllegalArgumentException("Email adresi gerekli"));
-            return failed;
-        }
         return repository.sendPasswordResetEmail(email);
     }
 }

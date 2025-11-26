@@ -13,6 +13,7 @@ public class User {
     private int level;
     private String profileImageUrl;
     private UserStats stats;
+    private int unreadNotifications;
 
     public UserStats getStats() {
         return stats;
@@ -22,13 +23,18 @@ public class User {
         this.stats = stats;
     }
 
+    public int getUnreadNotifications() { return unreadNotifications; }
+    public void setUnreadNotifications(int unreadNotifications) {
+        this.unreadNotifications = unreadNotifications;
+    }
+
     @ServerTimestamp
     private Date createdAt;
 
 
     public User(){} // firestore icin bos constructor
 
-    public User(String uid, String userName, String email, boolean emailVerified, int xp, int level, String profileImageUrl, Date createdAt, UserStats stats) {
+    public User(String uid, String userName, String email, boolean emailVerified, int xp, int level, String profileImageUrl, Date createdAt, UserStats stats, int unreadNotifications) {
         this.uid = uid;
         this.userName = userName;
         this.email = email;
@@ -38,6 +44,7 @@ public class User {
         this.profileImageUrl = profileImageUrl;
         this.createdAt = createdAt;
         this.stats = stats;
+        this.unreadNotifications = unreadNotifications;
     }
 
     public String getUid() {

@@ -20,7 +20,8 @@ import androidx.navigation.NavOptions;
 import androidx.navigation.fragment.NavHostFragment;
 
 import com.scu.smartlang.R;
-import com.scu.smartlang.presentation.viewmodel.UserViewModel;
+import com.scu.smartlang.presentation.viewmodel.AuthViewModel;
+import com.scu.smartlang.presentation.viewmodel.ProfileViewModel;
 
 import dagger.hilt.android.AndroidEntryPoint;
 
@@ -28,7 +29,8 @@ import dagger.hilt.android.AndroidEntryPoint;
 public class SignInFragment extends Fragment {
 
     private static final String TAG = "SignInFragment";
-    private UserViewModel userViewModel;
+    private ProfileViewModel profileViewModel;
+    private AuthViewModel authViewModel;
     private NavController navController;
     private EditText etEmail, etPassword;
     private Button btnSignIn, btnGoToSignUp;
@@ -49,8 +51,8 @@ public class SignInFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         navController = NavHostFragment.findNavController(this);
-        userViewModel = new ViewModelProvider(requireActivity()).get(UserViewModel.class);
-
+        profileViewModel = new ViewModelProvider(requireActivity()).get(ProfileViewModel.class);
+        authViewModel = new ViewModelProvider(requireActivity()).get(AuthViewModel.class);
         // UI Elemanlarının Tanımlanması
         etEmail = view.findViewById(R.id.et_email);
         etPassword = view.findViewById(R.id.et_password);
@@ -62,28 +64,46 @@ public class SignInFragment extends Fragment {
         Button btnResendEmail = view.findViewById(R.id.btn_resend_email);
         forgotPasswordTextView = view.findViewById(R.id.tv_forgot_password);
 
-        // --- TEMİZLEME DÜZELTMESİ ---
-        // (Test kodları silindi. Burası normal akış.)
-
+        // TEMİZLEME DÜZELTMESİ (Önemli. Silinmeyecek.)
+        // Fragment yüklendiğinde, ViewModel'deki son kayıt sonucunu (EmailNotVerified gibi)
+        // hemen ve koşulsuz olarak temizle. Bu, observerın sadece kullanıcının
+        // Giriş yap butonuna bastıktan sonraki yeni durumları görmesini sağlar.
         Log.d(TAG, "Zorunlu Temizleme: SignInFragment yüklendi, AuthResult durumu sıfırlanıyor.");
-        userViewModel.clearAuthResultState();
+        authViewModel.clearAuthResultState();
+        // TEMİZLEME SONU
+
 
         // Başlangıçta Formu Gizle, Oturum Kontrolü Metnini Göster
         setLoadingState(true, true);
 
         // OTURUM KONTROLÜ
-        userViewModel.fetchUserProfile();
+        profileViewModel.fetchUserProfile();
 
-        // Açılışta Oturum Kontrolü Sonucunu Dinle
-        userViewModel.getUserProfile().observe(getViewLifecycleOwner(), authResult -> {
+        // Açılışta Oturum Kontrolü Sonucunu Dinle (Sadece oturum var mı/doğrulanmış mı kontrolü)
+        profileViewModel.getUserProfile().observe(getViewLifecycleOwner(), authResult -> {
+            // If initial loading message is visible, ignore Loading state as before
             if (authResult instanceof AuthResultState.Loading && tvInitialLoading.getVisibility() == View.VISIBLE) {
                 return;
             }
+
+            // YENİ DEĞİŞİKLİK: Manuel giriş işlemi devam ediyorsa, bu gözlemcinin herhangi bir
+            // navigasyon veya UI değişikliği yapmasını tamamen engelle.
+            // Bu, authViewModel gözlemcisi ile çakışmayı önler.
+            if (isManualSignIn) {
+                Log.d(TAG, "profileViewModel observer: Manuel giriş işlemi aktif, bu gözlemci atlanıyor.");
+                return;
+            }
+
             if (authResult instanceof AuthResultState.Success) {
-                if (isManualSignIn) {
+                AuthResultState.Success success = (AuthResultState.Success) authResult;
+                if (success.getUser() == null) {
+                    Log.d(TAG, "Açılış oturum kontrolü: Success durumu alındı ama User nesnesi null. Form gösteriliyor.");
+                    setLoadingState(false, false);
                     return;
                 }
-                AuthResultState.Success success = (AuthResultState.Success) authResult;
+
+                // 'isManualSignIn' kontrolü yukarı taşındığı için buradan kaldırılabilir,
+                // ancak okunabilirlik için kalmasında bir sakınca yoktur.
                 String welcomeName = success.getUser().getUserName();
                 setLoadingState(false, false);
                 Toast.makeText(getContext(), "Hoş geldiniz! Otomatik giriş yapıldı. Kullanıcı: " + welcomeName, Toast.LENGTH_SHORT).show();
@@ -91,41 +111,50 @@ public class SignInFragment extends Fragment {
                         .setPopUpTo(R.id.signInFragment, true)
                         .build());
             } else if (authResult instanceof AuthResultState.EmailNotVerified) {
+                // DURUM: Oturum vardı ama E-posta DOĞRULANMAMIŞ. ViewModel oturumu kapattı.
                 Log.d(TAG, "Açılış oturum kontrolü: E-posta doğrulanmamış. Form gösteriliyor.");
-                setLoadingState(false, false);
+                setLoadingState(false, false); // Formu görünür yap
                 tvError.setText("Hesabınız doğrulanmamış. Lütfen e-postanızı kontrol edin.");
                 tvError.setVisibility(View.VISIBLE);
                 if (btnResendEmail != null) btnResendEmail.setVisibility(View.VISIBLE);
             } else {
+                // DURUM: Oturum yok (Error, SignedOut veya genel hata). Formu göster.
                 Log.d(TAG, "Açılış oturum kontrolü: Oturum yok veya geçersiz. Giriş formu gösteriliyor.");
-                setLoadingState(false, false);
+                setLoadingState(false, false); // Formu görünür yap
             }
         });
 
-        // Manuel Giriş/Kayıt Sonuçlarını Dinle
-        userViewModel.getAuthResult().observe(getViewLifecycleOwner(), authResult -> {
+        // Manuel Giriş/Kayıt Sonuçlarını Dinle (loginUser()'dan gelen)
+        authViewModel.getAuthResult().observe(getViewLifecycleOwner(), authResult -> {
+            // Temizleme sinyalini (null) yakala. Bu, manuel clearAuthResultState() çağrımızdan sonraki durumdur.
             if (authResult == null) {
                 isManualSignIn = false;
+                // UI'ı temiz ve sıfırlanmış halde tut.
                 setLoadingState(false, false);
                 tvError.setVisibility(View.GONE);
                 if (btnResendEmail != null) btnResendEmail.setVisibility(View.GONE);
                 return;
             }
 
+            // Yeni bir işlem sonucu geldi, hata metnini sıfırla.
             tvError.setVisibility(View.GONE);
 
+            // Loading
             if (authResult instanceof AuthResultState.Loading) {
                 setLoadingState(true, false);
             }
+            // Başarılı Giriş (E-posta zaten doğrulanmış varsayılır)
             else if (authResult instanceof AuthResultState.Success) {
                 setLoadingState(false, false);
                 Toast.makeText(getContext(), "Giriş başarılı!", Toast.LENGTH_SHORT).show();
+                // NAVİGASYON: Ana Sayfaya git ve geri yığını temizle.
                 navController.navigate(R.id.navigation_home, null,
                         new NavOptions.Builder()
                                 .setPopUpTo(R.id.signInFragment, true)
                                 .build());
                 isManualSignIn = false;
             }
+            // E-posta Doğrulaması Gerekli (YALNIZCA KULLANICI GİRİŞ YAPMAYI DENEYİNCE GÖSTERİLMELİ)
             else if (authResult instanceof AuthResultState.EmailNotVerified) {
                 setLoadingState(false, false);
                 tvError.setText("Hesabınız doğrulanmamış. Lütfen e-postanızı kontrol edin.");
@@ -133,6 +162,7 @@ public class SignInFragment extends Fragment {
                 if (btnResendEmail != null) btnResendEmail.setVisibility(View.VISIBLE);
                 isManualSignIn = false;
             }
+            // E-posta Tekrar Gönderim Başarısı
             else if (authResult instanceof AuthResultState.ResendEmailSuccess) {
                 setLoadingState(false, false);
                 Toast.makeText(getContext(), "Doğrulama e-postası tekrar gönderildi. Lütfen kontrol edin.", Toast.LENGTH_LONG).show();
@@ -140,6 +170,7 @@ public class SignInFragment extends Fragment {
                 if (btnResendEmail != null) btnResendEmail.setVisibility(View.GONE);
                 isManualSignIn = false;
             }
+            // Hata
             else if (authResult instanceof AuthResultState.Error) {
                 setLoadingState(false, false);
                 AuthResultState.Error error = (AuthResultState.Error) authResult;
@@ -151,9 +182,10 @@ public class SignInFragment extends Fragment {
 
         // BUTON CLICK LISTENERLAR
 
+        // E-posta Tekrar Gönderme
         if (btnResendEmail != null) {
             btnResendEmail.setOnClickListener(v -> {
-                userViewModel.resendVerificationEmail();
+                authViewModel.resendVerificationEmail();
             });
         }
 
@@ -167,8 +199,11 @@ public class SignInFragment extends Fragment {
             }
 
             isManualSignIn = true;
+
+            // Giriş denemesi başladığında hata metnini kapat.
             tvError.setVisibility(View.GONE);
-            userViewModel.loginUser(email, password);
+
+            authViewModel.loginUser(email, password);
         });
 
         btnGoToSignUp.setOnClickListener(v -> {
@@ -182,20 +217,31 @@ public class SignInFragment extends Fragment {
         }
     }
 
-    // UI durumunu ayarlar (Yükleniyor/Form).
+
+     // UI durumunu ayarlar (Yükleniyor/Form).
     private void setLoadingState(boolean isLoading, boolean isInitialLoading) {
+        // Oturum kontrolü devam ederken form gizli olmalı
         int formVisibility = (isLoading && isInitialLoading) ? View.GONE : View.VISIBLE;
+
+        // Oturum kontrolü bitene kadar merkezi yükleniyor göster (tvInitialLoading)
         int initialLoadingVisibility = isInitialLoading ? View.VISIBLE : View.GONE;
+
+        // Genel progress bar görünürlüğü (hem initial hem de form submission için)
         int progressBarVisibility = isLoading && !isInitialLoading ? View.VISIBLE : View.GONE;
 
+        // Form Bileşenlerini Kontrol Et
         if (etEmail != null) etEmail.setVisibility(formVisibility);
         if (etPassword != null) etPassword.setVisibility(formVisibility);
         if (btnSignIn != null) btnSignIn.setVisibility(formVisibility);
         if (btnGoToSignUp != null) btnGoToSignUp.setVisibility(formVisibility);
 
+        // Açılış Yükleniyor Metni
         if (tvInitialLoading != null) tvInitialLoading.setVisibility(initialLoadingVisibility);
+
+        // Progress Bar'ı göster (sadece manuel yükleme için, initial için değil)
         if (progressBar != null) progressBar.setVisibility(progressBarVisibility);
 
+        // Hata metnini ve tekrar gönder butonunu (görünürse) initial loading bitene kadar gizle
         if (isInitialLoading) {
             if (tvError != null) tvError.setVisibility(View.GONE);
         }

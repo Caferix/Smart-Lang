@@ -1,14 +1,14 @@
 package com.scu.smartlang.domain.usecase.user;
 
-import com.scu.smartlang.domain.repository.FirebaseRepository;
+import com.scu.smartlang.domain.repository.AuthRepository;
 import java.util.concurrent.CompletableFuture;
 import javax.inject.Inject;
 
 public class UpdatePasswordUseCase {
-    private final FirebaseRepository repository;
+    private final AuthRepository repository;
 
     @Inject
-    public UpdatePasswordUseCase(FirebaseRepository repository) {
+    public UpdatePasswordUseCase(AuthRepository repository) {
         this.repository = repository;
     }
 
@@ -39,8 +39,6 @@ public class UpdatePasswordUseCase {
             );
             return failed;
         }
-
-        // Repository'de reauthenticate + update işlemini yaptık
         return repository.reauthenticateAndUpdatePassword(currentPassword, newPassword);
     }
 }

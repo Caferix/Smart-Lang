@@ -1,4 +1,3 @@
-// java
 package com.scu.smartlang.presentation.ui.profile;
 
 import android.os.Bundle;
@@ -9,74 +8,60 @@ import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-
 import com.scu.smartlang.R;
 import com.scu.smartlang.domain.model.Friend;
 import com.scu.smartlang.domain.model.User;
-import com.scu.smartlang.presentation.ui.auth.AuthResultState;
-import com.scu.smartlang.presentation.viewmodel.ProfileViewModel;
 import com.scu.smartlang.presentation.viewmodel.SocialViewModel;
-
 import java.util.ArrayList;
 import java.util.List;
-
 import dagger.hilt.android.AndroidEntryPoint;
 
 @AndroidEntryPoint
-public class ProfileFragment extends Fragment {
+public class OtherUserFragment extends Fragment {
 
-
-    private TextView tvName;
-    private TextView tvLevelLabel;
-    private TextView tvXpLabel;
+    private TextView tvName, tvLevelLabel, tvXpLabel;
     private ProgressBar pbXp;
     private RecyclerView rvFriends;
     private Button btnSendFriendRequest;
-
     private FriendsAdapter friendsAdapter;
-
-    private String viewUserId = null;
-    private String currentUid = null;
-    private boolean isMyProfile = false;
     private SocialViewModel socialViewModel;
-    private ProfileViewModel profileViewModel;
+    private String viewUserId;
+    private String currentUid;
 
     @Override
-    public View onCreateView(
-            @NonNull LayoutInflater inflater,
-            ViewGroup container,
-            Bundle savedInstanceState
-    ) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_profile, container, false);
     }
 
     @Override
-    public void onViewCreated(
-            @NonNull View view,
-            @Nullable Bundle savedInstanceState
-    ) {
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
         socialViewModel = new ViewModelProvider(requireActivity()).get(SocialViewModel.class);
-        profileViewModel = new ViewModelProvider(requireActivity()).get(ProfileViewModel.class);
-
-        setupViews(view);
 
         if (getArguments() != null) {
             viewUserId = getArguments().getString("userId");
         }
 
+        if (viewUserId == null) {
+            Toast.makeText(getContext(), "Kullanıcı bulunamadı.", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        setupViews(view);
+        observeViewModel();
+
         socialViewModel.getCurrentUserId().thenAccept(uid -> {
             currentUid = uid;
             if (!isAdded()) return;
-            requireActivity().runOnUiThread(this::setupProfileView);
+            requireActivity().runOnUiThread(this::fetchData);
         });
     }
 
@@ -91,82 +76,56 @@ public class ProfileFragment extends Fragment {
         rvFriends.setLayoutManager(new LinearLayoutManager(getContext()));
         friendsAdapter = new FriendsAdapter(new ArrayList<>());
         rvFriends.setAdapter(friendsAdapter);
+
+        btnSendFriendRequest.setVisibility(View.VISIBLE);
     }
 
-    private void setupProfileView() {
-        isMyProfile = (viewUserId == null || viewUserId.equals(currentUid));
-
-        observeViewModel();
-
-        if (isMyProfile) {
-            btnSendFriendRequest.setVisibility(View.GONE);
-            profileViewModel.fetchUserProfile();
-            if (currentUid != null) {
-                socialViewModel.fetchFriends(currentUid);
-            }
-        } else {
-            btnSendFriendRequest.setVisibility(View.VISIBLE);
-            btnSendFriendRequest.setOnClickListener(v -> sendFriendRequest());
-            socialViewModel.fetchUserById(viewUserId);
-            socialViewModel.fetchFriends(viewUserId);
-            if (currentUid != null) {
-                socialViewModel.checkFriendshipStatus(currentUid, viewUserId);
-            }
+    private void fetchData() {
+        socialViewModel.fetchUserById(viewUserId);
+        socialViewModel.fetchFriends(viewUserId);
+        if (currentUid != null) {
+            socialViewModel.checkFriendshipStatus(currentUid, viewUserId);
         }
     }
 
     private void observeViewModel() {
-        if (isMyProfile) {
-            profileViewModel.getUserProfile().observe(getViewLifecycleOwner(), state -> {
-                if (state instanceof AuthResultState.Success) {
-                    User user = ((AuthResultState.Success) state).getUser();
-                    updateUi(user);
-                }
-            });
-        } else {
-            socialViewModel.getViewedUser().observe(getViewLifecycleOwner(), user -> {
-                if (user != null) updateUi(user);
-            });
-
-            socialViewModel.getFriendshipStatus().observe(
-                    getViewLifecycleOwner(),
-                    this::updateFriendRequestButton
-            );
-        }
+        socialViewModel.getViewedUser().observe(getViewLifecycleOwner(), this::updateUi);
+        socialViewModel.getFriendshipStatus().observe(getViewLifecycleOwner(), this::updateFriendRequestButton);
 
         socialViewModel.getFriends().observe(getViewLifecycleOwner(), friends -> {
-            if (friends == null) return;
+            if (friends == null || !isAdded()) {
+                friendsAdapter.updateList(new ArrayList<>()); // Listeyi temizle
+                return;
+            }
             List<FriendsAdapter.FriendModel> models = new ArrayList<>();
             for (Friend f : friends) {
-                models.add(new FriendsAdapter.FriendModel(
-                        f.getUserName(),   // name
-                        f.getLevel()       // level
-                ));
+                // Friend nesnesinden FriendModel nesnesi oluştur
+                models.add(new FriendsAdapter.FriendModel(f.getUserName(), f.getLevel()));
             }
-            friendsAdapter.updateList(models);
+            friendsAdapter.updateList(models); // Adaptörü doğru veriyle güncelle
+        });
+
+        // Herhangi bir arkadaşlık aksiyonu (ekleme, çıkarma, kabul etme) tamamlandığında
+        // profil durumunu ve arkadaş listesini yeniden kontrol et.
+        socialViewModel.getFriendshipActionCompleted().observe(getViewLifecycleOwner(), aVoid -> {
+            Toast.makeText(getContext(), "İşlem tamamlandı.", Toast.LENGTH_SHORT).show();
+            fetchData(); // Tüm verileri yenile
         });
     }
 
     private void updateUi(User user) {
         if (user == null || !isAdded()) return;
-
-        String name = (user.getUserName() != null) ? user.getUserName() : "Kullanıcı";
-        tvName.setText(name);
-
+        tvName.setText(user.getUserName() != null ? user.getUserName() : "Kullanıcı");
         int level = user.getLevel();
         int totalXp = user.getXp();
-
-        // Basit level / XP hesabı
         int requiredXpForThisLevel = 100 + (level - 1) * 25;
         int previousLevelsXp = 0;
         for (int i = 1; i < level; i++) {
             previousLevelsXp += 100 + (i - 1) * 25;
         }
         int xpInCurrentLevel = Math.max(0, totalXp - previousLevelsXp);
-
         tvLevelLabel.setText("Level " + level);
         tvXpLabel.setText(xpInCurrentLevel + " / " + requiredXpForThisLevel + " XP");
-
         pbXp.setMax(requiredXpForThisLevel);
         pbXp.setProgress(Math.min(xpInCurrentLevel, requiredXpForThisLevel));
     }
@@ -174,26 +133,28 @@ public class ProfileFragment extends Fragment {
     private void updateFriendRequestButton(String status) {
         if (!isAdded() || btnSendFriendRequest == null) return;
 
-        if (status == null) {
-            btnSendFriendRequest.setText("Arkadaşlık İsteği Gönder");
-            btnSendFriendRequest.setEnabled(true);
-            btnSendFriendRequest.setOnClickListener(v -> sendFriendRequest());
-            return;
-        }
+        String statusNonNull = (status == null) ? "NONE" : status;
 
-        switch (status) {
+        switch (statusNonNull) {
             case "FRIENDS":
-                btnSendFriendRequest.setText("Arkadaşsınız");
-                btnSendFriendRequest.setEnabled(false);
+                btnSendFriendRequest.setText("Arkadaşlıktan Çıkar");
+                btnSendFriendRequest.setEnabled(true);
+                btnSendFriendRequest.setOnClickListener(v -> showRemoveFriendDialog());
                 break;
             case "REQUEST_SENT":
                 btnSendFriendRequest.setText("İstek Gönderildi");
                 btnSendFriendRequest.setEnabled(false);
+                btnSendFriendRequest.setOnClickListener(null);
                 break;
             case "REQUEST_RECEIVED":
                 btnSendFriendRequest.setText("İsteği Kabul Et");
                 btnSendFriendRequest.setEnabled(true);
-                // Şimdilik sadece pasif bırakıyoruz.
+                // Bu butona tıklandığında isteği kabul etme mantığı eklenebilir.
+                // Ancak genellikle bu işlem istek listesi ekranında yapılır.
+                // Şimdilik bu butonu istekler ekranına yönlendirmek daha doğru olabilir.
+                btnSendFriendRequest.setOnClickListener(v -> {
+                    Toast.makeText(getContext(), "Lütfen isteği gelen kutunuzdan kabul edin.", Toast.LENGTH_LONG).show();
+                });
                 break;
             case "NONE":
             default:
@@ -204,10 +165,23 @@ public class ProfileFragment extends Fragment {
         }
     }
 
+    private void showRemoveFriendDialog() {
+        if (getContext() == null) return;
+        new AlertDialog.Builder(getContext())
+                .setTitle("Arkadaşlıktan Çıkar")
+                .setMessage("Bu kullanıcıyı arkadaşlıktan çıkarmak istediğinizden emin misiniz?")
+                .setPositiveButton("Evet", (dialog, which) -> {
+                    if (currentUid != null && viewUserId != null) {
+                        socialViewModel.removeFriend(currentUid, viewUserId);
+                    }
+                })
+                .setNegativeButton("Hayır", null)
+                .show();
+    }
+
     private void sendFriendRequest() {
         if (currentUid != null && viewUserId != null) {
             socialViewModel.sendFriendRequest(currentUid, viewUserId);
-            Toast.makeText(getContext(), "Arkadaşlık isteği gönderildi.", Toast.LENGTH_SHORT).show();
         } else {
             Toast.makeText(getContext(), "İstek gönderilemedi. Lütfen tekrar deneyin.", Toast.LENGTH_SHORT).show();
         }

@@ -4,27 +4,35 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+
 import com.scu.smartlang.R;
+
 import java.util.List;
 
 public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.FriendViewHolder> {
 
-    // Basit model (Şimdilik dummy data için)
+    private List<FriendModel> friends;
+
     public static class FriendModel {
-        String name;
-        int level;
+        public String name;
+        public int level;
+
         public FriendModel(String name, int level) {
             this.name = name;
             this.level = level;
         }
     }
 
-    private List<FriendModel> friendList;
+    public FriendsAdapter(List<FriendModel> friends) {
+        this.friends = friends;
+    }
 
-    public FriendsAdapter(List<FriendModel> friendList) {
-        this.friendList = friendList;
+    public void updateList(List<FriendModel> newList) {
+        this.friends = newList;
+        notifyDataSetChanged();
     }
 
     @NonNull
@@ -37,20 +45,20 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.FriendVi
 
     @Override
     public void onBindViewHolder(@NonNull FriendViewHolder holder, int position) {
-        FriendModel friend = friendList.get(position);
+        FriendModel friend = friends.get(position);
         holder.tvName.setText(friend.name);
-        holder.tvLevel.setText("Level: " + friend.level);
+        holder.tvLevel.setText("Level " + friend.level);
     }
 
     @Override
     public int getItemCount() {
-        return friendList != null ? friendList.size() : 0;
+        return friends.size();
     }
 
     static class FriendViewHolder extends RecyclerView.ViewHolder {
         TextView tvName, tvLevel;
 
-        public FriendViewHolder(@NonNull View itemView) {
+        FriendViewHolder(View itemView) {
             super(itemView);
             tvName = itemView.findViewById(R.id.tv_friend_name);
             tvLevel = itemView.findViewById(R.id.tv_friend_level);
