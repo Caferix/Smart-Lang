@@ -5,6 +5,7 @@ import android.view.View;
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
+import androidx.core.splashscreen.SplashScreen;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.navigation.NavController;
@@ -26,6 +27,10 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        // ⭐ KRİTİK DEĞİŞİKLİK: Splash Screen'i başlatın.
+        // Bu, her zaman super.onCreate() çağrılmadan önce yapılmalıdır.
+        SplashScreen splashScreen = SplashScreen.installSplashScreen(this);
+
         super.onCreate(savedInstanceState);
 
         firebaseAuth = FirebaseAuth.getInstance();
@@ -37,6 +42,8 @@ public class MainActivity extends AppCompatActivity {
                 .findFragmentById(R.id.nav_host_fragment_activity_main);
 
         if (navHostFragment == null) {
+            // Eğer R.id.nav_host_fragment_activity_main bulunamazsa, uygulamadan çık.
+            // (Ya da başka bir hata işleme mantığı uygulayın.)
             return;
         }
 
@@ -61,14 +68,13 @@ public class MainActivity extends AppCompatActivity {
         // 5. Bottom Navigation'ı NavController ile bağla
         NavigationUI.setupWithNavController(navView, navController);
 
-        // 6. BottomNav Görünürlük Mantığı - GÜNCELLENEN KISIM
+        // 6. BottomNav Görünürlük Mantığı
         navController.addOnDestinationChangedListener((controller, destination, arguments) -> {
             int destinationId = destination.getId();
 
-            // Profil sayfasında (navigation_profile) da alt menünün görünmesini sağlıyoruz
             if (destinationId == R.id.navigation_home ||
                     destinationId == R.id.navigation_leaderboard ||
-                    destinationId == R.id.navigation_profile || // YENİ EKLENDİ
+                    destinationId == R.id.navigation_profile ||
                     destinationId == R.id.navigation_settings) {
                 navView.setVisibility(View.VISIBLE);
             } else {

@@ -37,6 +37,10 @@ android {
 
 dependencies {
 
+    // Hilt ve WorkManager entegrasyonu için BU GEREKLİ:
+
+    // Eğer kapt kullanıyorsanız:
+
     // Lottie Animasyon Kütüphanesi
     implementation("com.airbnb.android:lottie:6.1.0") // En güncel sürümü kontrol edebilirsiniz
 
@@ -75,6 +79,12 @@ dependencies {
 
     // work manager
     implementation("androidx.work:work-runtime:2.9.0")
+    // Hilt ve WorkManager entegrasyonu
+    implementation("androidx.hilt:hilt-work:1.2.0")
+    annotationProcessor("androidx.hilt:hilt-compiler:1.2.0")
+
+    // ⭐ YENİ EKLENEN SATIR: Splash Screen API kütüphanesi
+    implementation("androidx.core:core-splashscreen:1.0.1")
 
 
 }

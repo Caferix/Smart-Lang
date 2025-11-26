@@ -3,7 +3,9 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
 
-    <color name="button_green">#70C000</color>
+    <color name="splash_background_color">#0C172B</color>
+
+    <color name="button_green">#79CE01</color>
     <color name="button_stroke_blue">#40B4E8</color>
     <color name="text_title_gray">#4A4A4A</color>
     <color name="text_hint_gray">#A0A0A0</color>
