@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/white"
+    android:background="?android:attr/colorBackground"
     android:fillViewport="true"
     tools:context=".presentation.ui.auth.SignUpFragment">
 
@@ -13,20 +13,18 @@
         android:layout_height="wrap_content"
         android:padding="32dp">
 
-        <!-- Başlık -->
         <TextView
             android:id="@+id/tv_title_signup"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="40dp"
             android:text="Hesap Oluştur"
-            android:textColor="@color/text_title_gray"
+            android:textColor="?android:attr/textColorPrimary"
             android:textSize="28sp"
             android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <!-- Kullanıcı Adı Girdi Alanı -->
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/til_username_signup"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
@@ -56,7 +54,6 @@
 
         </com.google.android.material.textfield.TextInputLayout>
 
-        <!-- E-posta Girdi Alanı -->
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/til_email_signup"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
@@ -86,7 +83,6 @@
 
         </com.google.android.material.textfield.TextInputLayout>
 
-        <!-- Şifre Girdi Alanı -->
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/til_password_signup"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
@@ -118,7 +114,6 @@
 
         </com.google.android.material.textfield.TextInputLayout>
 
-        <!-- Hesap Oluştur Butonu -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_sign_up"
             android:layout_width="0dp"

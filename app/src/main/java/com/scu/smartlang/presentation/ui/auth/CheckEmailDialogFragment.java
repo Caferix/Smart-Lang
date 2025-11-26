@@ -7,17 +7,14 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.DialogFragment;
-import androidx.lifecycle.ViewModelProvider; // Eklendi
+import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 
 import com.scu.smartlang.R;
-import com.scu.smartlang.presentation.viewmodel.AuthViewModel; // Eklendi
+import com.scu.smartlang.presentation.viewmodel.AuthViewModel;
 
-/**
- * Kayıt başarılı olduktan sonra e-posta doğrulama talimatını gösteren sade iletişim kutusu.
- * Harici XML dosyasına ihtiyaç duymaz, standart AlertDialog kullanır.
- */
+
 public class CheckEmailDialogFragment extends DialogFragment {
 
     public static final String TAG = "CheckEmailDialogFragment";
@@ -40,16 +37,13 @@ public class CheckEmailDialogFragment extends DialogFragment {
             try {
                 // ViewModel'e Activity üzerinden erişim (Fragment'lar arası paylaşılan instance)
                 AuthViewModel authViewModel = new ViewModelProvider(requireActivity()).get(AuthViewModel.class);
-                // ÖNCEKİ Auth sonucunu temizle (EmailNotVerified durumunu null'a çek)
+                // öncekli Auth sonucunu temizle (EmailNotVerified durumunu null'a çek)
                 authViewModel.clearAuthResultState();
 
-                // Navigasyonu gerçekleştirmek için NavController'ı doğrudan Fragment'tan bul
                 NavController navController = NavHostFragment.findNavController(this);
 
-                // Önce SignUp Fragment'ı Nav Stack'ten çıkar
                 navController.popBackStack();
 
-                // Sonra SignIn Fragment'a git (R.id.signInFragment, NavGraph'ta tanımlı olmalı)
                 navController.navigate(R.id.signInFragment);
             } catch (IllegalStateException e) {
                 // NavController bulunamazsa veya navigasyon hatası oluşursa kullanıcı bilgilendirilebilir.

@@ -102,6 +102,9 @@
         <action
             android:id="@+id/action_navigation_profile_to_otherUserFragment"
             app:destination="@id/otherUserFragment" />
+        <action
+            android:id="@+id/action_navigation_profile_to_otherUserFragment2"
+            app:destination="@id/otherUserFragment" />
     </fragment>
 
     <fragment

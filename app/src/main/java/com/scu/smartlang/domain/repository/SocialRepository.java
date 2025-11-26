@@ -7,6 +7,8 @@ import com.scu.smartlang.domain.model.User;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
+import io.reactivex.rxjava3.core.Observable;
+
 public interface SocialRepository {
     CompletableFuture<Void> sendFriendRequest(String fromUid, String toUid);
     CompletableFuture<Void> acceptFriendRequest(String requestId, String acceptorUid, String requesterUid);
@@ -18,4 +20,5 @@ public interface SocialRepository {
     CompletableFuture<String> checkFriendshipStatus(String currentUid, String otherUid);
     CompletableFuture<Void> removeFriend(String currentUserId, String friendToRemoveId);
     CompletableFuture<Void> rejectFriendRequest(String requestId, String recipientUid);
+    Observable<List<User>> getFriendLeaderboard();
 }

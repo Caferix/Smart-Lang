@@ -35,4 +35,14 @@ public class FirebaseAuth {
     public Task<Void> sendPasswordResetEmail(String email){
         return mAuth.sendPasswordResetEmail(email);
     }
+
+    public void addAuthStateListener(
+            com.google.firebase.auth.FirebaseAuth.AuthStateListener listener) {
+        mAuth.addAuthStateListener(listener);
+    }
+
+    public void removeAuthStateListener(
+            com.google.firebase.auth.FirebaseAuth.AuthStateListener listener) {
+        mAuth.removeAuthStateListener(listener);
+    }
 }

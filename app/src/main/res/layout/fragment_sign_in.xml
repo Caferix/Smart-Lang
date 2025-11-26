@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fillViewport="true"
-    android:background="@color/white"
+    android:background="?android:attr/colorBackground"
     tools:context=".presentation.ui.auth.SignInFragment">
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -15,10 +15,11 @@
 
         <ImageView
             android:id="@+id/iv_logo"
-            android:layout_width="80dp"
-            android:layout_height="80dp"
+            android:layout_width="150dp"
+            android:layout_height="150dp"
             android:layout_marginTop="40dp"
-            android:src="@android:drawable/ic_dialog_map"
+            android:src="@drawable/logo"
+            android:contentDescription="Uygulama Logosu"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
@@ -28,9 +29,9 @@
             android:id="@+id/tv_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="48dp"
+            android:layout_marginTop="32dp"
             android:text="Giriş Yap"
-            android:textColor="@color/text_title_gray"
+            android:textColor="?android:attr/textColorPrimary"
             android:textSize="28sp"
             android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
@@ -85,8 +86,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@drawable/bg_input_field"
-                android:hint="Şifre"
                 android:textColor="@color/black"
+                android:hint="Şifre"
                 android:inputType="textPassword"
                 android:paddingStart="20dp"
                 android:paddingTop="16dp"
@@ -109,7 +110,7 @@
             app:layout_constraintTop_toBottomOf="@id/til_password"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            tools:text="Hesabınız doğrulanmamış. Lütfen e-postanızı kontrol edin."/>
+            tools:text="Hesabınız doğrulanmamış."/>
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_resend_email"
@@ -124,7 +125,6 @@
             app:layout_constraintTop_toBottomOf="@id/tv_error"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
-
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_sign_in"
@@ -188,7 +188,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:textColor="@color/black"
+            android:textColor="?android:attr/textColorPrimary"
             android:textAlignment="center"
             android:textSize="16sp"
             android:text="Oturum Kontrol Ediliyor..."
@@ -198,5 +198,4 @@
             app:layout_constraintEnd_toEndOf="parent"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
-
 </ScrollView>

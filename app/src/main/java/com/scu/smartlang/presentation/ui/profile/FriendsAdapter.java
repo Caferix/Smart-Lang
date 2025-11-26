@@ -9,28 +9,26 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.scu.smartlang.R;
+import com.scu.smartlang.domain.model.Friend;
 
 import java.util.List;
 
 public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.FriendViewHolder> {
 
-    private List<FriendModel> friends;
+    private List<Friend> friends;
+    private final OnFriendClickListener listener;
 
-    public static class FriendModel {
-        public String name;
-        public int level;
-
-        public FriendModel(String name, int level) {
-            this.name = name;
-            this.level = level;
-        }
+    // Tıklama olaylarını dinlemek için arayüz
+    public interface OnFriendClickListener {
+        void onFriendClick(Friend friend);
     }
 
-    public FriendsAdapter(List<FriendModel> friends) {
+    public FriendsAdapter(List<Friend> friends, OnFriendClickListener listener) {
         this.friends = friends;
+        this.listener = listener;
     }
 
-    public void updateList(List<FriendModel> newList) {
+    public void updateList(List<Friend> newList) {
         this.friends = newList;
         notifyDataSetChanged();
     }
@@ -45,14 +43,13 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.FriendVi
 
     @Override
     public void onBindViewHolder(@NonNull FriendViewHolder holder, int position) {
-        FriendModel friend = friends.get(position);
-        holder.tvName.setText(friend.name);
-        holder.tvLevel.setText("Level " + friend.level);
+        Friend friend = friends.get(position);
+        holder.bind(friend, listener);
     }
 
     @Override
     public int getItemCount() {
-        return friends.size();
+        return friends != null ? friends.size() : 0;
     }
 
     static class FriendViewHolder extends RecyclerView.ViewHolder {
@@ -62,6 +59,13 @@ public class FriendsAdapter extends RecyclerView.Adapter<FriendsAdapter.FriendVi
             super(itemView);
             tvName = itemView.findViewById(R.id.tv_friend_name);
             tvLevel = itemView.findViewById(R.id.tv_friend_level);
+        }
+
+        // Veriyi bağla ve tıklama dinleyicisini ayarla
+        public void bind(final Friend friend, final OnFriendClickListener listener) {
+            tvName.setText(friend.getUserName());
+            tvLevel.setText("Level " + friend.getLevel());
+            itemView.setOnClickListener(v -> listener.onFriendClick(friend));
         }
     }
 }
