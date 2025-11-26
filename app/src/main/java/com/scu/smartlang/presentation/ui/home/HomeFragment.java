@@ -14,6 +14,7 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
+import androidx.navigation.Navigation;
 import androidx.navigation.NavOptions;
 import androidx.navigation.fragment.NavHostFragment;
 
@@ -33,9 +34,10 @@ public class HomeFragment extends Fragment {
     private ProgressBar progressXp;
     private TextView tvStreakCount;
     private MaterialButton btnStartDailyLesson;
-    private MaterialButton btnStartGameMatch;
-    private MaterialButton btnStartGamePuzzle;
-    private MaterialButton btnStartAi;
+    private MaterialButton btnLanguageSelector;
+    private MaterialButton btnStartGameMatch; // Kelime Eşleştirme
+    private MaterialButton btnStartGamePuzzle; // Boşluk Doldurma (Senin Oyunun)
+    private MaterialButton btnStartAi;         // AI Butonu
     private ImageView ivNotificationIcon;
     private ProfileViewModel profileViewModel;
 
@@ -68,9 +70,13 @@ public class HomeFragment extends Fragment {
         progressXp = view.findViewById(R.id.progress_xp);
         tvStreakCount = view.findViewById(R.id.tv_streak_count);
         ivNotificationIcon = view.findViewById(R.id.iv_notification_icon);
+        btnLanguageSelector = view.findViewById(R.id.btn_language_selector);
+        tvNotificationBadge = view.findViewById(R.id.tv_notification_badge);
+
+        // Butonlar
         btnStartDailyLesson = view.findViewById(R.id.btn_start_daily_lesson);
         btnStartGameMatch = view.findViewById(R.id.btn_start_game_match);
-        btnStartGamePuzzle = view.findViewById(R.id.btn_start_game_puzzle);
+        btnStartGamePuzzle = view.findViewById(R.id.btn_start_game_puzzle); // Bu artık senin oyunun
         btnStartAi = view.findViewById(R.id.btn_start_ai);
 
         observeViewModel();
@@ -102,13 +108,17 @@ public class HomeFragment extends Fragment {
 
         btnStartDailyLesson.setOnClickListener(v -> Toast.makeText(getContext(), "Günlük ders yakında!", Toast.LENGTH_SHORT).show());
 
+        // Oyun 1: Kelime Eşleştirme
         btnStartGameMatch.setOnClickListener(v -> {
             Intent intent = new Intent(getActivity(), GameActivity.class);
             startActivity(intent);
         });
 
-        btnStartGamePuzzle.setOnClickListener(v ->
-                Toast.makeText(getContext(), "Kelime Bulmaca çok yakında!", Toast.LENGTH_SHORT).show());
+        // --- SENİN OYUNUN ---
+        // "Kelime Bulmaca" butonuna (btnStartGamePuzzle) basınca "Boşluk Doldurma" açılacak.
+        btnStartGamePuzzle.setOnClickListener(v -> {
+            Navigation.findNavController(v).navigate(R.id.sentenceGameFragment);
+        });
 
         btnStartAi.setOnClickListener(v ->
                 Toast.makeText(getContext(), "AI Asistan ile sohbet yakında!", Toast.LENGTH_SHORT).show());

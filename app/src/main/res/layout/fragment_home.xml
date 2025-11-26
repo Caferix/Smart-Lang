@@ -165,18 +165,23 @@
                 android:layout_marginTop="8dp"
                 android:gravity="center_vertical|start"
                 android:paddingStart="20dp"
-                android:text="@string/game_puzzle_title"
-                android:textColor="@color/purple_700"
+
+                android:text="BOŞLUK DOLDURMA"
+                android:textColor="@color/sl_primary"
+
                 android:textSize="16sp"
                 android:textStyle="bold"
                 app:cornerRadius="12dp"
+
                 app:icon="@drawable/ic_gamepad_24dp"
                 app:iconGravity="textStart"
-                app:iconTint="@color/purple_700"
+                app:iconTint="@color/sl_primary"
+
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/btn_start_game_match"
-                app:strokeColor="@color/purple_700"
+
+                app:strokeColor="@color/sl_primary"
                 app:strokeWidth="2dp" />
 
             <com.google.android.material.button.MaterialButton
@@ -199,6 +204,39 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/btn_start_game_puzzle" />
+
+            <TextView
+                android:id="@+id/tv_courses_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="32dp"
+                android:text="@string/courses_title"
+                android:textColor="?android:attr/textColorPrimary"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/btn_start_ai" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:orientation="vertical"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/tv_courses_title">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:minHeight="120dp"
+                    android:text="@string/module_placeholder"
+                    android:gravity="center"
+                    android:padding="32dp"
+                    android:textColor="?android:attr/textColorSecondary"
+                    android:background="@drawable/bg_input_field"
+                    android:textSize="16sp"/>
+            </LinearLayout>
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </ScrollView>
