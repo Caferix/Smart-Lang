@@ -199,7 +199,7 @@ public class SettingsFragment extends Fragment {
             }
             editor.apply();
 
-            // 🆕 Saatler değiştiğinde alarmı yeniden kur
+            // Saatler değiştiğinde alarmı yeniden kur
             AlarmScheduler.scheduleNext(requireContext());
         }, hour, minute, true);
 

@@ -64,12 +64,14 @@ public class SignInFragment extends Fragment {
         Button btnResendEmail = view.findViewById(R.id.btn_resend_email);
         forgotPasswordTextView = view.findViewById(R.id.tv_forgot_password);
 
-        // TEMİZLEME DÜZELTMESİ (Önemli. Silinmeyecek.)
+        // TEMİZLEME DÜZELTMESİ (Önemli yorum satırı. Silinmeyecek.)
+
         // Fragment yüklendiğinde, ViewModel'deki son kayıt sonucunu (EmailNotVerified gibi)
         // hemen ve koşulsuz olarak temizle. Bu, observerın sadece kullanıcının
         // Giriş yap butonuna bastıktan sonraki yeni durumları görmesini sağlar.
         Log.d(TAG, "Zorunlu Temizleme: SignInFragment yüklendi, AuthResult durumu sıfırlanıyor.");
         authViewModel.clearAuthResultState();
+
         // TEMİZLEME SONU
 
 
@@ -81,12 +83,11 @@ public class SignInFragment extends Fragment {
 
         // Açılışta Oturum Kontrolü Sonucunu Dinle (Sadece oturum var mı/doğrulanmış mı kontrolü)
         profileViewModel.getUserProfile().observe(getViewLifecycleOwner(), authResult -> {
-            // If initial loading message is visible, ignore Loading state as before
             if (authResult instanceof AuthResultState.Loading && tvInitialLoading.getVisibility() == View.VISIBLE) {
                 return;
             }
 
-            // YENİ DEĞİŞİKLİK: Manuel giriş işlemi devam ediyorsa, bu gözlemcinin herhangi bir
+            //  Manuel giriş işlemi devam ediyorsa, bu gözlemcinin herhangi bir
             // navigasyon veya UI değişikliği yapmasını tamamen engelle.
             // Bu, authViewModel gözlemcisi ile çakışmayı önler.
             if (isManualSignIn) {
@@ -102,8 +103,6 @@ public class SignInFragment extends Fragment {
                     return;
                 }
 
-                // 'isManualSignIn' kontrolü yukarı taşındığı için buradan kaldırılabilir,
-                // ancak okunabilirlik için kalmasında bir sakınca yoktur.
                 String welcomeName = success.getUser().getUserName();
                 setLoadingState(false, false);
                 Toast.makeText(getContext(), "Hoş geldiniz! Otomatik giriş yapıldı. Kullanıcı: " + welcomeName, Toast.LENGTH_SHORT).show();
@@ -147,7 +146,7 @@ public class SignInFragment extends Fragment {
             else if (authResult instanceof AuthResultState.Success) {
                 setLoadingState(false, false);
                 Toast.makeText(getContext(), "Giriş başarılı!", Toast.LENGTH_SHORT).show();
-                // NAVİGASYON: Ana Sayfaya git ve geri yığını temizle.
+                // Ana Sayfaya git ve geri yığını temizle.
                 navController.navigate(R.id.navigation_home, null,
                         new NavOptions.Builder()
                                 .setPopUpTo(R.id.signInFragment, true)
