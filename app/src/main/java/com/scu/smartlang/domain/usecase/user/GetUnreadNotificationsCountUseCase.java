@@ -4,7 +4,6 @@ import androidx.lifecycle.LiveData;
 
 import com.scu.smartlang.domain.repository.UserProfileRepository;
 
-import java.util.concurrent.CompletableFuture;
 import javax.inject.Inject;
 
 

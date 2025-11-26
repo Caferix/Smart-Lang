@@ -1,4 +1,4 @@
-package com.scu.smartlang.domain.usecase.user;
+package com.scu.smartlang.domain.usecase.social;
 
 import androidx.lifecycle.LiveData;
 import com.scu.smartlang.domain.model.FriendRequest;
