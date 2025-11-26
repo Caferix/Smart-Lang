@@ -1,4 +1,3 @@
-// java
 package com.scu.smartlang.presentation.ui.profile;
 
 import android.os.Bundle;
@@ -6,6 +5,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView; // Eklendi
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -38,6 +38,7 @@ public class ProfileFragment extends Fragment implements FriendsAdapter.OnFriend
     private ProgressBar pbXp;
     private RecyclerView rvFriends;
     private Button btnSendFriendRequest;
+    private ImageView ivLanguageSettings; // Yeni Eklendi
 
     private FriendsAdapter friendsAdapter;
 
@@ -86,6 +87,7 @@ public class ProfileFragment extends Fragment implements FriendsAdapter.OnFriend
         pbXp = view.findViewById(R.id.pb_profile_xp);
         rvFriends = view.findViewById(R.id.rv_friends);
         btnSendFriendRequest = view.findViewById(R.id.btn_send_friend_request);
+        ivLanguageSettings = view.findViewById(R.id.iv_language_settings); // Yeni Eklendi
 
         rvFriends.setLayoutManager(new LinearLayoutManager(getContext()));
         friendsAdapter = new FriendsAdapter(new ArrayList<>(), this);
@@ -94,6 +96,16 @@ public class ProfileFragment extends Fragment implements FriendsAdapter.OnFriend
 
     private void setupProfileView() {
         isMyProfile = (viewUserId == null || viewUserId.equals(currentUid));
+
+        // Eğer kendi profilim ise dil ikonunu göster, başkasının profili ise gizle
+        if (ivLanguageSettings != null) {
+            ivLanguageSettings.setVisibility(isMyProfile ? View.VISIBLE : View.GONE);
+            if (isMyProfile) {
+                ivLanguageSettings.setOnClickListener(v ->
+                        Toast.makeText(getContext(), "Dil seçme menüsü yakında!", Toast.LENGTH_SHORT).show()
+                );
+            }
+        }
 
         observeViewModel();
 
@@ -137,7 +149,6 @@ public class ProfileFragment extends Fragment implements FriendsAdapter.OnFriend
             if (friends != null) {
                 friendsAdapter.updateList(friends);
             }
-            //friendsAdapter.updateList(models);
         });
     }
 

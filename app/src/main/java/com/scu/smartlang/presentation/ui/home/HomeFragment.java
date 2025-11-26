@@ -21,12 +21,9 @@ import com.scu.smartlang.GameActivity;
 import com.scu.smartlang.R;
 import com.scu.smartlang.domain.model.User;
 import com.scu.smartlang.presentation.ui.auth.AuthResultState;
-import com.scu.smartlang.presentation.viewmodel.AuthViewModel;
 import com.scu.smartlang.presentation.viewmodel.ProfileViewModel;
 import com.google.android.material.button.MaterialButton;
 import dagger.hilt.android.AndroidEntryPoint;
-import com.scu.smartlang.presentation.viewmodel.AuthViewModel;
-import com.scu.smartlang.presentation.viewmodel.ProfileViewModel;
 
 @AndroidEntryPoint
 public class HomeFragment extends Fragment {
@@ -36,17 +33,14 @@ public class HomeFragment extends Fragment {
     private ProgressBar progressXp;
     private TextView tvStreakCount;
     private MaterialButton btnStartDailyLesson;
-    private MaterialButton btnLanguageSelector;
     private MaterialButton btnStartGameMatch;
     private MaterialButton btnStartGamePuzzle;
     private MaterialButton btnStartAi;
     private ImageView ivNotificationIcon;
-    private TextView tvNotificationBadge;
     private ProfileViewModel profileViewModel;
 
     private static final String DAILY_LESSON_TITLE = "GÜNLÜK DERSE BAŞLA";
-    private static final String DEFAULT_MODULE_PLACEHOLDER = "(Henüz ders atanmadı)";
-
+    private static final String DEFAULT_MODULE_PLACEHOLDER = "(Temel Zamirler)";
 
     @Nullable
     @Override
@@ -73,10 +67,8 @@ public class HomeFragment extends Fragment {
         tvUserLevelXp = view.findViewById(R.id.tv_user_level_xp);
         progressXp = view.findViewById(R.id.progress_xp);
         tvStreakCount = view.findViewById(R.id.tv_streak_count);
-        btnStartDailyLesson = view.findViewById(R.id.btn_start_daily_lesson);
         ivNotificationIcon = view.findViewById(R.id.iv_notification_icon);
-        btnLanguageSelector = view.findViewById(R.id.btn_language_selector);
-        tvNotificationBadge = view.findViewById(R.id.tv_notification_badge);
+        btnStartDailyLesson = view.findViewById(R.id.btn_start_daily_lesson);
         btnStartGameMatch = view.findViewById(R.id.btn_start_game_match);
         btnStartGamePuzzle = view.findViewById(R.id.btn_start_game_puzzle);
         btnStartAi = view.findViewById(R.id.btn_start_ai);
@@ -98,15 +90,7 @@ public class HomeFragment extends Fragment {
                 Toast.makeText(getContext(), "Hata: " + ((AuthResultState.Error) authResult).getMessage(), Toast.LENGTH_LONG).show();
                 navigateToSignIn();
             } else if (authResult instanceof AuthResultState.SignedOut || authResult instanceof AuthResultState.EmailNotVerified) {
-                // Oturum kapalıysa veya e-posta doğrulanmamışsa giriş ekranına yönlendir.
                 navigateToSignIn();
-            }
-        });
-
-        // Bildirim sayısını reaktif olarak gözlemle
-        profileViewModel.getUnreadNotificationsCount().observe(getViewLifecycleOwner(), count -> {
-            if (count != null) {
-                updateNotificationBadge(count);
             }
         });
     }
@@ -129,14 +113,14 @@ public class HomeFragment extends Fragment {
         btnStartAi.setOnClickListener(v ->
                 Toast.makeText(getContext(), "AI Asistan ile sohbet yakında!", Toast.LENGTH_SHORT).show());
 
+        // Arkadaş İsteklerine Git
         ivNotificationIcon.setOnClickListener(v -> {
             NavHostFragment.findNavController(this).navigate(R.id.action_to_friend_requests);
         });
-
-        btnLanguageSelector.setOnClickListener(v -> Toast.makeText(getContext(), "Dil seçimi", Toast.LENGTH_SHORT).show());
     }
 
     private void updateUiWithUser(User user) {
+        if (user == null) return;
         String userName = user.getUserName();
         String welcomeName = (userName != null && !userName.isEmpty()) ? userName : user.getEmail().split("@")[0];
         tvWelcomeTitle.setText(getString(R.string.welcome_message, welcomeName));
@@ -159,15 +143,6 @@ public class HomeFragment extends Fragment {
             NavController navController = NavHostFragment.findNavController(this);
             NavOptions navOptions = new NavOptions.Builder().setPopUpTo(R.id.main_nav_graph, true).build();
             navController.navigate(R.id.signInFragment, null, navOptions);
-        }
-    }
-
-    private void updateNotificationBadge(Integer count) {
-        if (count != null && count > 0) {
-            tvNotificationBadge.setText(count > 99 ? "99+" : String.valueOf(count));
-            tvNotificationBadge.setVisibility(View.VISIBLE);
-        } else {
-            tvNotificationBadge.setVisibility(View.GONE);
         }
     }
 }

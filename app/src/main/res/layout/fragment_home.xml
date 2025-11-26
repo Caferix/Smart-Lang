@@ -34,51 +34,19 @@
                 app:layout_constraintTop_toTopOf="parent"
                 tools:text="Hoş Geldin!" />
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btn_language_selector"
-                style="@style/Widget.MaterialComponents.Button.TextButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/language_selector_text"
-                android:textColor="@color/text_link_blue"
-                android:textSize="14sp"
-                android:textStyle="bold"
-                app:icon="@drawable/ic_arrow_drop_down_24dp"
-                app:iconGravity="end"
-                app:iconTint="@color/text_link_blue"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/tv_welcome_title" />
-
-            <FrameLayout
-                android:id="@+id/fl_notification_container"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:layout_marginEnd="16dp"
+            <ImageView
+                android:id="@+id/iv_notification_icon"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:clickable="true"
+                android:contentDescription="Arkadaş İstekleri"
+                android:focusable="true"
+                android:padding="10dp"
+                android:src="@drawable/ic_notifications_24dp"
+                app:tint="?android:attr/textColorPrimary"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="@id/tv_welcome_title"
-                app:layout_constraintBottom_toBottomOf="@id/tv_welcome_title">
-
-                <ImageView
-                    android:id="@+id/iv_notification_icon"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:src="@drawable/ic_notifications_24dp"
-                    android:background="?attr/selectableItemBackgroundBorderless" />
-
-                <TextView
-                    android:id="@+id/tv_notification_badge"
-                    android:layout_width="18dp"
-                    android:layout_height="18dp"
-                    android:layout_gravity="top|end"
-                    android:background="@drawable/badge_background"
-                    android:gravity="center"
-                    android:text="5"
-                    android:textColor="@android:color/white"
-                    android:textSize="10sp"
-                    android:textStyle="bold"
-                    android:visibility="gone"
-                    tools:visibility="visible" />
-            </FrameLayout>
+                app:layout_constraintTop_toTopOf="parent" />
 
             <androidx.cardview.widget.CardView
                 android:id="@+id/cv_progress_card"
@@ -91,7 +59,7 @@
                 app:contentPadding="16dp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/btn_language_selector">
+                app:layout_constraintTop_toBottomOf="@id/iv_notification_icon">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -231,40 +199,6 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/btn_start_game_puzzle" />
-
-
-            <TextView
-                android:id="@+id/tv_courses_title"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="32dp"
-                android:text="@string/courses_title"
-                android:textColor="?android:attr/textColorPrimary"
-                android:textSize="20sp"
-                android:textStyle="bold"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/btn_start_ai" />
-
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:orientation="vertical"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/tv_courses_title">
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:minHeight="120dp"
-                    android:text="@string/module_placeholder"
-                    android:gravity="center"
-                    android:padding="32dp"
-                    android:textColor="?android:attr/textColorSecondary"
-                    android:background="@drawable/bg_input_field"
-                    android:textSize="16sp"/>
-            </LinearLayout>
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </ScrollView>
