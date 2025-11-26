@@ -78,10 +78,17 @@
         android:name="com.scu.smartlang.presentation.ui.auth.ChangePasswordFragment"
         android:label="Şifre Değiştir"
         tools:layout="@layout/fragment_change_password" />
+
     <fragment
         android:id="@+id/navigation_profile"
         android:name="com.scu.smartlang.presentation.ui.profile.ProfileFragment"
         android:label="Profilim"
         tools:layout="@layout/fragment_profile" />
+
+    <fragment
+        android:id="@+id/sentenceGameFragment"
+        android:name="com.scu.smartlang.presentation.ui.sentence.SentenceGameFragment"
+        android:label="Boşluk Doldurma"
+        tools:layout="@layout/fragment_sentence_game" />
 
 </navigation>

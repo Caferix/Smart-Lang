@@ -1,5 +1,7 @@
 package com.scu.smartlang.presentation.viewmodel;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.Looper;
 
@@ -12,12 +14,16 @@ import com.scu.smartlang.domain.model.Difficulty;
 import com.scu.smartlang.domain.model.SentenceGameSampleData;
 import com.scu.smartlang.domain.model.SentenceQuestion;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 import javax.inject.Inject;
 import dagger.hilt.android.lifecycle.HiltViewModel;
+import dagger.hilt.android.qualifiers.ApplicationContext;
 
 @HiltViewModel
 public class SentenceGameViewModel extends ViewModel {
@@ -25,11 +31,19 @@ public class SentenceGameViewModel extends ViewModel {
     // =========================
     // 🔧 SABİTLER
     // =========================
-    private static final int LEVEL_XP_STEP = 15;
-    private static final int SPECIAL_EVENT_XP = 75;
+    private static final String PREF_NAME = "game_data";
+    private static final String KEY_XP = "xp";
+    private static final String KEY_LEVEL = "level";
+    private static final String KEY_INDEX = "question_index";
+    private static final String KEY_DATE = "last_played_date";
+
+    private static final int LEVEL_XP_STEP = 15;      // Her 15 XP'de Level Atla
+    private static final int SPECIAL_EVENT_XP = 75;   // 75 XP'de Özel Kupa
     private static final int EASY_COUNT = 6;
     private static final int MED_COUNT  = 3;
     private static final int HARD_COUNT = 1;
+
+    private final SharedPreferences prefs;
 
     // =========================
     // 🎮 OYUN VERİLERİ
@@ -68,46 +82,90 @@ public class SentenceGameViewModel extends ViewModel {
     // 💉 CONSTRUCTOR
     // =========================
     @Inject
-    public SentenceGameViewModel() {
-        // Artık SharedPreferences yüklemiyoruz.
-        // Direkt oyunu başlatıyoruz (Her zaman 0'dan başlar).
-        startNewGame();
+    public SentenceGameViewModel(@ApplicationContext Context context) {
+        this.prefs = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE);
+
+        // Soruları havuzdan çek ve karıştır
+        prepareQuestionList();
+
+        // Tarih kontrolü yap (Bugün mü? Yeni gün mü?)
+        checkAndLoadProgress();
     }
 
     // =========================
-    // 🚀 OYUN BAŞLATMA
+    // 📅 GÜNLÜK KONTROL & KAYIT SİSTEMİ
     // =========================
-    private void startNewGame() {
-        // Değişkenleri sıfırla
+    private void checkAndLoadProgress() {
+        String savedDate = prefs.getString(KEY_DATE, "");
+        String todayDate = getTodayDate();
+
+        if (savedDate.equals(todayDate)) {
+            // --- AYNI GÜN: KALDIĞIN YERDEN DEVAM ---
+            currentXp = prefs.getInt(KEY_XP, 0);
+            currentLevel = prefs.getInt(KEY_LEVEL, 1);
+            currentIndex = prefs.getInt(KEY_INDEX, 0);
+        } else {
+            // --- YENİ GÜN: SIFIRLA ---
+            resetGameData();
+        }
+
+        // UI Güncelle
+        updateLiveData();
+
+        // Eğer kullanıcı daha önce turu bitirip çıktıysa, yeni tura başlat
+        if (currentIndex >= questions.size()) {
+            restartGame();
+        } else {
+            publishCurrentQuestion();
+        }
+    }
+
+    private void saveProgress() {
+        prefs.edit()
+                .putInt(KEY_XP, currentXp)
+                .putInt(KEY_LEVEL, currentLevel)
+                .putInt(KEY_INDEX, currentIndex)
+                .putString(KEY_DATE, getTodayDate())
+                .apply();
+    }
+
+    private void resetGameData() {
         currentXp = 0;
         currentLevel = 1;
         currentIndex = 0;
+        // Hafızayı temizle ve bugünün tarihini at
+        prefs.edit().clear().putString(KEY_DATE, getTodayDate()).apply();
+    }
 
-        // UI güncelle
-        _totalXp.setValue(0);
-        _currentLevel.setValue(1);
-        _currentProgress.setValue(0);
+    private String getTodayDate() {
+        return new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
+    }
 
-        // Soruları hazırla
-        prepareQuestionList();
-        publishCurrentQuestion();
+    private void updateLiveData() {
+        _totalXp.setValue(currentXp);
+        _currentLevel.setValue(currentLevel);
+        _currentProgress.setValue(currentXp % LEVEL_XP_STEP);
     }
 
     // =========================
-    // 🗑 OYUNU SIFIRLA (Tekrar Oyna için)
+    // 🚀 OYUN AKIŞI
     // =========================
-    public void restartGame() {
-        // Zaten startNewGame her şeyi sıfırlıyor, onu çağırıyoruz.
-        startNewGame();
 
-        // Bitiş ekranını kapatmak için flag'leri resetle
+    // "Devam Et" butonuna basınca veya yeni turda çalışır.
+    // XP ve Level KORUNUR, sadece sorular yenilenir.
+    public void restartGame() {
+        currentIndex = 0;
         _quizFinished.setValue(false);
         _answerStatus.setValue(null);
+
+        // Soruları tekrar karıştır
+        prepareQuestionList();
+        publishCurrentQuestion();
+
+        // Yeni durumu kaydet
+        saveProgress();
     }
 
-    // =========================
-    // 🧩 SORU HAZIRLAMA
-    // =========================
     private void prepareQuestionList() {
         questions.clear();
         List<SentenceQuestion> poolEasy   = new ArrayList<>(SentenceGameSampleData.getQuestionsByDifficulty(Difficulty.EASY));
@@ -138,9 +196,6 @@ public class SentenceGameViewModel extends ViewModel {
         }
     }
 
-    // =========================
-    // 👆 CEVAP KONTROLÜ
-    // =========================
     public void onAnswerSelected(String selectedOption) {
         if (isInteractionLocked || Boolean.TRUE.equals(_quizFinished.getValue())) return;
 
@@ -163,12 +218,11 @@ public class SentenceGameViewModel extends ViewModel {
     private void processXpGain(int gainedXp) {
         int oldXp = currentXp;
         currentXp += gainedXp;
-        _totalXp.setValue(currentXp);
+
+        updateLiveData();
 
         int oldLevel = (oldXp / LEVEL_XP_STEP) + 1;
         int newLevel = (currentXp / LEVEL_XP_STEP) + 1;
-
-        _currentProgress.setValue(currentXp % LEVEL_XP_STEP);
 
         boolean didLevelUp = false;
 
@@ -189,11 +243,13 @@ public class SentenceGameViewModel extends ViewModel {
             _soundEvent.setValue(R.raw.sound_correct);
         }
 
-        // saveProgress() metodunu sildik, artık kayıt yok.
+        saveProgress();
     }
 
     private void advanceToNextQuestion() {
         currentIndex++;
+        saveProgress(); // Her soruda kaydet
+
         if (currentIndex < questions.size()) publishCurrentQuestion();
         else _quizFinished.setValue(true);
     }

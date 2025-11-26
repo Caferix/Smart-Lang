@@ -16,6 +16,7 @@
         android:padding="24dp"
         android:gravity="center">
 
+        <!-- Lottie Animasyonu -->
         <com.airbnb.lottie.LottieAnimationView
             android:id="@+id/lottieDialogIcon"
             android:layout_width="120dp"
@@ -25,6 +26,7 @@
             app:lottie_rawRes="@raw/anim_special_105"
             android:layout_marginBottom="16dp"/>
 
+        <!-- Başlık -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -35,6 +37,7 @@
             android:gravity="center"
             android:layout_marginBottom="8dp"/>
 
+        <!-- Açıklama -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -44,29 +47,33 @@
             android:gravity="center"
             android:layout_marginBottom="32dp"/>
 
+        <!-- Butonlar -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
+            <!-- TEKRAR OYNA (Yeşil - Primary Action) -->
             <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/btnDialogRestart"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Tekrar Oyna"
+                android:text="Devam Et"
                 android:textColor="#FFFFFF"
                 android:background="@drawable/button_sentence_option"
                 android:backgroundTint="@color/sl_success"
                 android:layout_marginBottom="12dp"/>
 
+            <!-- MENÜYE DÖN (Mavi/Beyaz - Secondary Action) -->
+            <!-- Değişiklik: Yazı düzeltildi, renk aktif hale getirildi -->
             <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/btnDialogMenu"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Menüye Dön (Yakında)"
-                android:textColor="@color/sl_text_secondary"
+                android:text="Menüye Dön"
+                android:textColor="@color/sl_primary"
                 android:background="@drawable/button_sentence_option"
-                android:backgroundTint="#E0E0E0"/>
+                android:backgroundTint="#FFFFFF"/>
 
         </LinearLayout>
     </LinearLayout>

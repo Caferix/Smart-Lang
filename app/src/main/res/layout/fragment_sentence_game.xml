@@ -6,7 +6,7 @@
     android:id="@+id/rootSentenceGame"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/sl_bg"
+    android:background="@drawable/bg_game_gradient"
     android:padding="16dp">
 
     <LinearLayout

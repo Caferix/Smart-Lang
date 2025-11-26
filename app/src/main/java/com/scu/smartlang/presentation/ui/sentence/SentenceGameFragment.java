@@ -57,7 +57,7 @@ public class SentenceGameFragment extends Fragment {
                               @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // ViewModel Başlatma (Hilt)
+        // ViewModel Başlatma
         viewModel = new ViewModelProvider(this).get(SentenceGameViewModel.class);
 
         // View Binding
@@ -77,15 +77,15 @@ public class SentenceGameFragment extends Fragment {
         // Level Bar Maksimum Değeri (15 XP)
         progressBarLevel.setMax(15);
 
-        // Tıklama Dinleyicisi (Haptic Feedback + Spam Koruması)
+        // Tıklama Dinleyicisi
         View.OnClickListener optionClickListener = v -> {
             if (!(v instanceof AppCompatButton)) return;
             AppCompatButton button = (AppCompatButton) v;
 
-            // Titreşim
+            // Haptic feedback
             button.performHapticFeedback(HapticFeedbackConstants.VIRTUAL_KEY);
 
-            // Spam önleme (Geçici disable)
+            // Spam önleme
             button.setEnabled(false);
             button.postDelayed(() -> {
                 if (isAdded()) button.setEnabled(true);
@@ -100,12 +100,12 @@ public class SentenceGameFragment extends Fragment {
         btnOption3.setOnClickListener(optionClickListener);
         btnOption4.setOnClickListener(optionClickListener);
 
-        // LiveData Gözlemcileri
+        // Gözlemciler
         observeViewModel();
     }
 
     private void observeViewModel() {
-        // 1. Soru
+        // Soru
         viewModel.currentQuestion.observe(getViewLifecycleOwner(), question -> {
             if (question == null) {
                 tvSentence.setText("");
@@ -116,27 +116,27 @@ public class SentenceGameFragment extends Fragment {
             updateQuestionIndex();
         });
 
-        // 2. Şıklar
+        // Şıklar
         viewModel.options.observe(getViewLifecycleOwner(), options -> {
             if (options != null) bindOptionsToButtons(options);
         });
 
-        // 3. XP
+        // XP
         viewModel.totalXp.observe(getViewLifecycleOwner(), xp ->
                 tvXp.setText("XP: " + (xp != null ? xp : 0))
         );
 
-        // 4. Level
+        // Level
         viewModel.currentLevelLiveData.observe(getViewLifecycleOwner(), level -> {
             if (level != null) tvLevel.setText("LVL " + level);
         });
 
-        // 5. Level Bar
+        // Level Bar
         viewModel.currentProgress.observe(getViewLifecycleOwner(), progress -> {
             if (progress != null) progressBarLevel.setProgress(progress);
         });
 
-        // 6. Renkler (Doğru/Yanlış)
+        // Renkler
         viewModel.answerStatus.observe(getViewLifecycleOwner(), isCorrect -> {
             if (isCorrect == null) {
                 resetButtonsVisualState();
@@ -155,7 +155,7 @@ public class SentenceGameFragment extends Fragment {
             }
         });
 
-        // 7. Ses Efektleri
+        // Sesler
         viewModel.soundEvent.observe(getViewLifecycleOwner(), soundResId -> {
             if (soundResId != null && soundResId != 0) {
                 playSound(soundResId);
@@ -163,28 +163,26 @@ public class SentenceGameFragment extends Fragment {
             }
         });
 
-        // 8. Oyun Bitti (CUSTOM DIALOG AÇILIR)
+        // Oyun Bitti (BURASI DÜZELTİLDİ)
         viewModel.quizFinished.observe(getViewLifecycleOwner(), finished -> {
             if (finished != null && finished) {
                 tvFinished.setVisibility(View.VISIBLE);
                 setButtonsEnabled(false);
-                showFinishDialog(); // Özel Diyalog Çağrısı
+                showFinishDialog(); // <-- Artık özel tasarımı çağırıyor
             } else {
                 tvFinished.setVisibility(View.GONE);
                 setButtonsEnabled(true);
             }
         });
 
-        // 9. Animasyonlar
+        // Animasyonlar
         viewModel.animationEvent.observe(getViewLifecycleOwner(), eventCode -> {
             if (eventCode == null || eventCode == 0) return;
 
             if (eventCode == 1) {
-                // Level Up
                 lottieAnimation.setAnimation(R.raw.anim_level_up);
                 Toast.makeText(requireContext(), "LEVEL UP! 🆙", Toast.LENGTH_SHORT).show();
             } else if (eventCode == 2) {
-                // Kupa
                 lottieAnimation.setAnimation(R.raw.anim_special_105);
                 Toast.makeText(requireContext(), "TEBRİKLER! 75 XP! 🏆", Toast.LENGTH_LONG).show();
             }
@@ -216,17 +214,19 @@ public class SentenceGameFragment extends Fragment {
         }
     }
 
-    // --- ÖZEL TASARIMLI BİTİŞ EKRANI ---
+    // --- 🔥 ÖZEL TASARIMLI BİTİŞ EKRANI (Custom Dialog) 🔥 ---
     private void showFinishDialog() {
-        // 1. Tasarımı Yükle
+        // 1. Custom Layout'u Yükle
         AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
         LayoutInflater inflater = requireActivity().getLayoutInflater();
+
+        // Burada senin tasarladığın dialog_game_finished.xml kullanılıyor
         View dialogView = inflater.inflate(R.layout.dialog_game_finished, null);
         builder.setView(dialogView);
 
         AlertDialog dialog = builder.create();
 
-        // Arka planı şeffaf yap (CardView köşeleri görünsün)
+        // Arka planı şeffaf yap (Köşeler yuvarlak görünsün diye)
         if (dialog.getWindow() != null) {
             dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
         }
@@ -235,19 +235,22 @@ public class SentenceGameFragment extends Fragment {
         AppCompatButton btnRestart = dialogView.findViewById(R.id.btnDialogRestart);
         AppCompatButton btnMenu = dialogView.findViewById(R.id.btnDialogMenu);
 
-        // 3. TEKRAR OYNA (Aktif)
+        // 3. TEKRAR OYNA
         btnRestart.setOnClickListener(v -> {
-            viewModel.restartGame(); // ViewModel hafızayı sıfırlar
+            viewModel.restartGame();
             tvFinished.setVisibility(View.GONE);
             setButtonsEnabled(true);
             dialog.dismiss();
         });
 
-        // 4. MENÜYE DÖN (Pasif)
-        btnMenu.setEnabled(false);
-        btnMenu.setAlpha(0.5f);
+        // 4. MENÜYE DÖN
+        btnMenu.setOnClickListener(v -> {
+            dialog.dismiss();
+            if (getActivity() != null) {
+                getActivity().onBackPressed(); // Ana sayfaya dön
+            }
+        });
 
-        // Mecbur seçim yapsın
         dialog.setCancelable(false);
         dialog.show();
     }
