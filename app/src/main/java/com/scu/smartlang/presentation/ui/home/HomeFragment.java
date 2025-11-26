@@ -34,7 +34,6 @@ public class HomeFragment extends Fragment {
     private ProgressBar progressXp;
     private TextView tvStreakCount;
     private MaterialButton btnStartDailyLesson;
-    private MaterialButton btnLanguageSelector;
     private MaterialButton btnStartGameMatch; // Kelime Eşleştirme
     private MaterialButton btnStartGamePuzzle; // Boşluk Doldurma (Senin Oyunun)
     private MaterialButton btnStartAi;         // AI Butonu
@@ -70,13 +69,11 @@ public class HomeFragment extends Fragment {
         progressXp = view.findViewById(R.id.progress_xp);
         tvStreakCount = view.findViewById(R.id.tv_streak_count);
         ivNotificationIcon = view.findViewById(R.id.iv_notification_icon);
-        btnLanguageSelector = view.findViewById(R.id.btn_language_selector);
-        tvNotificationBadge = view.findViewById(R.id.tv_notification_badge);
 
         // Butonlar
         btnStartDailyLesson = view.findViewById(R.id.btn_start_daily_lesson);
         btnStartGameMatch = view.findViewById(R.id.btn_start_game_match);
-        btnStartGamePuzzle = view.findViewById(R.id.btn_start_game_puzzle); // Bu artık senin oyunun
+        btnStartGamePuzzle = view.findViewById(R.id.btn_start_game_puzzle);
         btnStartAi = view.findViewById(R.id.btn_start_ai);
 
         observeViewModel();
