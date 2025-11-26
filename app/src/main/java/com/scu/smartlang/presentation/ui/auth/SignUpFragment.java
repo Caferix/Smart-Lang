@@ -19,13 +19,14 @@ import com.scu.smartlang.presentation.viewmodel.ProfileViewModel;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 
+import java.util.Objects;
+
 import dagger.hilt.android.AndroidEntryPoint;
 
 
 @AndroidEntryPoint
 public class SignUpFragment extends Fragment {
 
-    private ProfileViewModel profileViewModel;
     private AuthViewModel authViewModel;
     private TextInputEditText etUsername;
     private TextInputEditText etEmail;
@@ -45,7 +46,6 @@ public class SignUpFragment extends Fragment {
 
         navController = NavHostFragment.findNavController(this);
 
-        profileViewModel = new ViewModelProvider(this).get(ProfileViewModel.class);
         authViewModel = new ViewModelProvider(this).get(AuthViewModel.class);
 
         etUsername = view.findViewById(R.id.et_username_signup);
@@ -55,9 +55,9 @@ public class SignUpFragment extends Fragment {
 
 
         btnSignUp.setOnClickListener(v -> {
-            String userName = etUsername.getText().toString().trim();
-            String email = etEmail.getText().toString().trim();
-            String password = etPassword.getText().toString().trim();
+            String userName = Objects.requireNonNull(etUsername.getText()).toString().trim();
+            String email = Objects.requireNonNull(etEmail.getText()).toString().trim();
+            String password = Objects.requireNonNull(etPassword.getText()).toString().trim();
 
             if (userName.isEmpty() || email.isEmpty() || password.isEmpty()) {
                 Toast.makeText(getContext(), "Lütfen tüm alanları doldurun", Toast.LENGTH_SHORT).show();

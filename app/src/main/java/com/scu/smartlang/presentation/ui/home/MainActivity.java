@@ -79,6 +79,7 @@ public class MainActivity extends AppCompatActivity {
         // 7. Insets handling
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.container), (v, insets) -> {
             WindowInsetsCompat windowInsets = ViewCompat.getRootWindowInsets(v);
+            assert windowInsets != null;
             Insets systemBars = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
