@@ -21,7 +21,7 @@ public class NotificationHelper {
     public static final String CHANNEL_ID = "reminder_channel";
     private static final int NOTIFICATION_ID = 1001;
 
-    // 🎯 Rastgele başlıklar
+    //  Rastgele başlıklar
     private static final String[] TITLES = {
             "📚 Kelime Zamanı!",
             "✨ Öğrenme Vakti!",
@@ -33,7 +33,7 @@ public class NotificationHelper {
             "⭐ Yeni Kelimeler Öğrenmeye Hazır mısın?"
     };
 
-    // 💬 Rastgele motivasyon mesajları
+    //  Rastgele motivasyon mesajları
     private static final String[] MESSAGES = {
             "5 dakikan var mı? Bugünkü kelimeleri öğren!",
             "Biraz kelime çalışmaya ne dersin knk?",
@@ -47,7 +47,7 @@ public class NotificationHelper {
             "Öğrenmeye devam et, ilerlemene şaşıracaksın!"
     };
 
-    // 🎨 Bildirim kanalı oluştur
+    //  Bildirim kanalı oluştur
     public static void createChannel(Context context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             // Ses ayarları

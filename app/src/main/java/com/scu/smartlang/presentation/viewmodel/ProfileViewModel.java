@@ -3,70 +3,104 @@ package com.scu.smartlang.presentation.viewmodel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
+import androidx.lifecycle.Transformations;
+
 import com.scu.smartlang.domain.model.User;
 import com.scu.smartlang.domain.repository.AuthRepository;
 import com.scu.smartlang.domain.usecase.social.GetCurrentUserProfileUseCase;
 import com.scu.smartlang.domain.usecase.user.GetUnreadNotificationsCountUseCase;
+import com.scu.smartlang.domain.usecase.user.ResetUnreadNotificationsCountUseCase;
 import com.scu.smartlang.domain.usecase.user.UpdateUserProfileUseCase;
 import com.scu.smartlang.presentation.ui.auth.AuthResultState;
+
 import java.util.concurrent.CompletableFuture;
+
 import javax.inject.Inject;
 import dagger.hilt.android.lifecycle.HiltViewModel;
 
 @HiltViewModel
 public class ProfileViewModel extends ViewModel {
 
-    private final GetCurrentUserProfileUseCase getCurrentUserProfileUseCase;
-    private final UpdateUserProfileUseCase updateUserProfileUseCase;
-    private final GetUnreadNotificationsCountUseCase getUnreadNotificationsCountUseCase;
     private final AuthRepository authRepository;
+    private String currentUserId;
+    private final GetCurrentUserProfileUseCase getCurrentUserProfileUseCase;
+    private final GetUnreadNotificationsCountUseCase getUnreadNotificationsCountUseCase;
+    private final ResetUnreadNotificationsCountUseCase resetUnreadNotificationsCountUseCase;
+    private final UpdateUserProfileUseCase updateUserProfileUseCase;
+
 
     private final MutableLiveData<AuthResultState> _userProfile = new MutableLiveData<>();
     public LiveData<AuthResultState> getUserProfile() { return _userProfile; }
 
-    private final MutableLiveData<Integer> _unreadNotifications = new MutableLiveData<>();
-    public LiveData<Integer> getUnreadNotifications() { return _unreadNotifications; }
+    private LiveData<Integer> unreadNotificationsCount;
+
 
     @Inject
-    public ProfileViewModel(
-            GetCurrentUserProfileUseCase getCurrentUserProfileUseCase,
-            UpdateUserProfileUseCase updateUserProfileUseCase,
-            GetUnreadNotificationsCountUseCase getUnreadNotificationsCountUseCase,
-            AuthRepository authRepository) {
-        this.getCurrentUserProfileUseCase = getCurrentUserProfileUseCase;
-        this.updateUserProfileUseCase = updateUserProfileUseCase;
-        this.getUnreadNotificationsCountUseCase = getUnreadNotificationsCountUseCase;
+    public ProfileViewModel(AuthRepository authRepository,
+                            GetCurrentUserProfileUseCase getCurrentUserProfileUseCase,
+                            GetUnreadNotificationsCountUseCase getUnreadNotificationsCountUseCase,
+                            ResetUnreadNotificationsCountUseCase resetUnreadNotificationsCountUseCase,
+                            UpdateUserProfileUseCase updateUserProfileUseCase
+                            ) {
         this.authRepository = authRepository;
+        this.getCurrentUserProfileUseCase = getCurrentUserProfileUseCase;
+        this.getUnreadNotificationsCountUseCase = getUnreadNotificationsCountUseCase;
+        this.resetUnreadNotificationsCountUseCase = resetUnreadNotificationsCountUseCase;
+        this.updateUserProfileUseCase = updateUserProfileUseCase;
+
+        // Kullanıcı ID'si değiştiğinde, bildirim sayısını dinleyen LiveData'yı değiştir.
+        unreadNotificationsCount = Transformations.switchMap(authRepository.getCurrentUserIdLiveData(), uid -> {
+            if (uid != null) {
+                return getUnreadNotificationsCountUseCase.execute(uid);
+            }
+            // Kullanıcı çıkış yapmışsa, bildirim sayısını 0 olarak ayarla.
+            MutableLiveData<Integer> emptyData = new MutableLiveData<>();
+            emptyData.setValue(0);
+            return emptyData;
+        });
+
+        fetchUserProfile();
+
     }
 
     public void fetchUserProfile() {
         _userProfile.setValue(new AuthResultState.Loading());
-        getCurrentUserProfileUseCase.execute()
-                .whenComplete((user, throwable) -> {
-                    if (throwable != null) {
-                        _userProfile.postValue(new AuthResultState.Error(throwable.getLocalizedMessage()));
-                    } else {
-                        _userProfile.postValue(new AuthResultState.Success(user));
-                    }
-                });
+        getCurrentUserProfileUseCase.execute().thenAccept(user -> {
+            if (user != null) {
+                _userProfile.postValue(new AuthResultState.Success(user));
+                initializeNotificationObserver(user.getUid());
+            } else {
+                _userProfile.postValue(new AuthResultState.Error("User not found."));
+            }
+        }).exceptionally(throwable -> {
+            _userProfile.postValue(new AuthResultState.Error(throwable.getMessage()));
+            return null;
+        });
+    }
+
+    private void initializeNotificationObserver(String uid) {
+        unreadNotificationsCount = getUnreadNotificationsCountUseCase.execute(uid);
+    }
+
+    public LiveData<Integer> getUnreadNotificationsCount() {
+        if (unreadNotificationsCount == null) {
+            // Return a LiveData with a default value if not initialized
+            MutableLiveData<Integer> defaultData = new MutableLiveData<>();
+            defaultData.setValue(0);
+            unreadNotificationsCount = defaultData;
+        }
+        return unreadNotificationsCount;
+    }
+
+    public void resetUnreadNotificationsCount() {
+        authRepository.getCurrentUserId().thenAccept(uid -> {
+            if (uid != null) {
+                resetUnreadNotificationsCountUseCase.execute(uid);
+            }
+        });
     }
 
     public CompletableFuture<Void> updateUserProfile(User user) {
         return updateUserProfileUseCase.execute(user);
-    }
-
-    public void fetchUnreadNotificationsCount() {
-        authRepository.getCurrentUserId().thenCompose(uid -> {
-            if (uid != null) {
-                return getUnreadNotificationsCountUseCase.execute(uid);
-            }
-            CompletableFuture<Integer> future = new CompletableFuture<>();
-            future.complete(0);
-            return future;
-        }).thenAccept(_unreadNotifications::postValue);
-    }
-
-    public void clearProfileData() {
-        _userProfile.postValue(null);
     }
 }

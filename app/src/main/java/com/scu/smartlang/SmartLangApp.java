@@ -16,10 +16,10 @@ public class SmartLangApp extends Application {
     public void onCreate() {
         super.onCreate();
 
-        // 1️⃣ Bildirim kanalını oluştur (Android 8.0+)
+        // Bildirim kanalını oluştur (Android 8.0+)
         NotificationHelper.createChannel(this);
 
-        // 2️⃣ WorkManager'ı başlat (her 15 dakikada bir alarm kontrolü)
+        // WorkManager'ı başlat (her 15 dakikada bir alarm kontrolü)
         PeriodicWorkRequest reminderWork = new PeriodicWorkRequest.Builder(
                 ReminderWorker.class,
                 15, // Her 15 dakikada bir

@@ -37,13 +37,12 @@ public class HomeFragment extends Fragment {
     private TextView tvStreakCount;
     private MaterialButton btnStartDailyLesson;
     private MaterialButton btnLanguageSelector;
-    private MaterialButton btnStartGameMatch; // Kelime Eşleştirme
-    private MaterialButton btnStartGamePuzzle; // Kelime Bulmaca
-    private MaterialButton btnStartAi;         // AI Butonu
+    private MaterialButton btnStartGameMatch;
+    private MaterialButton btnStartGamePuzzle;
+    private MaterialButton btnStartAi;
     private ImageView ivNotificationIcon;
     private TextView tvNotificationBadge;
     private ProfileViewModel profileViewModel;
-    private AuthViewModel authViewModel;
 
     private static final String DAILY_LESSON_TITLE = "GÜNLÜK DERSE BAŞLA";
     private static final String DEFAULT_MODULE_PLACEHOLDER = "(Henüz ders atanmadı)";
@@ -60,7 +59,6 @@ public class HomeFragment extends Fragment {
         super.onResume();
         if (profileViewModel != null) {
             profileViewModel.fetchUserProfile();
-            profileViewModel.fetchUnreadNotificationsCount(); // Badge'i güncelle
         }
     }
 
@@ -69,7 +67,6 @@ public class HomeFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         profileViewModel = new ViewModelProvider(requireActivity()).get(ProfileViewModel.class);
-        authViewModel = new ViewModelProvider(requireActivity()).get(AuthViewModel.class);
 
         // View'ları bağla
         tvWelcomeTitle = view.findViewById(R.id.tv_welcome_title);
@@ -80,31 +77,23 @@ public class HomeFragment extends Fragment {
         ivNotificationIcon = view.findViewById(R.id.iv_notification_icon);
         btnLanguageSelector = view.findViewById(R.id.btn_language_selector);
         tvNotificationBadge = view.findViewById(R.id.tv_notification_badge);
-
-        // Yeni Butonlar
         btnStartGameMatch = view.findViewById(R.id.btn_start_game_match);
         btnStartGamePuzzle = view.findViewById(R.id.btn_start_game_puzzle);
         btnStartAi = view.findViewById(R.id.btn_start_ai);
 
+        observeViewModel();
+        setupListenersAndText();
+    }
 
-        // Kullanıcı Profilini Gözlemle
+    private void observeViewModel() {
         profileViewModel.getUserProfile().observe(getViewLifecycleOwner(), authResult -> {
             if (authResult instanceof AuthResultState.Loading) {
                 tvWelcomeTitle.setText("Yükleniyor...");
-                progressXp.setIndeterminate(true);
             } else if (authResult instanceof AuthResultState.Success) {
                 User user = ((AuthResultState.Success) authResult).getUser();
-
-                // GÜVENLİK KONTROLÜ: User nesnesi null ise UI güncellemesini atla.
-                // Bu, veri tam yüklenmeden çökmesini engeller.
-                if (user == null) {
-                    return;
+                if (user != null) {
+                    updateUiWithUser(user);
                 }
-
-                updateUiWithUser(user);
-                updateNotificationBadge(user.getUnreadNotifications()); // Bildirim rozetini güncelle
-                progressXp.setIndeterminate(false);
-
             } else if (authResult instanceof AuthResultState.Error) {
                 Toast.makeText(getContext(), "Hata: " + ((AuthResultState.Error) authResult).getMessage(), Toast.LENGTH_LONG).show();
                 navigateToSignIn();
@@ -114,8 +103,12 @@ public class HomeFragment extends Fragment {
             }
         });
 
-
-        setupListenersAndText();
+        // Bildirim sayısını reaktif olarak gözlemle
+        profileViewModel.getUnreadNotificationsCount().observe(getViewLifecycleOwner(), count -> {
+            if (count != null) {
+                updateNotificationBadge(count);
+            }
+        });
     }
 
     private void setupListenersAndText() {
@@ -125,40 +118,25 @@ public class HomeFragment extends Fragment {
 
         btnStartDailyLesson.setOnClickListener(v -> Toast.makeText(getContext(), "Günlük ders yakında!", Toast.LENGTH_SHORT).show());
 
-        // Oyun 1: Kelime Eşleştirme (Mevcut GameActivity)
         btnStartGameMatch.setOnClickListener(v -> {
             Intent intent = new Intent(getActivity(), GameActivity.class);
             startActivity(intent);
         });
 
-        // Oyun 2: Kelime Bulmaca (Placeholder)
         btnStartGamePuzzle.setOnClickListener(v ->
                 Toast.makeText(getContext(), "Kelime Bulmaca çok yakında!", Toast.LENGTH_SHORT).show());
 
-        // AI Butonu
         btnStartAi.setOnClickListener(v ->
                 Toast.makeText(getContext(), "AI Asistan ile sohbet yakında!", Toast.LENGTH_SHORT).show());
-
-        // Badge güncellemesi için listener
-        ivNotificationIcon.setOnClickListener(v -> {
-            // Arkadaşlık istekleri sayfasına git
-            NavHostFragment.findNavController(this)
-                    .navigate(R.id.action_to_friend_requests);
-        });
 
         ivNotificationIcon.setOnClickListener(v -> {
             NavHostFragment.findNavController(this).navigate(R.id.action_to_friend_requests);
         });
 
-        // ilk bildirim sayısını çek
-        profileViewModel.fetchUnreadNotificationsCount();
-
-
         btnLanguageSelector.setOnClickListener(v -> Toast.makeText(getContext(), "Dil seçimi", Toast.LENGTH_SHORT).show());
     }
 
     private void updateUiWithUser(User user) {
-        if (user == null) return;
         String userName = user.getUserName();
         String welcomeName = (userName != null && !userName.isEmpty()) ? userName : user.getEmail().split("@")[0];
         tvWelcomeTitle.setText(getString(R.string.welcome_message, welcomeName));
@@ -184,8 +162,8 @@ public class HomeFragment extends Fragment {
         }
     }
 
-    private void updateNotificationBadge(int count) {
-        if (count > 0) {
+    private void updateNotificationBadge(Integer count) {
+        if (count != null && count > 0) {
             tvNotificationBadge.setText(count > 99 ? "99+" : String.valueOf(count));
             tvNotificationBadge.setVisibility(View.VISIBLE);
         } else {

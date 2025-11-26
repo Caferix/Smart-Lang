@@ -14,6 +14,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -25,13 +26,11 @@ import com.scu.smartlang.presentation.viewmodel.ProfileViewModel;
 import com.scu.smartlang.presentation.viewmodel.SocialViewModel;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import dagger.hilt.android.AndroidEntryPoint;
 
 @AndroidEntryPoint
-public class ProfileFragment extends Fragment {
-
+public class ProfileFragment extends Fragment implements FriendsAdapter.OnFriendClickListener {
 
     private TextView tvName;
     private TextView tvLevelLabel;
@@ -89,7 +88,7 @@ public class ProfileFragment extends Fragment {
         btnSendFriendRequest = view.findViewById(R.id.btn_send_friend_request);
 
         rvFriends.setLayoutManager(new LinearLayoutManager(getContext()));
-        friendsAdapter = new FriendsAdapter(new ArrayList<>());
+        friendsAdapter = new FriendsAdapter(new ArrayList<>(), this);
         rvFriends.setAdapter(friendsAdapter);
     }
 
@@ -135,13 +134,8 @@ public class ProfileFragment extends Fragment {
         }
 
         socialViewModel.getFriends().observe(getViewLifecycleOwner(), friends -> {
-            if (friends == null) return;
-            List<FriendsAdapter.FriendModel> models = new ArrayList<>();
-            for (Friend f : friends) {
-                models.add(new FriendsAdapter.FriendModel(
-                        f.getUserName(),   // name
-                        f.getLevel()       // level
-                ));
+            if (friends != null) {
+                friendsAdapter.updateList(friends);
             }
             friendsAdapter.updateList(models);
         });
@@ -156,7 +150,6 @@ public class ProfileFragment extends Fragment {
         int level = user.getLevel();
         int totalXp = user.getXp();
 
-        // Basit level / XP hesabı
         int requiredXpForThisLevel = 100 + (level - 1) * 25;
         int previousLevelsXp = 0;
         for (int i = 1; i < level; i++) {
@@ -174,14 +167,9 @@ public class ProfileFragment extends Fragment {
     private void updateFriendRequestButton(String status) {
         if (!isAdded() || btnSendFriendRequest == null) return;
 
-        if (status == null) {
-            btnSendFriendRequest.setText("Arkadaşlık İsteği Gönder");
-            btnSendFriendRequest.setEnabled(true);
-            btnSendFriendRequest.setOnClickListener(v -> sendFriendRequest());
-            return;
-        }
+        String statusNonNull = (status == null) ? "NONE" : status;
 
-        switch (status) {
+        switch (statusNonNull) {
             case "FRIENDS":
                 btnSendFriendRequest.setText("Arkadaşsınız");
                 btnSendFriendRequest.setEnabled(false);
@@ -193,7 +181,9 @@ public class ProfileFragment extends Fragment {
             case "REQUEST_RECEIVED":
                 btnSendFriendRequest.setText("İsteği Kabul Et");
                 btnSendFriendRequest.setEnabled(true);
-                // Şimdilik sadece pasif bırakıyoruz.
+                btnSendFriendRequest.setOnClickListener(v ->
+                        Toast.makeText(getContext(), "Lütfen isteği bildirimler sayfasından yönetin.", Toast.LENGTH_LONG).show()
+                );
                 break;
             case "NONE":
             default:
@@ -211,5 +201,13 @@ public class ProfileFragment extends Fragment {
         } else {
             Toast.makeText(getContext(), "İstek gönderilemedi. Lütfen tekrar deneyin.", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    @Override
+    public void onFriendClick(Friend friend) {
+        Bundle args = new Bundle();
+        args.putString("userId", friend.getUid());
+        NavHostFragment.findNavController(this)
+                .navigate(R.id.action_navigation_profile_to_otherUserFragment, args);
     }
 }

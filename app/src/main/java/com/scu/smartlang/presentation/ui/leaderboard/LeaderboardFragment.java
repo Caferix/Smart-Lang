@@ -4,12 +4,18 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
+import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.scu.smartlang.R;
+import com.scu.smartlang.presentation.viewmodel.LeaderboardViewModel;
+
 import com.scu.smartlang.presentation.ui.auth.AuthResultState;
 import com.scu.smartlang.presentation.viewmodel.AuthViewModel;
 import com.scu.smartlang.presentation.viewmodel.ProfileViewModel;
@@ -18,31 +24,39 @@ import dagger.hilt.android.AndroidEntryPoint;
 @AndroidEntryPoint
 public class LeaderboardFragment extends Fragment {
 
+    private LeaderboardViewModel leaderboardViewModel;
+    private LeaderboardAdapter leaderboardAdapter;
+    private RecyclerView recyclerView;
     private ProfileViewModel profileViewModel;
     private TextView tvLeaderboardContent;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_leaderboard, container, false);
+        View view = inflater.inflate(R.layout.fragment_leaderboard, container, false);
+        recyclerView = view.findViewById(R.id.leaderboard_recycler_view);
+        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        leaderboardAdapter = new LeaderboardAdapter();
+        recyclerView.setAdapter(leaderboardAdapter);
+        return view;
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        profileViewModel = new ViewModelProvider(this).get(ProfileViewModel.class);
+        leaderboardViewModel = new ViewModelProvider(this).get(LeaderboardViewModel.class);
 
-        // Layout'unda bir TextView ID'si tanımlı olmalı, örneğin: tv_leaderboard_title'ın altındaki bir textview
-        // Şimdilik sadece başlığı güncelleyelim veya log basalım.
-
-        // Kullanıcı kendi puanını görsün
-        profileViewModel.getUserProfile().observe(getViewLifecycleOwner(), state -> {
-            if (state instanceof AuthResultState.Success) {
-                // Burada ileride tüm kullanıcıları listeleyen bir logic kurulacak.
-                // Şimdilik kullanıcının kendi sırasını (temsili) gösterelim.
+        leaderboardViewModel.getLeaderboard().observe(getViewLifecycleOwner(), users -> {
+            if (users != null) {
+                leaderboardAdapter.setUsers(users);
             }
         });
-        profileViewModel.fetchUserProfile();
+
+        leaderboardViewModel.getError().observe(getViewLifecycleOwner(), error -> {
+            if (error != null) {
+                Toast.makeText(getContext(), error, Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 }

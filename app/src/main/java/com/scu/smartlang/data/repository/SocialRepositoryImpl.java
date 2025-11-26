@@ -13,6 +13,7 @@ import com.scu.smartlang.data.remote.firebase.models.UserDto;
 import com.scu.smartlang.domain.model.Friend;
 import com.scu.smartlang.domain.model.FriendRequest;
 import com.scu.smartlang.domain.model.User;
+import com.scu.smartlang.domain.repository.AuthRepository;
 import com.scu.smartlang.domain.repository.SocialRepository;
 import com.scu.smartlang.domain.repository.UserProfileRepository;
 
@@ -21,6 +22,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+
+import io.reactivex.rxjava3.core.Observable;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -31,12 +34,14 @@ public class SocialRepositoryImpl implements SocialRepository {
     private final FirebaseFirestore db;
     private final UserDataMapper userMapper;
     private final UserProfileRepository userProfileRepository;
+    private final AuthRepository authRepository;
 
     @Inject
-    public SocialRepositoryImpl(FirebaseFirestore db, UserDataMapper userMapper, UserProfileRepository userProfileRepository) {
+    public SocialRepositoryImpl(FirebaseFirestore db, UserDataMapper userMapper, UserProfileRepository userProfileRepository, AuthRepository authRepository) {
         this.db = db;
         this.userMapper = userMapper;
         this.userProfileRepository = userProfileRepository;
+        this.authRepository = authRepository;
     }
 
     private <T> CompletableFuture<T> taskToFuture(Task<T> task) {
@@ -75,27 +80,32 @@ public class SocialRepositoryImpl implements SocialRepository {
                     return failed;
                 }
 
-                return taskToFuture(db.collection(USERS_COLLECTION).document(fromUid).get())
-                        .thenCompose(fromDoc -> {
-                            UserDto fromUser = fromDoc.toObject(UserDto.class);
-                            String senderName = fromUser != null && fromUser.getUserName() != null ? fromUser.getUserName() : "Bir kullanıcı";
+                return taskToFuture(
+                        db.collection(USERS_COLLECTION).document(fromUid).get()
+                ).thenCompose(fromDoc -> {
+                    UserDto fromUser = fromDoc.toObject(UserDto.class);
+                    String senderName = fromUser != null && fromUser.getUserName() != null
+                            ? fromUser.getUserName()
+                            : "Bir kullanıcı";
 
-                            Map<String, Object> request = new HashMap<>();
-                            request.put("fromUid", fromUid);
-                            request.put("toUid", toUid);
-                            request.put("status", "PENDING");
-                            request.put("senderName", senderName);
-                            request.put("createdAt", FieldValue.serverTimestamp());
+                    Map<String, Object> request = new HashMap<>();
+                    request.put("fromUid", fromUid);
+                    request.put("toUid", toUid);
+                    request.put("status", "PENDING");
+                    request.put("senderName", senderName);
+                    request.put("createdAt", FieldValue.serverTimestamp());
 
-                            return taskToFuture(
-                                    db.collection(USERS_COLLECTION).document(toUid)
-                                            .collection("friendRequests")
-                                            .add(request)
-                            ).thenCompose(docRef -> taskToFuture(
+                    return taskToFuture(
+                            db.collection(USERS_COLLECTION).document(toUid)
+                                    .collection("friendRequests")
+                                    .add(request)
+                    ).thenCompose(docRef ->
+                            taskToFuture(
                                     db.collection(USERS_COLLECTION).document(toUid)
                                             .update("unreadNotifications", FieldValue.increment(1))
-                            ));
-                        });
+                            )
+                    );
+                });
             });
         });
     }
@@ -287,11 +297,73 @@ public class SocialRepositoryImpl implements SocialRepository {
 
     @Override
     public CompletableFuture<Void> rejectFriendRequest(String requestId, String recipientUid) {
-        DocumentReference requestRef = db.collection(USERS_COLLECTION)
-                .document(recipientUid)
-                .collection("friendRequests")
-                .document(requestId);
-        // Instead of updating status, delete the request entirely.
-        return taskToFuture(requestRef.delete());
+        return taskToFuture(
+                db.collection(USERS_COLLECTION)
+                        .document(recipientUid)
+                        .collection("friendRequests")
+                        .document(requestId)
+                        .delete()
+        );
+    }
+
+    @Override
+    public Observable<List<User>> getFriendLeaderboard() {
+        return Observable.create(emitter -> {
+            String currentUid = authRepository.getCurrentUser().getUid();
+            if (currentUid == null) {
+                emitter.onError(new Exception("User not logged in"));
+                return;
+            }
+
+            db.collection(USERS_COLLECTION).document(currentUid).collection("friends")
+                    .addSnapshotListener((friendsSnapshot, error) -> {
+                        if (error != null) {
+                            emitter.onError(error);
+                            return;
+                        }
+
+                        if (friendsSnapshot == null) {
+                            emitter.onNext(new ArrayList<>());
+                            return;
+                        }
+
+                        List<String> friendUids = new ArrayList<>();
+                        for (DocumentSnapshot doc : friendsSnapshot.getDocuments()) {
+                            friendUids.add(doc.getId());
+                        }
+                        friendUids.add(currentUid);
+
+
+                        if (friendUids.isEmpty()) {
+                            emitter.onNext(new ArrayList<>());
+                            return;
+                        }
+
+                        db.collection(USERS_COLLECTION)
+                                .whereIn("uid", friendUids)
+                                .addSnapshotListener((usersSnapshot, usersError) -> {
+                                    if (usersError != null) {
+                                        emitter.onError(usersError);
+                                        return;
+                                    }
+
+                                    if (usersSnapshot == null) {
+                                        emitter.onNext(new ArrayList<>());
+                                        return;
+                                    }
+
+                                    List<User> leaderboard = new ArrayList<>();
+                                    for (DocumentSnapshot userDoc : usersSnapshot.getDocuments()) {
+                                        User user = userDoc.toObject(User.class);
+                                        if(user != null){
+                                            leaderboard.add(user);
+                                        }
+                                    }
+
+                                    leaderboard.sort((u1, u2) -> Integer.compare(u2.getXp(), u1.getXp()));
+                                    emitter.onNext(leaderboard);
+                                });
+                    });
+        });
     }
 }

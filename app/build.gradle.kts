@@ -53,12 +53,10 @@ dependencies {
     implementation(libs.androidx.navigation.ui)
 
     implementation (libs.hilt.android)
-    annotationProcessor (libs.hilt.android.compiler)
-
-    implementation (libs.hilt.lifecycle.viewmodel)
     annotationProcessor (libs.hilt.compiler)
 
-
+    implementation(libs.rxjava3)
+    implementation(libs.rxandroid)
 
     //BoM for the Firebase platform
     implementation(platform(libs.firebase.bom))

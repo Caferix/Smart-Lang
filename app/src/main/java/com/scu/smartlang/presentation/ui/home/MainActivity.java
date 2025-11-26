@@ -61,14 +61,14 @@ public class MainActivity extends AppCompatActivity {
         // 5. Bottom Navigation'ı NavController ile bağla
         NavigationUI.setupWithNavController(navView, navController);
 
-        // 6. BottomNav Görünürlük Mantığı - GÜNCELLENEN KISIM
+        // 6. BottomNav Görünürlük Mantığı
         navController.addOnDestinationChangedListener((controller, destination, arguments) -> {
             int destinationId = destination.getId();
 
             // Profil sayfasında (navigation_profile) da alt menünün görünmesini sağlıyoruz
             if (destinationId == R.id.navigation_home ||
                     destinationId == R.id.navigation_leaderboard ||
-                    destinationId == R.id.navigation_profile || // YENİ EKLENDİ
+                    destinationId == R.id.navigation_profile ||
                     destinationId == R.id.navigation_settings) {
                 navView.setVisibility(View.VISIBLE);
             } else {
@@ -79,6 +79,7 @@ public class MainActivity extends AppCompatActivity {
         // 7. Insets handling
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.container), (v, insets) -> {
             WindowInsetsCompat windowInsets = ViewCompat.getRootWindowInsets(v);
+            assert windowInsets != null;
             Insets systemBars = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;

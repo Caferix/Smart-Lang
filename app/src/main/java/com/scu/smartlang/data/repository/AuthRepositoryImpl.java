@@ -1,5 +1,8 @@
 package com.scu.smartlang.data.repository;
 
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
+
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.EmailAuthProvider;
@@ -103,6 +106,20 @@ public class AuthRepositoryImpl implements AuthRepository {
     }
 
     @Override
+    public LiveData<String> getCurrentUserIdLiveData() {
+        MutableLiveData<String> userIdLiveData = new MutableLiveData<>();
+        auth.addAuthStateListener(firebaseAuth -> {
+            FirebaseUser user = firebaseAuth.getCurrentUser();
+            if (user != null) {
+                userIdLiveData.postValue(user.getUid());
+            } else {
+                userIdLiveData.postValue(null);
+            }
+        });
+        return userIdLiveData;
+    }
+
+    @Override
     public CompletableFuture<Void> sendPasswordResetEmail(String email) {
         return taskToFuture(auth.sendPasswordResetEmail(email));
     }
@@ -144,5 +161,10 @@ public class AuthRepositoryImpl implements AuthRepository {
         AuthCredential credential = EmailAuthProvider.getCredential(user.getEmail(), currentPassword);
         return taskToFuture(user.reauthenticate(credential))
                 .thenCompose(aVoid -> taskToFuture(user.updatePassword(newPassword)));
+    }
+
+    @Override
+    public FirebaseUser getCurrentUser() {
+        return auth.getCurrentUser();
     }
 }
