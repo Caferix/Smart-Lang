@@ -137,7 +137,7 @@ public class ProfileFragment extends Fragment implements FriendsAdapter.OnFriend
             if (friends != null) {
                 friendsAdapter.updateList(friends);
             }
-            friendsAdapter.updateList(models);
+            //friendsAdapter.updateList(models);
         });
     }
 
