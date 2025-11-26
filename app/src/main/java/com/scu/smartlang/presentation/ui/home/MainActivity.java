@@ -43,30 +43,31 @@ public class MainActivity extends AppCompatActivity {
         navController = navHostFragment.getNavController();
         navView = findViewById(R.id.nav_view);
 
-        // 2. NavGraph'ı yükle
-        NavGraph navGraph = navController.getNavInflater().inflate(R.navigation.main_nav_graph);
+        // 2. NavGraph'ı yükle ve Başlangıç Noktasını Ayarla (Sadece ilk açılışta)
+        if (savedInstanceState == null) {
+            NavGraph navGraph = navController.getNavInflater().inflate(R.navigation.main_nav_graph);
 
-        // 3. OTURUM KONTROLÜ: Başlangıç noktasını dinamik olarak ayarla
-        if (firebaseAuth.getCurrentUser() != null) {
-            // Oturum açıksa, Ana Sayfa'dan başla
-            navGraph.setStartDestination(R.id.navigation_home);
-        } else {
-            // Oturum kapalıysa, Giriş Ekranı'ndan başla
-            navGraph.setStartDestination(R.id.signInFragment);
+            if (firebaseAuth.getCurrentUser() != null) {
+                // Oturum açıksa, Ana Sayfa'dan başla
+                navGraph.setStartDestination(R.id.navigation_home);
+            } else {
+                // Oturum kapalıysa, Giriş Ekranı'ndan başla
+                navGraph.setStartDestination(R.id.signInFragment);
+            }
+
+            navController.setGraph(navGraph);
         }
-
-        // 4. NavController'a güncel NavGraph'ı ata
-        navController.setGraph(navGraph);
 
         // 5. Bottom Navigation'ı NavController ile bağla
         NavigationUI.setupWithNavController(navView, navController);
 
-        // 6. BottomNav Görünürlük Mantığı
+        // 6. BottomNav Görünürlük Mantığı - BURASI GÜNCELLENDİ
         navController.addOnDestinationChangedListener((controller, destination, arguments) -> {
             int destinationId = destination.getId();
 
-            // Profil sayfasında (navigation_profile) da alt menünün görünmesini sağlıyoruz
+            // Alt menünün görüneceği sayfaları buraya ekliyoruz
             if (destinationId == R.id.navigation_home ||
+                    destinationId == R.id.navigation_search ||      // EKLENDİ: Arama Sayfası
                     destinationId == R.id.navigation_leaderboard ||
                     destinationId == R.id.navigation_profile ||
                     destinationId == R.id.navigation_settings) {
@@ -76,12 +77,13 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        // 7. Insets handling
+        // 7. Ekran kenar boşlukları (Insets)
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.container), (v, insets) -> {
             WindowInsetsCompat windowInsets = ViewCompat.getRootWindowInsets(v);
-            assert windowInsets != null;
-            Insets systemBars = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+            if (windowInsets != null) {
+                Insets systemBars = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars());
+                v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+            }
             return insets;
         });
     }
