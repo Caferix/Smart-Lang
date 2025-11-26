@@ -179,7 +179,7 @@
                         android:text="09:00"
                         android:textSize="18sp"
                         android:textStyle="bold"
-                        android:textColor="@color/black"/>
+                        android:textColor="?android:attr/textColorPrimary"/>
                 </LinearLayout>
 
                 <LinearLayout
@@ -207,7 +207,7 @@
                         android:text="20:00"
                         android:textSize="18sp"
                         android:textStyle="bold"
-                        android:textColor="@color/black"/>
+                        android:textColor="?android:attr/textColorPrimary"/>
                 </LinearLayout>
             </LinearLayout>
 

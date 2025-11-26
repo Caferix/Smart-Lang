@@ -1,10 +1,7 @@
 package com.scu.smartlang.presentation.ui.settings;
 
-import android.Manifest;
 import android.app.TimePickerDialog;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
-import android.os.Build;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,13 +9,9 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatDelegate;
-import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
@@ -27,7 +20,6 @@ import androidx.navigation.fragment.NavHostFragment;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.scu.smartlang.R;
-import com.scu.smartlang.notifications.AlarmScheduler;
 import com.scu.smartlang.presentation.viewmodel.UserViewModel;
 import dagger.hilt.android.AndroidEntryPoint;
 
@@ -49,29 +41,6 @@ public class SettingsFragment extends Fragment {
     private static final String KEY_START_TIME_MINUTE = "start_time_minute";
     private static final String KEY_END_TIME_HOUR = "end_time_hour";
     private static final String KEY_END_TIME_MINUTE = "end_time_minute";
-
-    private ActivityResultLauncher<String> requestPermissionLauncher;
-
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-        // İzin isteme launcher'ını hazırla
-        requestPermissionLauncher = registerForActivityResult(
-                new ActivityResultContracts.RequestPermission(),
-                isGranted -> {
-                    if (isGranted) {
-                        // İzin verildi - alarmı kur
-                        AlarmScheduler.scheduleNext(requireContext());
-                        Toast.makeText(getContext(), "Bildirimler Açıldı", Toast.LENGTH_SHORT).show();
-                    } else {
-                        // İzin reddedildi
-                        switchNotifications.setChecked(false);
-                        Toast.makeText(getContext(), "Bildirim izni gerekli", Toast.LENGTH_SHORT).show();
-                    }
-                }
-        );
-    }
 
     @Nullable
     @Override
@@ -142,24 +111,7 @@ public class SettingsFragment extends Fragment {
         switchNotifications.setOnCheckedChangeListener((buttonView, isChecked) -> {
             prefs.edit().putBoolean(KEY_NOTIFICATIONS, isChecked).apply();
             updateTimePickersState(isChecked);
-
-            if (isChecked) {
-                // Android 13+ için izin kontrolü
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.POST_NOTIFICATIONS)
-                            != PackageManager.PERMISSION_GRANTED) {
-                        // İzin iste
-                        requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS);
-                        return; // Launcher'dan sonuç gelince devam edecek
-                    }
-                }
-                // İzin var veya Android 12 ve altı
-                AlarmScheduler.scheduleNext(requireContext());
-                Toast.makeText(getContext(), "Bildirimler Açıldı", Toast.LENGTH_SHORT).show();
-            } else {
-                AlarmScheduler.cancel(requireContext());
-                Toast.makeText(getContext(), "Bildirimler Kapatıldı", Toast.LENGTH_SHORT).show();
-            }
+            Toast.makeText(getContext(), isChecked ? "Bildirimler Açıldı" : "Bildirimler Kapatıldı", Toast.LENGTH_SHORT).show();
         });
 
         // Saat Seçiciler
@@ -198,9 +150,6 @@ public class SettingsFragment extends Fragment {
                 editor.putInt(KEY_END_TIME_MINUTE, m);
             }
             editor.apply();
-
-            // 🆕 Saatler değiştiğinde alarmı yeniden kur
-            AlarmScheduler.scheduleNext(requireContext());
         }, hour, minute, true);
 
         picker.show();
