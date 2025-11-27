@@ -48,6 +48,9 @@
     <action
         android:id="@+id/action_to_friend_requests"
         app:destination="@id/friendRequestsFragment" />
+    <action
+        android:id="@+id/action_navigation_home_to_aiChatFragment"
+        app:destination="@id/aiChatFragment" />
     </fragment>
 
     <fragment
@@ -131,5 +134,11 @@
         android:name="com.scu.smartlang.presentation.ui.profile.OtherUserFragment"
         android:label="fragment_other_user"
         tools:layout="@layout/fragment_other_user" />
+
+    <fragment
+        android:id="@+id/aiChatFragment"
+        android:name="com.scu.smartlang.presentation.ui.aichat.AiChatFragment"
+        android:label="AI Sohbet"
+        tools:layout="@layout/fragment_ai_chat" />
 
 </navigation>

@@ -25,8 +25,6 @@ import com.scu.smartlang.presentation.viewmodel.AuthViewModel;
 import com.scu.smartlang.presentation.viewmodel.ProfileViewModel;
 import com.google.android.material.button.MaterialButton;
 import dagger.hilt.android.AndroidEntryPoint;
-import com.scu.smartlang.presentation.viewmodel.AuthViewModel;
-import com.scu.smartlang.presentation.viewmodel.ProfileViewModel;
 
 @AndroidEntryPoint
 public class HomeFragment extends Fragment {
@@ -137,7 +135,7 @@ public class HomeFragment extends Fragment {
 
         // AI Butonu
         btnStartAi.setOnClickListener(v ->
-                Toast.makeText(getContext(), "AI Asistan ile sohbet yakında!", Toast.LENGTH_SHORT).show());
+                NavHostFragment.findNavController(HomeFragment.this).navigate(R.id.action_navigation_home_to_aiChatFragment));
 
         // Badge güncellemesi için listener
         ivNotificationIcon.setOnClickListener(v -> {
