@@ -43,14 +43,14 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@drawable/bg_input_field"
+                android:textColor="@color/input_text_color_dynamic"
+                android:textColorHint="@color/input_hint_color_dynamic"
                 android:hint="Kullanıcı Adı"
                 android:inputType="text"
-                android:textColor="@color/black"
                 android:paddingStart="20dp"
                 android:paddingTop="16dp"
                 android:paddingEnd="20dp"
-                android:paddingBottom="16dp"
-                android:textColorHint="@color/text_hint_gray" />
+                android:paddingBottom="16dp" />
 
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -72,14 +72,14 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@drawable/bg_input_field"
+                android:textColor="@color/input_text_color_dynamic"
+                android:textColorHint="@color/input_hint_color_dynamic"
                 android:hint="E-posta"
                 android:inputType="textEmailAddress"
-                android:textColor="@color/black"
                 android:paddingStart="20dp"
                 android:paddingTop="16dp"
                 android:paddingEnd="20dp"
-                android:paddingBottom="16dp"
-                android:textColorHint="@color/text_hint_gray" />
+                android:paddingBottom="16dp" />
 
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -96,21 +96,21 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/til_email_signup"
             app:passwordToggleEnabled="true"
-            app:passwordToggleTint="@color/text_hint_gray">
+            app:passwordToggleTint="?android:attr/textColorSecondary">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/et_password_signup"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@drawable/bg_input_field"
+                android:textColor="@color/input_text_color_dynamic"
+                android:textColorHint="@color/input_hint_color_dynamic"
                 android:hint="Şifre"
-                android:textColor="@color/black"
                 android:inputType="textPassword"
                 android:paddingStart="20dp"
                 android:paddingTop="16dp"
                 android:paddingEnd="20dp"
-                android:paddingBottom="16dp"
-                android:textColorHint="@color/text_hint_gray" />
+                android:paddingBottom="16dp" />
 
         </com.google.android.material.textfield.TextInputLayout>
 
