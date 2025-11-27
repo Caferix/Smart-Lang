@@ -22,8 +22,7 @@
             android:contentDescription="Uygulama Logosu"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:tint="@color/input_stroke_gray" />
+            app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
             android:id="@+id/tv_title"
@@ -55,14 +54,14 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@drawable/bg_input_field"
-                android:textColor="@color/black"
+                android:textColor="@color/input_text_color_dynamic"
+                android:textColorHint="@color/input_hint_color_dynamic"
                 android:hint="E-posta"
                 android:inputType="textEmailAddress"
                 android:paddingStart="20dp"
                 android:paddingTop="16dp"
                 android:paddingEnd="20dp"
-                android:paddingBottom="16dp"
-                android:textColorHint="@color/text_hint_gray" />
+                android:paddingBottom="16dp" />
 
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -76,7 +75,7 @@
             app:boxStrokeWidthFocused="0dp"
             app:hintEnabled="false"
             app:passwordToggleEnabled="true"
-            app:passwordToggleTint="@color/text_hint_gray"
+            app:passwordToggleTint="?android:attr/textColorSecondary"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/til_email">
@@ -86,14 +85,14 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@drawable/bg_input_field"
-                android:textColor="@color/black"
+                android:textColor="@color/input_text_color_dynamic"
+                android:textColorHint="@color/input_hint_color_dynamic"
                 android:hint="Şifre"
                 android:inputType="textPassword"
                 android:paddingStart="20dp"
                 android:paddingTop="16dp"
                 android:paddingEnd="20dp"
-                android:paddingBottom="16dp"
-                android:textColorHint="@color/text_hint_gray" />
+                android:paddingBottom="16dp" />
 
         </com.google.android.material.textfield.TextInputLayout>
 
