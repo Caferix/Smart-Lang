@@ -7,6 +7,7 @@ import com.scu.smartlang.domain.model.User;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import android.net.Uri;
 
 public interface UserProfileRepository {
     CompletableFuture<User> getUserProfile(String uid);
@@ -15,4 +16,5 @@ public interface UserProfileRepository {
     LiveData<Integer> getUnreadNotificationsCount(String uid);
     CompletableFuture<Void> resetUnreadNotificationsCount(String uid);
     LiveData<List<FriendRequest>> getIncomingFriendRequests(String uid);
+    CompletableFuture<String> uploadProfileImage(Uri imageUri);
 }

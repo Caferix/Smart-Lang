@@ -14,7 +14,10 @@ import com.scu.smartlang.data.remote.firebase.models.UserDto;
 import com.scu.smartlang.domain.model.FriendRequest;
 import com.scu.smartlang.domain.model.User;
 import com.scu.smartlang.domain.repository.UserProfileRepository;
-
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import android.net.Uri;
+import java.util.UUID;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -25,13 +28,16 @@ import javax.inject.Singleton;
 public class UserProfileRepositoryImpl implements UserProfileRepository {
 
     private static final String USERS_COLLECTION = "users";
+    private static final String PROFILE_IMAGES_PATH = "profile_images";
     private final FirebaseFirestore db;
+    private final FirebaseStorage storage;
     private final UserDataMapper userMapper;
     private final FirebaseAuth auth;
 
     @Inject
-    public UserProfileRepositoryImpl(FirebaseFirestore db, UserDataMapper userMapper, FirebaseAuth auth) {
+    public UserProfileRepositoryImpl(FirebaseFirestore db, FirebaseStorage storage, UserDataMapper userMapper, FirebaseAuth auth) {
         this.db = db;
+        this.storage = storage;
         this.userMapper = userMapper;
         this.auth = auth;
     }
@@ -135,5 +141,35 @@ public class UserProfileRepositoryImpl implements UserProfileRepository {
         });
 
         return requestsLiveData;
+    }
+
+    @Override
+    public CompletableFuture<String> uploadProfileImage(Uri imageUri) {
+        FirebaseUser currentUser = auth.getCurrentUser();
+        if (currentUser == null) {
+            CompletableFuture<String> future = new CompletableFuture<>();
+            future.completeExceptionally(new IllegalStateException("Kullanıcı giriş yapmamış."));
+            return future;
+        }
+        String fileName = UUID.randomUUID().toString();
+        StorageReference ref = storage.getReference().child(PROFILE_IMAGES_PATH + "/" + currentUser.getUid() + "/" + fileName);
+
+        CompletableFuture<String> future = new CompletableFuture<>();
+        ref.putFile(imageUri)
+                .continueWithTask(task -> {
+                    if (!task.isSuccessful()) {
+                        throw task.getException();
+                    }
+                    return ref.getDownloadUrl();
+                })
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        Uri downloadUri = task.getResult();
+                        future.complete(downloadUri.toString());
+                    } else {
+                        future.completeExceptionally(task.getException());
+                    }
+                });
+        return future;
     }
 }

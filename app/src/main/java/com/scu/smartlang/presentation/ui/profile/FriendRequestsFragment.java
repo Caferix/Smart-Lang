@@ -14,6 +14,7 @@ import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.appbar.MaterialToolbar;
 import com.scu.smartlang.R;
 import com.scu.smartlang.presentation.viewmodel.ProfileViewModel;
 import com.scu.smartlang.presentation.viewmodel.SocialViewModel;
@@ -62,6 +63,11 @@ public class FriendRequestsFragment extends Fragment implements FriendRequestsAd
 
         // Reset notification count when viewing this screen
         profileViewModel.resetUnreadNotificationsCount();
+
+        MaterialToolbar toolbar = view.findViewById(R.id.toolbar);
+        toolbar.setNavigationOnClickListener(v -> {
+            NavHostFragment.findNavController(this).navigateUp();
+        });
     }
 
     private void loadRequests() {
@@ -95,6 +101,6 @@ public class FriendRequestsFragment extends Fragment implements FriendRequestsAd
         Bundle args = new Bundle();
         args.putString("userId", userId);
         NavHostFragment.findNavController(this)
-                .navigate(R.id.action_friendRequestsFragment_to_navigation_profile, args);
+                .navigate(R.id.action_friendRequestsFragment_to_otherUserFragment, args);
     }
 }

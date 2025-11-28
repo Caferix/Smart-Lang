@@ -24,6 +24,8 @@ public class FirebaseModule {
     @Singleton
     public FirebaseFirestore provideFirebaseFireStore(){return FirebaseFirestore.getInstance();}
 
+    @Provides
+    @Singleton
     public FirebaseStorage provideFirebaseStroge(){return FirebaseStorage.getInstance();}
 
     // TODO: Firestore, Storage vb. eklenecek
