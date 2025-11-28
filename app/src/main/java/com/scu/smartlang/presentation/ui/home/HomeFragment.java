@@ -118,7 +118,7 @@ public class HomeFragment extends Fragment {
         });
 
         btnStartAi.setOnClickListener(v ->
-                Toast.makeText(getContext(), "AI Asistan ile sohbet yakında!", Toast.LENGTH_SHORT).show());
+                NavHostFragment.findNavController(HomeFragment.this).navigate(R.id.action_navigation_home_to_aiChatFragment));
 
         // Arkadaş İsteklerine Git
         ivNotificationIcon.setOnClickListener(v -> {
