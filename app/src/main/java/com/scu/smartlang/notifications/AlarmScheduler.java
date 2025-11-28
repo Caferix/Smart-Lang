@@ -21,7 +21,7 @@ public class AlarmScheduler {
             return;
         }
 
-        // BU KISIM GAMEACTIVITY MİMARİYE UYGUN HALE GETİRİLİNCE EKLENECEK
+
         // Bugün çalışma yapıldı mı kontrol et
 //        if (hasStudiedToday(context)) {
 //            // Yarına kadar alarmı ertele

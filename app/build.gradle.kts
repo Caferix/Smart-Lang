@@ -2,7 +2,6 @@ import org.gradle.kotlin.dsl.annotationProcessor
 import org.gradle.kotlin.dsl.implementation
 
 plugins {
-
     alias(libs.plugins.android.application)
     alias(libs.plugins.hilt.android)
     id("com.google.gms.google-services")
@@ -53,17 +52,12 @@ dependencies {
     implementation(libs.androidx.navigation.ui)
 
     implementation (libs.hilt.android)
-    annotationProcessor (libs.hilt.android.compiler)
-
-    implementation (libs.hilt.lifecycle.viewmodel)
     annotationProcessor (libs.hilt.compiler)
-
-
 
     //BoM for the Firebase platform
     implementation(platform(libs.firebase.bom))
-    //Firebase
 
+    //Firebase
     implementation(libs.firebase.auth)
     implementation(libs.firebase.firestore)
     implementation(libs.firebase.storage)
@@ -71,9 +65,19 @@ dependencies {
 
     implementation(libs.play.services.auth)
 
+    // --- LOTTIE ANIMATION LIBRARY (EKLENDİ) ---
+    implementation("com.airbnb.android:lottie:6.1.0")
     implementation("com.google.code.gson:gson:2.13.2")
 
     // work manager
     implementation("androidx.work:work-runtime:2.9.0")
 
+    // RxJava
+    implementation("io.reactivex.rxjava3:rxandroid:3.0.2")
+    implementation("io.reactivex.rxjava3:rxjava:3.1.8")
+
+
+    // Glide (Resim göstermek için)
+    implementation ("com.github.bumptech.glide:glide:4.16.0")
+    annotationProcessor("com.github.bumptech.glide:compiler:4.16.0")
 }

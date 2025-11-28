@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="input_field_background_dynamic">#2D2D2D</color>
+    <color name="input_text_color_dynamic">#FFFFFF</color>
+    <color name="input_hint_color_dynamic">#B0B0B0</color>
+
+    <color name="sl_bg">@color/dark_background</color>
+    <color name="sl_text_primary">@color/white_text</color>
+    <color name="sl_text_secondary">@color/text_hint_light</color>
+    <color name="sl_primary">#5B8CFF</color>
+    <color name="sl_primary_dark">#3D6DE6</color>
+    <color name="sl_success">#35C759</color>
+    <color name="sl_error">#FF4D5E</color>
+    <color name="sl_stroke">#333333</color>
+    <color name="sl_btn_bg">#2D2D2D</color>
+    <color name="sl_xp_start">#00BCD4</color>
+    <color name="sl_xp_end">#03DAC5</color>
+</resources>

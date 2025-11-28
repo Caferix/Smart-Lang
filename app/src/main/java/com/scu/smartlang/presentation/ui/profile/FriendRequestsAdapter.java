@@ -4,17 +4,19 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.scu.smartlang.R;
 import com.scu.smartlang.domain.model.FriendRequest;
 
 import java.util.List;
 
-public class FriendRequestsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+public class FriendRequestsAdapter extends RecyclerView.Adapter<FriendRequestsAdapter.RequestViewHolder> {
 
     private List<FriendRequest> requests;
     private final OnRequestActionListener listener;
@@ -37,31 +39,54 @@ public class FriendRequestsAdapter extends RecyclerView.Adapter<RecyclerView.Vie
 
     @NonNull
     @Override
-    public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public RequestViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.item_friend_request, parent, false);
-        return new RecyclerView.ViewHolder(view) {};
+        return new RequestViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull RequestViewHolder holder, int position) {
         FriendRequest request = requests.get(position);
 
-        TextView tvFromUser = holder.itemView.findViewById(R.id.tv_request_from);
-        Button btnAccept = holder.itemView.findViewById(R.id.btn_accept_request);
-        Button btnReject = holder.itemView.findViewById(R.id.btn_reject_request);
-        String display = request.getSenderName() != null
+        String display = request.getSenderName() != null && !request.getSenderName().isEmpty()
                 ? request.getSenderName()
                 : request.getFromUid();
-        tvFromUser.setText(display);
+        holder.tvFromUser.setText(display);
 
-        btnAccept.setOnClickListener(v -> listener.onAccept(request.getId(), request.getFromUid()));
-        btnReject.setOnClickListener(v -> listener.onReject(request.getId()));
+        // Profil resmini Glide ile yükle (URL varsa)
+        if (request.getSenderProfileImageUrl() != null && !request.getSenderProfileImageUrl().isEmpty()) {
+            Glide.with(holder.itemView.getContext())
+                    .load(request.getSenderProfileImageUrl())
+                    .circleCrop()
+                    .placeholder(R.drawable.ic_person_24dp)
+                    .into(holder.ivProfileImage);
+        } else {
+            holder.ivProfileImage.setImageResource(R.drawable.ic_person_24dp);
+        }
+
+        holder.btnAccept.setOnClickListener(v -> listener.onAccept(request.getId(), request.getFromUid()));
+        holder.btnReject.setOnClickListener(v -> listener.onReject(request.getId()));
         holder.itemView.setOnClickListener(v -> listener.onViewProfile(request.getFromUid()));
     }
 
     @Override
     public int getItemCount() {
         return requests == null ? 0 : requests.size();
+    }
+
+    public static class RequestViewHolder extends RecyclerView.ViewHolder {
+        final TextView tvFromUser;
+        final Button btnAccept;
+        final Button btnReject;
+        final ImageView ivProfileImage;
+
+        public RequestViewHolder(@NonNull View itemView) {
+            super(itemView);
+            tvFromUser = itemView.findViewById(R.id.tv_request_from);
+            btnAccept = itemView.findViewById(R.id.btn_accept_request);
+            btnReject = itemView.findViewById(R.id.btn_reject_request);
+            ivProfileImage = itemView.findViewById(R.id.iv_profile_image);
+        }
     }
 }

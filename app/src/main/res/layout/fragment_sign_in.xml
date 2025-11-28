@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fillViewport="true"
-    android:background="@color/white"
+    android:background="?android:attr/colorBackground"
     tools:context=".presentation.ui.auth.SignInFragment">
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -13,32 +13,29 @@
         android:layout_height="wrap_content"
         android:padding="32dp">
 
-
         <ImageView
             android:id="@+id/iv_logo"
-            android:layout_width="80dp"
-            android:layout_height="80dp"
+            android:layout_width="150dp"
+            android:layout_height="150dp"
             android:layout_marginTop="40dp"
-            android:src="@android:drawable/ic_dialog_map"
+            android:src="@drawable/logo"
+            android:contentDescription="Uygulama Logosu"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:tint="@color/input_stroke_gray" />
-
+            app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
             android:id="@+id/tv_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="48dp"
+            android:layout_marginTop="32dp"
             android:text="Giriş Yap"
-            android:textColor="@color/text_title_gray"
+            android:textColor="?android:attr/textColorPrimary"
             android:textSize="28sp"
             android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/iv_logo" />
 
-        <!-- E-posta Girdi Alanı -->
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/til_email"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
@@ -57,18 +54,17 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@drawable/bg_input_field"
-                android:textColor="@color/black"
+                android:textColor="@color/input_text_color_dynamic"
+                android:textColorHint="@color/input_hint_color_dynamic"
                 android:hint="E-posta"
                 android:inputType="textEmailAddress"
                 android:paddingStart="20dp"
                 android:paddingTop="16dp"
                 android:paddingEnd="20dp"
-                android:paddingBottom="16dp"
-                android:textColorHint="@color/text_hint_gray" />
+                android:paddingBottom="16dp" />
 
         </com.google.android.material.textfield.TextInputLayout>
 
-        <!-- Şifre Girdi Alanı -->
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/til_password"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
@@ -79,7 +75,7 @@
             app:boxStrokeWidthFocused="0dp"
             app:hintEnabled="false"
             app:passwordToggleEnabled="true"
-            app:passwordToggleTint="@color/text_hint_gray"
+            app:passwordToggleTint="?android:attr/textColorSecondary"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/til_email">
@@ -89,18 +85,17 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@drawable/bg_input_field"
+                android:textColor="@color/input_text_color_dynamic"
+                android:textColorHint="@color/input_hint_color_dynamic"
                 android:hint="Şifre"
-                android:textColor="@color/black"
                 android:inputType="textPassword"
                 android:paddingStart="20dp"
                 android:paddingTop="16dp"
                 android:paddingEnd="20dp"
-                android:paddingBottom="16dp"
-                android:textColorHint="@color/text_hint_gray" />
+                android:paddingBottom="16dp" />
 
         </com.google.android.material.textfield.TextInputLayout>
 
-        <!-- Hata Mesajı Alanı-->
         <TextView
             android:id="@+id/tv_error"
             android:layout_width="0dp"
@@ -114,9 +109,8 @@
             app:layout_constraintTop_toBottomOf="@id/til_password"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            tools:text="Hesabınız doğrulanmamış. Lütfen e-postanızı kontrol edin."/>
+            tools:text="Hesabınız doğrulanmamış."/>
 
-        <!-- Doğrulama E-postası Tekrar Gönder Butonu -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_resend_email"
             style="@style/Widget.MaterialComponents.Button.TextButton"
@@ -131,8 +125,6 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 
-
-        <!-- Giriş Yap Butonu-->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_sign_in"
             android:layout_width="0dp"
@@ -148,7 +140,6 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/btn_resend_email" />
 
-        <!-- YENİ: Şifremi Unuttum Butonu -->
         <TextView
             android:id="@+id/tv_forgot_password"
             android:layout_width="wrap_content"
@@ -163,7 +154,6 @@
             app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginTop="8dp"/>
 
-        <!-- Hesap Oluştur Butonu-->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_go_to_sign_up"
             style="@style/Widget.MaterialComponents.Button.OutlinedButton"
@@ -181,7 +171,6 @@
             app:strokeColor="@color/button_stroke_blue"
             app:strokeWidth="2dp" />
 
-        <!-- YENİ BİLEŞEN 3: Loading ProgressBar (Ekran Ortasında) -->
         <ProgressBar
             android:id="@+id/pb_loading"
             android:layout_width="wrap_content"
@@ -192,12 +181,13 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             android:elevation="10dp"/>
+
         <TextView
             android:id="@+id/tv_initial_loading"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            android:textColor="@color/black"
+            android:textColor="?android:attr/textColorPrimary"
             android:textAlignment="center"
             android:textSize="16sp"
             android:text="Oturum Kontrol Ediliyor..."
@@ -207,5 +197,4 @@
             app:layout_constraintEnd_toEndOf="parent"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
-
 </ScrollView>

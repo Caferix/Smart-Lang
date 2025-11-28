@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/white"
+    android:background="?android:attr/colorBackground"
     android:fillViewport="true"
     tools:context=".presentation.ui.auth.SignUpFragment">
 
@@ -13,20 +13,18 @@
         android:layout_height="wrap_content"
         android:padding="32dp">
 
-        <!-- Başlık -->
         <TextView
             android:id="@+id/tv_title_signup"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="40dp"
             android:text="Hesap Oluştur"
-            android:textColor="@color/text_title_gray"
+            android:textColor="?android:attr/textColorPrimary"
             android:textSize="28sp"
             android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <!-- Kullanıcı Adı Girdi Alanı -->
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/til_username_signup"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
@@ -45,18 +43,17 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@drawable/bg_input_field"
+                android:textColor="@color/input_text_color_dynamic"
+                android:textColorHint="@color/input_hint_color_dynamic"
                 android:hint="Kullanıcı Adı"
                 android:inputType="text"
-                android:textColor="@color/black"
                 android:paddingStart="20dp"
                 android:paddingTop="16dp"
                 android:paddingEnd="20dp"
-                android:paddingBottom="16dp"
-                android:textColorHint="@color/text_hint_gray" />
+                android:paddingBottom="16dp" />
 
         </com.google.android.material.textfield.TextInputLayout>
 
-        <!-- E-posta Girdi Alanı -->
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/til_email_signup"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
@@ -75,18 +72,17 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@drawable/bg_input_field"
+                android:textColor="@color/input_text_color_dynamic"
+                android:textColorHint="@color/input_hint_color_dynamic"
                 android:hint="E-posta"
                 android:inputType="textEmailAddress"
-                android:textColor="@color/black"
                 android:paddingStart="20dp"
                 android:paddingTop="16dp"
                 android:paddingEnd="20dp"
-                android:paddingBottom="16dp"
-                android:textColorHint="@color/text_hint_gray" />
+                android:paddingBottom="16dp" />
 
         </com.google.android.material.textfield.TextInputLayout>
 
-        <!-- Şifre Girdi Alanı -->
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/til_password_signup"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense"
@@ -100,25 +96,24 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/til_email_signup"
             app:passwordToggleEnabled="true"
-            app:passwordToggleTint="@color/text_hint_gray">
+            app:passwordToggleTint="?android:attr/textColorSecondary">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/et_password_signup"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@drawable/bg_input_field"
+                android:textColor="@color/input_text_color_dynamic"
+                android:textColorHint="@color/input_hint_color_dynamic"
                 android:hint="Şifre"
-                android:textColor="@color/black"
                 android:inputType="textPassword"
                 android:paddingStart="20dp"
                 android:paddingTop="16dp"
                 android:paddingEnd="20dp"
-                android:paddingBottom="16dp"
-                android:textColorHint="@color/text_hint_gray" />
+                android:paddingBottom="16dp" />
 
         </com.google.android.material.textfield.TextInputLayout>
 
-        <!-- Hesap Oluştur Butonu -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_sign_up"
             android:layout_width="0dp"

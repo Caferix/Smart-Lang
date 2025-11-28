@@ -19,13 +19,14 @@ import com.scu.smartlang.presentation.viewmodel.ProfileViewModel;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 
+import java.util.Objects;
+
 import dagger.hilt.android.AndroidEntryPoint;
 
 
 @AndroidEntryPoint
 public class SignUpFragment extends Fragment {
 
-    private ProfileViewModel profileViewModel;
     private AuthViewModel authViewModel;
     private TextInputEditText etUsername;
     private TextInputEditText etEmail;
@@ -43,9 +44,8 @@ public class SignUpFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        navController = NavHostFragment.findNavController(this); // NavController başlatıldı
+        navController = NavHostFragment.findNavController(this);
 
-        profileViewModel = new ViewModelProvider(this).get(ProfileViewModel.class);
         authViewModel = new ViewModelProvider(this).get(AuthViewModel.class);
 
         etUsername = view.findViewById(R.id.et_username_signup);
@@ -55,9 +55,9 @@ public class SignUpFragment extends Fragment {
 
 
         btnSignUp.setOnClickListener(v -> {
-            String userName = etUsername.getText().toString().trim();
-            String email = etEmail.getText().toString().trim();
-            String password = etPassword.getText().toString().trim();
+            String userName = Objects.requireNonNull(etUsername.getText()).toString().trim();
+            String email = Objects.requireNonNull(etEmail.getText()).toString().trim();
+            String password = Objects.requireNonNull(etPassword.getText()).toString().trim();
 
             if (userName.isEmpty() || email.isEmpty() || password.isEmpty()) {
                 Toast.makeText(getContext(), "Lütfen tüm alanları doldurun", Toast.LENGTH_SHORT).show();
@@ -80,12 +80,12 @@ public class SignUpFragment extends Fragment {
                 Toast.makeText(getContext(), "Hesap oluşturuluyor...", Toast.LENGTH_SHORT).show();
 
             } else if (authResult instanceof AuthResultState.EmailNotVerified) {
-                // KRİTİK DEĞİŞİKLİK: Kayıt başarılı olduğunda bu sinyal alınır (ViewModel'den).
+                // Kayıt başarılı olduğunda bu sinyal alınır (ViewModel'den).
 
                 // Kullanıcıya e-posta doğrulama talimatını içeren dialogu göster
                 if (getParentFragmentManager().findFragmentByTag(CheckEmailDialogFragment.TAG) == null) {
                     CheckEmailDialogFragment dialog = new CheckEmailDialogFragment();
-                    // Dialog, kapandığında kullanıcıyı SignInFragment'a yönlendirece.
+                    // Dialog kapandığında kullanıcıyı SignInFragment'a yönlendirece.
                     dialog.show(getParentFragmentManager(), CheckEmailDialogFragment.TAG);
                 }
 

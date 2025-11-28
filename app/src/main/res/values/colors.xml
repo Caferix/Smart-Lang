@@ -20,24 +20,39 @@
     <color name="white_text">#FFFFFFFF</color>
     <color name="text_hint_light">#E0E0E0</color>
     <color name="card_background_dark">#FF333333</color>
+
+    <color name="sl_bg">#FAFAFF</color>
+    <color name="sl_text_primary">#202124</color>
+    <color name="sl_text_secondary">#6C727F</color>
+
+    <color name="sl_primary">#5B8CFF</color>
+    <color name="sl_primary_dark">#3D6DE6</color>
+    <color name="sl_success">#35C759</color>
+    <color name="sl_error">#FF4D5E</color>
+
+    <color name="sl_xp_start">#8BC6FF</color>
+    <color name="sl_xp_end">#5B8CFF</color>
+
+    <color name="sl_stroke">#DADCE0</color>
+    <color name="sl_btn_bg">#FFFFFF</color>
     <color name="purple_500">#FF6200EE</color>
     <color name="purple_700">#FF3700B3</color>
 
 
-    <!-- YENİ OYUN PALETİ -->
-    <color name="game_bg_start">#6D55A4</color> <!-- Gradyan Başlangıç Rengi -->
-    <color name="game_bg_end">#3B2A63</color>   <!-- Gradyan Bitiş Rengi -->
+    <color name="game_bg_start">#6D55A4</color>
+    <color name="game_bg_end">#3B2A63</color>
 
-    <color name="game_button_bg">#4C3A7A</color> <!-- Buton Arka Planı -->
-    <color name="game_button_stroke">#9575CD</color> <!-- Buton Çerçevesi -->
-    <color name="game_button_text">#E8E4F1</color>  <!-- Buton Yazı Rengi -->
+    <color name="game_button_bg">#4C3A7A</color>
+    <color name="game_button_stroke">#9575CD</color>
+    <color name="game_button_text">#E8E4F1</color>
 
-    <color name="game_button_selected_bg">#9575CD</color> <!-- Seçili Buton Arka Planı -->
-    <color name="game_button_selected_text">#FFFFFFFF</color> <!-- Seçili Buton Yazı Rengi -->
+    <color name="game_button_selected_bg">#9575CD</color>
+    <color name="game_button_selected_text">#FFFFFFFF</color>
 
-    <color name="game_correct_glow">#4CAF50</color> <!-- Doğru Cevap Işıltısı -->
-    <color name="game_wrong_glow">#F44336</color>   <!-- Yanlış Cevap Işıltısı -->
+    <color name="game_correct_glow">#4CAF50</color>
+    <color name="game_wrong_glow">#F44336</color>
 
-    <color name="game_xp_bar_progress">#81C784</color> <!-- XP Bar Dolu Rengi -->
+    <color name="game_xp_bar_progress">#81C784</color>
     <color name="game_xp_bar_bg">#4C3A7A</color>
-</resources>
+
+    <color name="input_field_background_dynamic">#F7F7F7</color> <color name="input_text_color_dynamic">#000000</color>       <color name="input_hint_color_dynamic">#808080</color>       </resources>

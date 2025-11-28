@@ -105,6 +105,9 @@
         <action
             android:id="@+id/action_navigation_profile_to_otherUserFragment"
             app:destination="@id/otherUserFragment" />
+        <action
+            android:id="@+id/action_navigation_profile_to_otherUserFragment2"
+            app:destination="@id/otherUserFragment" />
     </fragment>
 
     <fragment
@@ -128,7 +131,11 @@
         <action
             android:id="@+id/action_friendRequestsFragment_to_navigation_profile"
             app:destination="@id/navigation_profile" />
+        <action
+            android:id="@+id/action_friendRequestsFragment_to_otherUserFragment"
+            app:destination="@id/otherUserFragment" />
     </fragment>
+
     <fragment
         android:id="@+id/otherUserFragment"
         android:name="com.scu.smartlang.presentation.ui.profile.OtherUserFragment"
@@ -140,5 +147,11 @@
         android:name="com.scu.smartlang.presentation.ui.aichat.AiChatFragment"
         android:label="AI Sohbet"
         tools:layout="@layout/fragment_ai_chat" />
+
+</navigation>
+        android:id="@+id/sentenceGameFragment"
+        android:name="com.scu.smartlang.presentation.ui.sentence.SentenceGameFragment"
+        android:label="Boşluk Doldurma"
+        tools:layout="@layout/fragment_sentence_game" />
 
 </navigation>
