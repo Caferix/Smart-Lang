@@ -147,7 +147,9 @@ public class UserProfileRepositoryImpl implements UserProfileRepository {
     public CompletableFuture<String> uploadProfileImage(Uri imageUri) {
         FirebaseUser currentUser = auth.getCurrentUser();
         if (currentUser == null) {
-            return CompletableFuture.failedFuture(new IllegalStateException("Kullanıcı giriş yapmamış."));
+            CompletableFuture<String> future = new CompletableFuture<>();
+            future.completeExceptionally(new IllegalStateException("Kullanıcı giriş yapmamış."));
+            return future;
         }
         String fileName = UUID.randomUUID().toString();
         StorageReference ref = storage.getReference().child(PROFILE_IMAGES_PATH + "/" + currentUser.getUid() + "/" + fileName);
