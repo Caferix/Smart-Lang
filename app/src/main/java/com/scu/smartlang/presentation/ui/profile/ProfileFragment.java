@@ -18,6 +18,7 @@ import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.scu.smartlang.R;
 import com.scu.smartlang.domain.model.Friend;
 import com.scu.smartlang.domain.model.User;
@@ -38,7 +39,7 @@ public class ProfileFragment extends Fragment implements FriendsAdapter.OnFriend
     private ProgressBar pbXp;
     private RecyclerView rvFriends;
     private Button btnSendFriendRequest;
-    private ImageView ivLanguageSettings; // Yeni Eklendi
+    private ImageView ivLanguageSettings;
 
     private FriendsAdapter friendsAdapter;
 
@@ -87,7 +88,7 @@ public class ProfileFragment extends Fragment implements FriendsAdapter.OnFriend
         pbXp = view.findViewById(R.id.pb_profile_xp);
         rvFriends = view.findViewById(R.id.rv_friends);
         btnSendFriendRequest = view.findViewById(R.id.btn_send_friend_request);
-        ivLanguageSettings = view.findViewById(R.id.iv_language_settings); // Yeni Eklendi
+        ivLanguageSettings = view.findViewById(R.id.iv_language_settings);
 
         rvFriends.setLayoutManager(new LinearLayoutManager(getContext()));
         friendsAdapter = new FriendsAdapter(new ArrayList<>(), this);
@@ -173,6 +174,14 @@ public class ProfileFragment extends Fragment implements FriendsAdapter.OnFriend
 
         pbXp.setMax(requiredXpForThisLevel);
         pbXp.setProgress(Math.min(xpInCurrentLevel, requiredXpForThisLevel));
+
+        ImageView ivProfileImage = getView().findViewById(R.id.iv_profile_image);
+        Glide.with(this)
+                .load(user.getProfileImageUrl())
+                .placeholder(R.drawable.ic_person_24dp)
+                .circleCrop()
+                .into(ivProfileImage);
+
     }
 
     private void updateFriendRequestButton(String status) {

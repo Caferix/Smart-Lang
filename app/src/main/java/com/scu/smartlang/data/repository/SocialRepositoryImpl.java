@@ -146,24 +146,65 @@ public class SocialRepositoryImpl implements SocialRepository {
 
     @Override
     public CompletableFuture<List<FriendRequest>> getIncomingFriendRequests(String uid) {
-        return taskToFuture(
-                db.collection(USERS_COLLECTION)
-                        .document(uid)
-                        .collection("friendRequests")
-                        .whereEqualTo("toUid", uid)
-                        .whereEqualTo("status", "PENDING")
-                        .get()
-        ).thenApply(qs -> {
-            List<FriendRequest> list = new ArrayList<>();
-            for (DocumentSnapshot ds : qs.getDocuments()) {
-                FriendRequest req = ds.toObject(FriendRequest.class);
-                if (req != null) {
-                    req.setId(ds.getId());
-                    list.add(req);
-                }
-            }
-            return list;
-        });
+        CompletableFuture<List<FriendRequest>> future = new CompletableFuture<>();
+
+        db.collection(USERS_COLLECTION)
+                .document(uid)
+                .collection("friendRequests")
+                .whereEqualTo("status", "PENDING")
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    if (queryDocumentSnapshots == null || queryDocumentSnapshots.isEmpty()) {
+                        future.complete(new ArrayList<>());
+                        return;
+                    }
+
+                    List<CompletableFuture<FriendRequest>> requestFutures = new ArrayList<>();
+                    for (DocumentSnapshot document : queryDocumentSnapshots.getDocuments()) {
+                        FriendRequest request = document.toObject(FriendRequest.class);
+                        if (request == null || request.getFromUid() == null) continue;
+
+                        request.setId(document.getId());
+
+                        CompletableFuture<FriendRequest> requestWithUserFuture = new CompletableFuture<>();
+                        requestFutures.add(requestWithUserFuture);
+
+                        // Gönderenin kullanıcı bilgilerini çek
+                        db.collection(USERS_COLLECTION).document(request.getFromUid()).get()
+                                .addOnSuccessListener(userDocument -> {
+                                    if (userDocument.exists()) {
+                                        User sender = userDocument.toObject(User.class);
+                                        if (sender != null) {
+                                            request.setSenderName(sender.getUserName());
+                                            request.setSenderProfileImageUrl(sender.getProfileImageUrl());
+                                        }
+                                    }
+                                    requestWithUserFuture.complete(request);
+                                })
+                                .addOnFailureListener(requestWithUserFuture::completeExceptionally);
+                    }
+
+                    // Tüm kullanıcı bilgisi çekme işlemlerinin tamamlanmasını bekle
+                    CompletableFuture.allOf(requestFutures.toArray(new CompletableFuture[0]))
+                            .thenRun(() -> {
+                                List<FriendRequest> completedRequests = new ArrayList<>();
+                                for (CompletableFuture<FriendRequest> reqFuture : requestFutures) {
+                                    try {
+                                        completedRequests.add(reqFuture.get());
+                                    } catch (Exception e) {
+                                        // Bir isteğin bilgisi çekilemezse logla ve devam et
+                                    }
+                                }
+                                future.complete(completedRequests);
+                            })
+                            .exceptionally(e -> {
+                                future.completeExceptionally(e);
+                                return null;
+                            });
+                })
+                .addOnFailureListener(future::completeExceptionally);
+
+        return future;
     }
 
     @Override

@@ -5,6 +5,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -16,6 +17,8 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.bumptech.glide.Glide;
 import com.scu.smartlang.R;
 import com.scu.smartlang.domain.model.Friend;
 import com.scu.smartlang.domain.model.User;
@@ -133,6 +136,13 @@ public class OtherUserFragment extends Fragment implements FriendsAdapter.OnFrie
         tvXpLabel.setText(xpInCurrentLevel + " / " + requiredXpForThisLevel + " XP");
         pbXp.setMax(requiredXpForThisLevel);
         pbXp.setProgress(Math.min(xpInCurrentLevel, requiredXpForThisLevel));
+
+        ImageView ivProfileImage = getView().findViewById(R.id.iv_profile_image);
+        Glide.with(this)
+                .load(user.getProfileImageUrl())
+                .placeholder(R.drawable.ic_person_24dp)
+                .circleCrop()
+                .into(ivProfileImage);
     }
 
     private void updateFriendRequestButton(String status) {
@@ -152,10 +162,10 @@ public class OtherUserFragment extends Fragment implements FriendsAdapter.OnFrie
                 btnSendFriendRequest.setOnClickListener(null);
                 break;
             case "REQUEST_RECEIVED":
-                btnSendFriendRequest.setText("İsteği Kabul Et");
+                btnSendFriendRequest.setText("İsteği Yönet");
                 btnSendFriendRequest.setEnabled(true);
                 btnSendFriendRequest.setOnClickListener(v -> {
-                    Toast.makeText(getContext(), "Lütfen isteği gelen kutunuzdan kabul edin.", Toast.LENGTH_LONG).show();
+                    NavHostFragment.findNavController(this).navigate(R.id.friendRequestsFragment);
                 });
                 break;
             case "NONE":
