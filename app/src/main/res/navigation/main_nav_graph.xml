@@ -143,15 +143,18 @@
         tools:layout="@layout/fragment_other_user" />
 
     <fragment
+        android:id="@+id/sentenceGameFragment"
+        android:name="com.scu.smartlang.presentation.ui.sentence.SentenceGameFragment"
+        android:label="Boşluk Doldurma"
+        tools:layout="@layout/fragment_sentence_game" />
+
+    <fragment
         android:id="@+id/aiChatFragment"
         android:name="com.scu.smartlang.presentation.ui.aichat.AiChatFragment"
         android:label="AI Sohbet"
         tools:layout="@layout/fragment_ai_chat" />
 
 </navigation>
-        android:id="@+id/sentenceGameFragment"
-        android:name="com.scu.smartlang.presentation.ui.sentence.SentenceGameFragment"
-        android:label="Boşluk Doldurma"
-        tools:layout="@layout/fragment_sentence_game" />
 
-</navigation>
+
+
