@@ -5,7 +5,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.ImageView; // Eklendi
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -37,6 +37,7 @@ public class ProfileFragment extends Fragment implements FriendsAdapter.OnFriend
     private TextView tvLevelLabel;
     private TextView tvXpLabel;
     private ProgressBar pbXp;
+    private ImageView ivProfileImage; // EKLENDİ
     private RecyclerView rvFriends;
     private Button btnSendFriendRequest;
     private ImageView ivLanguageSettings;
@@ -86,6 +87,7 @@ public class ProfileFragment extends Fragment implements FriendsAdapter.OnFriend
         tvLevelLabel = view.findViewById(R.id.tv_level_label);
         tvXpLabel = view.findViewById(R.id.tv_xp_label);
         pbXp = view.findViewById(R.id.pb_profile_xp);
+        ivProfileImage = view.findViewById(R.id.iv_profile_image); // BAĞLANDI
         rvFriends = view.findViewById(R.id.rv_friends);
         btnSendFriendRequest = view.findViewById(R.id.btn_send_friend_request);
         ivLanguageSettings = view.findViewById(R.id.iv_language_settings);
@@ -175,13 +177,15 @@ public class ProfileFragment extends Fragment implements FriendsAdapter.OnFriend
         pbXp.setMax(requiredXpForThisLevel);
         pbXp.setProgress(Math.min(xpInCurrentLevel, requiredXpForThisLevel));
 
-        ImageView ivProfileImage = getView().findViewById(R.id.iv_profile_image);
-        Glide.with(this)
-                .load(user.getProfileImageUrl())
-                .placeholder(R.drawable.ic_person_24dp)
-                .circleCrop()
-                .into(ivProfileImage);
-
+        // RESİM YÜKLEME KISMI (GÜNCELLENDİ)
+        if (ivProfileImage != null) {
+            Glide.with(this)
+                    .load(user.getProfileImageUrl())
+                    .placeholder(R.drawable.ic_person_24dp)
+                    .error(R.drawable.ic_person_24dp) // Hata olursa varsayılan ikon
+                    .circleCrop()
+                    .into(ivProfileImage);
+        }
     }
 
     private void updateFriendRequestButton(String status) {

@@ -9,6 +9,7 @@ import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
@@ -23,7 +24,9 @@ import com.scu.smartlang.R;
 import com.scu.smartlang.domain.model.Friend;
 import com.scu.smartlang.domain.model.User;
 import com.scu.smartlang.presentation.viewmodel.SocialViewModel;
+
 import java.util.ArrayList;
+
 import dagger.hilt.android.AndroidEntryPoint;
 
 @AndroidEntryPoint
@@ -31,6 +34,7 @@ public class OtherUserFragment extends Fragment implements FriendsAdapter.OnFrie
 
     private TextView tvName, tvLevelLabel, tvXpLabel;
     private ProgressBar pbXp;
+    private ImageView ivProfileImage; // EKLENDİ
     private RecyclerView rvFriends;
     private Button btnSendFriendRequest;
     private FriendsAdapter friendsAdapter;
@@ -82,6 +86,7 @@ public class OtherUserFragment extends Fragment implements FriendsAdapter.OnFrie
         tvLevelLabel = view.findViewById(R.id.tv_level_label);
         tvXpLabel = view.findViewById(R.id.tv_xp_label);
         pbXp = view.findViewById(R.id.pb_profile_xp);
+        ivProfileImage = view.findViewById(R.id.iv_profile_image); // BAĞLANDI
         rvFriends = view.findViewById(R.id.rv_friends);
         btnSendFriendRequest = view.findViewById(R.id.btn_send_friend_request);
 
@@ -137,12 +142,15 @@ public class OtherUserFragment extends Fragment implements FriendsAdapter.OnFrie
         pbXp.setMax(requiredXpForThisLevel);
         pbXp.setProgress(Math.min(xpInCurrentLevel, requiredXpForThisLevel));
 
-        ImageView ivProfileImage = getView().findViewById(R.id.iv_profile_image);
-        Glide.with(this)
-                .load(user.getProfileImageUrl())
-                .placeholder(R.drawable.ic_person_24dp)
-                .circleCrop()
-                .into(ivProfileImage);
+        // RESİM YÜKLEME KISMI (GÜNCELLENDİ)
+        if (ivProfileImage != null) {
+            Glide.with(this)
+                    .load(user.getProfileImageUrl())
+                    .placeholder(R.drawable.ic_person_24dp)
+                    .error(R.drawable.ic_person_24dp) // Hata olursa varsayılan ikon
+                    .circleCrop()
+                    .into(ivProfileImage);
+        }
     }
 
     private void updateFriendRequestButton(String status) {

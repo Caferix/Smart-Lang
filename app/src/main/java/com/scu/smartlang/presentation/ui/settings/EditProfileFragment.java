@@ -59,13 +59,27 @@ public class EditProfileFragment extends Fragment {
     }
 
     private void loadUserData() {
-        // Mevcut kullanıcı verisini çek ve EditText'e yaz
+        // Mevcut kullanıcı verisini çek
         profileViewModel.getUserProfile().observe(getViewLifecycleOwner(), state -> {
             if (state instanceof AuthResultState.Success) {
                 currentUser = ((AuthResultState.Success) state).getUser();
-                // Kullanıcı adı daha önce set edilmediyse, veritabanından gelen değeri set et
-                if (etUsername.getText().toString().isEmpty()) {
-                    etUsername.setText(currentUser.getUserName());
+
+                if (currentUser != null) {
+                    // 1. Kullanıcı adını set et
+                    if (etUsername.getText().toString().isEmpty()) {
+                        etUsername.setText(currentUser.getUserName());
+                    }
+
+                    // 2. Profil Fotoğrafını Yükle (EKSİK OLAN KISIM BUYDU)
+                    // Eğer seçili yeni bir resim yoksa, mevcut URL'yi yükle
+                    if (selectedImageUri == null) {
+                        Glide.with(this)
+                                .load(currentUser.getProfileImageUrl()) // URL'den yükle
+                                .placeholder(R.drawable.ic_person_24dp) // Yüklenirken göster
+                                .error(R.drawable.ic_person_24dp)       // Hata olursa veya URL yoksa göster
+                                .circleCrop()                           // Yuvarlak yap
+                                .into(ivProfileImage);
+                    }
                 }
             }
         });
@@ -107,6 +121,7 @@ public class EditProfileFragment extends Fragment {
             });
         });
     }
+
 
     private final ActivityResultLauncher<Intent> imagePickerLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),

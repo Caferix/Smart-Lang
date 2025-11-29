@@ -1,6 +1,11 @@
 package com.scu.smartlang.presentation.ui.home;
 
 import android.content.Intent;
+import android.content.Context;
+import android.content.SharedPreferences;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,9 +26,15 @@ import androidx.navigation.fragment.NavHostFragment;
 import com.scu.smartlang.GameActivity;
 import com.scu.smartlang.R;
 import com.scu.smartlang.domain.model.User;
+import com.scu.smartlang.domain.model.Word; // Word importunu ekleyin
+import com.scu.smartlang.domain.model.WordSampleData; // Yeni oluşturduğumuz sınıfı import edin
 import com.scu.smartlang.presentation.ui.auth.AuthResultState;
 import com.scu.smartlang.presentation.viewmodel.ProfileViewModel;
 import com.google.android.material.button.MaterialButton;
+
+import java.util.List;
+import java.util.Random;
+
 import dagger.hilt.android.AndroidEntryPoint;
 
 @AndroidEntryPoint
@@ -32,16 +43,16 @@ public class HomeFragment extends Fragment {
     private TextView tvWelcomeTitle;
     private TextView tvUserLevelXp;
     private ProgressBar progressXp;
-    private TextView tvStreakCount;
-    private MaterialButton btnStartDailyLesson;
-    private MaterialButton btnStartGameMatch; // Kelime Eşleştirme
-    private MaterialButton btnStartGamePuzzle; // Boşluk Doldurma (Senin Oyunun)
-    private MaterialButton btnStartAi;         // AI Butonu
+    // private TextView tvStreakCount; // Kaldırıldı
+    private MaterialButton btnStartGameMatch;
+    private MaterialButton btnStartGamePuzzle;
+    private MaterialButton btnStartAi;
     private ImageView ivNotificationIcon;
     private ProfileViewModel profileViewModel;
 
-    private static final String DAILY_LESSON_TITLE = "GÜNLÜK DERSE BAŞLA";
-    private static final String DEFAULT_MODULE_PLACEHOLDER = "(Temel Zamirler)";
+    // YENİ EKLENENLER
+    private TextView tvEnglishWord;
+    private TextView tvTurkishMeaning;
 
     @Nullable
     @Override
@@ -67,18 +78,75 @@ public class HomeFragment extends Fragment {
         tvWelcomeTitle = view.findViewById(R.id.tv_welcome_title);
         tvUserLevelXp = view.findViewById(R.id.tv_user_level_xp);
         progressXp = view.findViewById(R.id.progress_xp);
-        tvStreakCount = view.findViewById(R.id.tv_streak_count);
+        // tvStreakCount = view.findViewById(R.id.tv_streak_count); // Kaldırıldı
         ivNotificationIcon = view.findViewById(R.id.iv_notification_icon);
 
+        // YENİ EKLENENLERİ BAĞLA
+        tvEnglishWord = view.findViewById(R.id.tv_english_word);
+        tvTurkishMeaning = view.findViewById(R.id.tv_turkish_meaning);
+
         // Butonlar
-        btnStartDailyLesson = view.findViewById(R.id.btn_start_daily_lesson);
         btnStartGameMatch = view.findViewById(R.id.btn_start_game_match);
         btnStartGamePuzzle = view.findViewById(R.id.btn_start_game_puzzle);
         btnStartAi = view.findViewById(R.id.btn_start_ai);
 
         observeViewModel();
         setupListenersAndText();
+        loadDailyWord(); // Yeni metodu çağır
     }
+
+    private void loadDailyWord() {
+        // Kelime listesini al
+        List<Word> words = WordSampleData.getAllWords();
+
+        if (words == null || words.isEmpty()) {
+            tvEnglishWord.setText("HELLO");
+            tvTurkishMeaning.setText("Merhaba");
+            return;
+        }
+
+        // SharedPreferences: Basit verileri telefonda saklamak için kullanılır.
+        // "DailyWordPrefs" adında bir dosya oluşturur.
+        SharedPreferences prefs = requireActivity().getSharedPreferences("DailyWordPrefs", Context.MODE_PRIVATE);
+
+        // Bugünün tarihini al (Format: 20231027 gibi)
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd", Locale.getDefault());
+        String todayDate = sdf.format(new Date());
+
+        // Telefonda kayıtlı olan tarihi ve kelime sırasını (index) al
+        String savedDate = prefs.getString("saved_date", "");
+        int savedIndex = prefs.getInt("saved_word_index", -1);
+
+        int indexToUse;
+
+        // Mantık: Eğer bugün, kaydedilen tarihten farklıysa VEYA hiç kayıt yoksa -> YENİ KELİME SEÇ
+        if (!todayDate.equals(savedDate) || savedIndex == -1) {
+
+            // Rastgele yeni bir sayı seç
+            indexToUse = new Random().nextInt(words.size());
+
+            // Yeni tarihi ve bu sayıyı hafızaya kaydet
+            SharedPreferences.Editor editor = prefs.edit();
+            editor.putString("saved_date", todayDate);
+            editor.putInt("saved_word_index", indexToUse);
+            editor.apply(); // Değişiklikleri uygula
+
+        } else {
+            // Tarihler aynı (yani gün değişmemiş) -> KAYITLI KELİMEYİ KULLAN
+            indexToUse = savedIndex;
+
+            // Güvenlik önlemi: Eğer kelime listesinin boyutu değiştiyse ve kayıtlı index sınır dışındaysa
+            if (indexToUse >= words.size()) {
+                indexToUse = 0;
+            }
+        }
+
+        // Seçilen (veya kayıtlı) kelimeyi ekrana bas
+        Word dailyWord = words.get(indexToUse);
+        tvEnglishWord.setText(dailyWord.getEnglishWord().toUpperCase());
+        tvTurkishMeaning.setText(dailyWord.getTurkishMeaning());
+    }
+
 
     private void observeViewModel() {
         profileViewModel.getUserProfile().observe(getViewLifecycleOwner(), authResult -> {
@@ -99,24 +167,18 @@ public class HomeFragment extends Fragment {
     }
 
     private void setupListenersAndText() {
-        String buttonText = String.format("%s<br><small><small>%s</small></small>",
-                DAILY_LESSON_TITLE, DEFAULT_MODULE_PLACEHOLDER);
-        btnStartDailyLesson.setText(android.text.Html.fromHtml(buttonText, android.text.Html.FROM_HTML_MODE_LEGACY));
-
-        btnStartDailyLesson.setOnClickListener(v -> Toast.makeText(getContext(), "Günlük ders yakında!", Toast.LENGTH_SHORT).show());
-
         // Oyun 1: Kelime Eşleştirme
         btnStartGameMatch.setOnClickListener(v -> {
             Intent intent = new Intent(getActivity(), GameActivity.class);
             startActivity(intent);
         });
 
-        // --- SENİN OYUNUN ---
-        // "Kelime Bulmaca" butonuna (btnStartGamePuzzle) basınca "Boşluk Doldurma" açılacak.
+        // Boşluk Doldurma
         btnStartGamePuzzle.setOnClickListener(v -> {
             Navigation.findNavController(v).navigate(R.id.sentenceGameFragment);
         });
 
+        // AI Sohbet
         btnStartAi.setOnClickListener(v ->
                 NavHostFragment.findNavController(HomeFragment.this).navigate(R.id.action_navigation_home_to_aiChatFragment));
 
@@ -142,7 +204,6 @@ public class HomeFragment extends Fragment {
         tvUserLevelXp.setText(String.format("Level %d | %d/%d XP", currentLevel, xpForCurrentLevel, requiredXpForNextLevel));
         progressXp.setMax(requiredXpForNextLevel);
         progressXp.setProgress(xpForCurrentLevel);
-        tvStreakCount.setText("Seri: 0 Gün");
     }
 
     private void navigateToSignIn() {

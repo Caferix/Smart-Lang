@@ -20,9 +20,9 @@
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:src="@drawable/ic_person_24dp"
-            app:tint="@color/text_hint_gray"
+            android:scaleType="centerCrop"
             android:background="@drawable/bg_input_field"
-            android:padding="8dp"
+            android:padding="2dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />

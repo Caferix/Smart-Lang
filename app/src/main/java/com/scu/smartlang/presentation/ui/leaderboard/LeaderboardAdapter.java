@@ -20,6 +20,19 @@ import java.util.Locale;
 public class LeaderboardAdapter extends RecyclerView.Adapter<LeaderboardAdapter.LeaderboardViewHolder> {
 
     private List<User> userList = new ArrayList<>();
+    private OnUserClickListener listener; // Yeni: Listener alanını ekle
+
+    // Yeni: Tıklama dinleyicisi arayüzü
+    public interface OnUserClickListener {
+        void onUserClick(String userId);
+    }
+
+    // Constructor'a listener'ı alacak şekilde overload ekliyoruz
+    public LeaderboardAdapter() {}
+
+    public LeaderboardAdapter(OnUserClickListener listener) {
+        this.listener = listener;
+    }
 
     @NonNull
     @Override
@@ -32,6 +45,13 @@ public class LeaderboardAdapter extends RecyclerView.Adapter<LeaderboardAdapter.
     public void onBindViewHolder(@NonNull LeaderboardViewHolder holder, int position) {
         User user = userList.get(position);
         holder.bind(user, position + 1);
+
+        // Yeni: Tıklama olayını işle
+        holder.itemView.setOnClickListener(v -> {
+            if (listener != null) {
+                listener.onUserClick(user.getUid());
+            }
+        });
     }
 
     @Override
