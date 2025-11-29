@@ -43,14 +43,12 @@ public class HomeFragment extends Fragment {
     private TextView tvWelcomeTitle;
     private TextView tvUserLevelXp;
     private ProgressBar progressXp;
-    // private TextView tvStreakCount; // Kaldırıldı
     private MaterialButton btnStartGameMatch;
     private MaterialButton btnStartGamePuzzle;
     private MaterialButton btnStartAi;
     private ImageView ivNotificationIcon;
     private ProfileViewModel profileViewModel;
 
-    // YENİ EKLENENLER
     private TextView tvEnglishWord;
     private TextView tvTurkishMeaning;
 
@@ -78,10 +76,7 @@ public class HomeFragment extends Fragment {
         tvWelcomeTitle = view.findViewById(R.id.tv_welcome_title);
         tvUserLevelXp = view.findViewById(R.id.tv_user_level_xp);
         progressXp = view.findViewById(R.id.progress_xp);
-        // tvStreakCount = view.findViewById(R.id.tv_streak_count); // Kaldırıldı
         ivNotificationIcon = view.findViewById(R.id.iv_notification_icon);
-
-        // YENİ EKLENENLERİ BAĞLA
         tvEnglishWord = view.findViewById(R.id.tv_english_word);
         tvTurkishMeaning = view.findViewById(R.id.tv_turkish_meaning);
 
@@ -92,7 +87,7 @@ public class HomeFragment extends Fragment {
 
         observeViewModel();
         setupListenersAndText();
-        loadDailyWord(); // Yeni metodu çağır
+        loadDailyWord();
     }
 
     private void loadDailyWord() {

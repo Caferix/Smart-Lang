@@ -123,12 +123,12 @@ public class SentenceGameFragment extends Fragment {
 
         // XP
         viewModel.totalXp.observe(getViewLifecycleOwner(), xp ->
-                tvXp.setText("XP: " + (xp != null ? xp : 0))
+                tvXp.setText("Score: " + (xp != null ? xp : 0))
         );
 
         // Level
         viewModel.currentLevelLiveData.observe(getViewLifecycleOwner(), level -> {
-            if (level != null) tvLevel.setText("LVL " + level);
+            if (level != null) tvLevel.setText("Level " + level);
         });
 
         // Level Bar
