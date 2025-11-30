@@ -26,7 +26,6 @@ public class LeaderboardViewModel extends ViewModel {
     @Inject
     public LeaderboardViewModel(GetFriendLeaderboardUseCase getFriendLeaderboardUseCase) {
         this.getFriendLeaderboardUseCase = getFriendLeaderboardUseCase;
-        fetchLeaderboard();
     }
 
     public LiveData<List<User>> getLeaderboard() {
@@ -37,7 +36,8 @@ public class LeaderboardViewModel extends ViewModel {
         return error;
     }
 
-    private void fetchLeaderboard() {
+    public void fetchLeaderboard() {
+        disposables.clear();
         disposables.add(getFriendLeaderboardUseCase.execute()
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
@@ -45,6 +45,12 @@ public class LeaderboardViewModel extends ViewModel {
                         leaderboard::setValue,
                         throwable -> error.setValue(throwable.getMessage())
                 ));
+    }
+
+    public void clearLeaderboard() {
+        disposables.clear();
+        leaderboard.setValue(null);
+        error.setValue(null);
     }
 
     @Override

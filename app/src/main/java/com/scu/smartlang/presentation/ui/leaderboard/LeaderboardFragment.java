@@ -58,6 +58,8 @@ public class LeaderboardFragment extends Fragment implements LeaderboardAdapter.
 
         leaderboardViewModel = new ViewModelProvider(this).get(LeaderboardViewModel.class);
 
+        leaderboardViewModel.fetchLeaderboard();
+
         // Kullanıcı listesi güncellendiğinde burası çalışır
         leaderboardViewModel.getLeaderboard().observe(getViewLifecycleOwner(), users -> {
             if (users != null && !users.isEmpty()) {
