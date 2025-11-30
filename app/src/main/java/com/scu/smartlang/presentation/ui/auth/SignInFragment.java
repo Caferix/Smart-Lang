@@ -105,7 +105,7 @@ public class SignInFragment extends Fragment {
 
                 String welcomeName = success.getUser().getUserName();
                 setLoadingState(false, false);
-                Toast.makeText(getContext(), "Hoş geldiniz! Otomatik giriş yapıldı. Kullanıcı: " + welcomeName, Toast.LENGTH_SHORT).show();
+               // Toast.makeText(getContext(), "Hoş geldiniz! Otomatik giriş yapıldı. Kullanıcı: " + welcomeName, Toast.LENGTH_SHORT).show();
                 navController.navigate(R.id.navigation_home, null, new NavOptions.Builder()
                         .setPopUpTo(R.id.signInFragment, true)
                         .build());
