@@ -1,0 +1,30 @@
+<resources>
+    <string name="app_name">SmartLang</string>
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+
+    <string name="welcome_message">Hoş Geldin, %1$s!</string>
+
+    <string name="games_section_title">Oyunlar ve Alıştırmalar</string>
+    <string name="game_match_title">Kelime Eşleştirme</string>
+    <string name="game_puzzle_title">Kelime Bulmaca (Yakında)</string>
+    <string name="ai_practice_title">AI ile Sohbet Et</string>
+    <string name="game_button_title">OYUN OYNA</string>
+
+    <string name="language_selector_text">İngilizce (Değiştir)</string>
+    <string name="language_selector_toast">Dil seçme menüsü açılacak (Çoklu dil desteği yakında!)</string>
+
+    <string name="settings_title">Ayarlar</string>
+    <string name="account_settings">Hesap Ayarları</string>
+    <string name="app_settings">Uygulama Ayarları</string>
+    <string name="profile_edit">Profilimi Düzenle</string>
+    <string name="change_password">Şifremi Değiştir</string>
+    <string name="dark_mode_label">Koyu Tema (Siyah Tema)</string>
+    <string name="notifications_label">Bildirimleri Aç/Kapat</string>
+    <string name="notification_schedule_label">Bildirim Saat Aralığı</string>
+    <string name="start_time_label">Başlangıç</string>
+    <string name="end_time_label">Bitiş</string>
+    <string name="sign_out">Çıkış Yap</string>
+
+    <string name="daily_word_section_title">Günün Kelimesi 🚀</string>
+    <string name="word_of_the_day_placeholder">Kelime yükleniyor...</string>
+</resources>

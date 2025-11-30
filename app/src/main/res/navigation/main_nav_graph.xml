@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main_nav_graph"
+    app:startDestination="@id/signInFragment">
+
+    <fragment
+        android:id="@+id/signInFragment"
+        android:name="com.scu.smartlang.presentation.ui.auth.SignInFragment"
+        android:label="Giriş Yap"
+        tools:layout="@layout/fragment_sign_in">
+        <action
+            android:id="@+id/action_signInFragment_to_signUpFragment"
+            app:destination="@id/signUpFragment" />
+        <action
+            android:id="@+id/action_signInFragment_to_navigation_home"
+            app:destination="@id/navigation_home"
+            app:popUpTo="@id/main_nav_graph"
+            app:popUpToInclusive="true"/>
+        <action
+            android:id="@+id/action_signInFragment_to_forgotPasswordFragment"
+            app:destination="@id/forgotPasswordFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/signUpFragment"
+        android:name="com.scu.smartlang.presentation.ui.auth.SignUpFragment"
+        android:label="Hesap Oluştur"
+        tools:layout="@layout/fragment_sign_up">
+        <action
+            android:id="@+id/action_signUpFragment_to_navigation_home"
+            app:destination="@id/navigation_home"
+            app:popUpTo="@id/main_nav_graph"
+            app:popUpToInclusive="true"/>
+    </fragment>
+
+    <fragment
+        android:id="@+id/forgotPasswordFragment"
+        android:name="com.scu.smartlang.presentation.ui.auth.ForgotPasswordFragment"
+        android:label="ForgotPasswordFragment" />
+
+    <fragment
+        android:id="@+id/navigation_home"
+        android:name="com.scu.smartlang.presentation.ui.home.HomeFragment"
+        android:label="Ana Sayfa"
+        tools:layout="@layout/fragment_home">
+        <action
+            android:id="@+id/action_to_friend_requests"
+            app:destination="@id/friendRequestsFragment" />
+        <action
+            android:id="@+id/action_navigation_home_to_aiChatFragment"
+            app:destination="@id/aiChatFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/navigation_leaderboard"
+        android:name="com.scu.smartlang.presentation.ui.leaderboard.LeaderboardFragment"
+        android:label="Puan Durumu"
+        tools:layout="@layout/fragment_leaderboard">
+        <action
+            android:id="@+id/action_navigation_leaderboard_to_navigation_profile"
+            app:destination="@id/navigation_profile" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/navigation_settings"
+        android:name="com.scu.smartlang.presentation.ui.settings.SettingsFragment"
+        android:label="Ayarlar"
+        tools:layout="@layout/fragment_settings">
+        <action
+            android:id="@+id/action_navigation_settings_to_editProfileFragment"
+            app:destination="@id/editProfileFragment" />
+        <action
+            android:id="@+id/action_navigation_settings_to_changePasswordFragment"
+            app:destination="@id/changePasswordFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/editProfileFragment"
+        android:name="com.scu.smartlang.presentation.ui.settings.EditProfileFragment"
+        android:label="Profili Düzenle"
+        tools:layout="@layout/fragment_edit_profile" />
+
+    <fragment
+        android:id="@+id/changePasswordFragment"
+        android:name="com.scu.smartlang.presentation.ui.auth.ChangePasswordFragment"
+        android:label="Şifre Değiştir"
+        tools:layout="@layout/fragment_change_password" />
+
+    <fragment
+        android:id="@+id/navigation_profile"
+        android:name="com.scu.smartlang.presentation.ui.profile.ProfileFragment"
+        android:label="Profilim"
+        tools:layout="@layout/fragment_profile">
+        <argument
+            android:name="userId"
+            app:argType="string"
+            app:nullable="true"
+            android:defaultValue="@null" />
+
+        <action
+            android:id="@+id/action_navigation_profile_self"
+            app:destination="@id/navigation_profile" />
+        <action
+            android:id="@+id/action_navigation_profile_to_otherUserFragment"
+            app:destination="@id/otherUserFragment" />
+        <action
+            android:id="@+id/action_navigation_profile_to_otherUserFragment2"
+            app:destination="@id/otherUserFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/navigation_search"
+        android:name="com.scu.smartlang.presentation.ui.search.SearchFragment"
+        android:label="Kullanıcı Ara"
+        tools:layout="@layout/fragment_search">
+        <action
+            android:id="@+id/action_navigation_search_to_navigation_profile"
+            app:destination="@id/navigation_profile" />
+        <action
+            android:id="@+id/action_navigation_search_to_otherUserFragment"
+            app:destination="@id/otherUserFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/friendRequestsFragment"
+        android:name="com.scu.smartlang.presentation.ui.profile.FriendRequestsFragment"
+        android:label="Arkadaşlık İstekleri"
+        tools:layout="@layout/fragment_friend_requests">
+        <action
+            android:id="@+id/action_friendRequestsFragment_to_navigation_profile"
+            app:destination="@id/navigation_profile" />
+        <action
+            android:id="@+id/action_friendRequestsFragment_to_otherUserFragment"
+            app:destination="@id/otherUserFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/otherUserFragment"
+        android:name="com.scu.smartlang.presentation.ui.profile.OtherUserFragment"
+        android:label="fragment_other_user"
+        tools:layout="@layout/fragment_other_user" />
+
+    <fragment
+        android:id="@+id/sentenceGameFragment"
+        android:name="com.scu.smartlang.presentation.ui.sentence.SentenceGameFragment"
+        android:label="Boşluk Doldurma"
+        tools:layout="@layout/fragment_sentence_game" />
+
+    <fragment
+        android:id="@+id/aiChatFragment"
+        android:name="com.scu.smartlang.presentation.ui.aichat.AiChatFragment"
+        android:label="AI Sohbet"
+        tools:layout="@layout/fragment_ai_chat" />
+
+</navigation>

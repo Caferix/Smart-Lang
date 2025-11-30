@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Arka plan -->
+    <item android:id="@android:id/background">
+        <shape android:shape="rectangle">
+            <corners android:radius="8dp"/>
+            <solid android:color="#E0E0E0"/>
+        </shape>
+    </item>
+
+    <!-- Dolan kısım (XP ilerlemesi) -->
+    <item android:id="@android:id/progress">
+        <clip>
+            <shape android:shape="rectangle">
+                <corners android:radius="8dp"/>
+                <gradient
+                    android:startColor="@color/sl_xp_start"
+                    android:endColor="@color/sl_xp_end"
+                    android:angle="0"/>
+            </shape>
+        </clip>
+    </item>
+</layer-list>
